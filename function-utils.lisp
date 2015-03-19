@@ -109,6 +109,23 @@
     (rec lst nil)))
 ; (print (last-member 'a '(a 1 a 2 a 3)))
 
+(defun most (fn lst)
+  (if (null lst)
+    (values nil nil)
+    (let* ((wins (car lst))
+           (max (funcall fn wins)))
+      (dolist (obj (cdr lst))
+        (let ((score (funcall fn obj)))
+          (when (> score max)
+            (setq wins obj
+                  max score))))
+      (values wins max))))
+; (print (most #'length '((1) (1 2) (1 2 3) (1 2 3 4))))
+; (print (most #'values '(1 2 3 4 5)))
+
+
+
+
 
 
 
