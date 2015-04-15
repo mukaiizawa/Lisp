@@ -1,3 +1,4 @@
+(load "string-utils")
 
 ; AA block{{{
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -686,34 +687,35 @@
 ; }}}
 ; logic {{{
 
-(defun charlist->aa-print (charlist &key (surroundp nil))
+(defun charlist->aa-print (charlist &key (surround nil) (background nil))
   (fresh-line)
-  (aa-surround charlist surroundp
+  (aa-surround charlist surround
                (loop for i from 0 to 7
-                     collect (fresh-princ (aa-line charlist i)))))
+                     collect (fresh-princ (aa-line charlist i :background background)))))
 
-(defun aa-line (charlist line-num)
+(defun aa-line (charlist line-num &key background)
   (let ((aa-string (aa-string charlist line-num)))
     (if charlist
-      (concatenate 'string aa-string
-                   (aa-line (cdr charlist) line-num))
-      " ")))
+      (concatenate 'string (if background
+                             (replace-string " " background aa-string)
+                             aa-string)
+                   (aa-line (cdr charlist) line-num :background background))
+      "")))
 
 (defun aa-string (charlist line-num)
   (cadr-assoc line-num (symbol-value (cadr-assoc (car charlist) *aa-nodes*))))
 
-; TODO cond -> acond
-(defmacro aa-surround (charlist surroundp &body body)
-  `(cond (,surroundp (let ((surround-str ((lambda ()
-                                            (labels ((rec (num-rec acc)
-                                                          (if (< 0 num-rec)
-                                                            (progn (setq acc (concatenate 'string acc surroundp))
-                                                                   (rec (1- num-rec) acc))
-                                                            acc)))
-                                              (rec (length (aa-line charlist 0)) surroundp))))))
-                       (fresh-princ surround-str)
-                       ,@body
-                       (fresh-princ surround-str)))
+(defmacro aa-surround (charlist surround &body body)
+  `(cond (,surround (let ((surround-str ((lambda ()
+                                           (labels ((rec (num-rec acc)
+                                                         (if (< 1 num-rec)
+                                                           (progn (setq acc (concatenate 'string acc surround))
+                                                                  (rec (1- num-rec) acc))
+                                                           acc)))
+                                             (rec (length (aa-line charlist 0)) surround))))))
+                      (fresh-princ surround-str)
+                      ,@body
+                      (fresh-princ surround-str)))
          (t ,@body)))
 
 (defun string->charlist (str)
@@ -728,7 +730,7 @@
   (charlist->aa-print (string->charlist str)))
 
 (defun aa-sla-print(str)
-  (charlist->aa-print (string->charlist str) :surroundp "*"))
+  (charlist->aa-print (string->charlist str) :surround "*" :background "/"))
 
 ; demo
 ; (aa-print "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
