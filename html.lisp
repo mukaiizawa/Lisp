@@ -3,7 +3,7 @@
 (defmacro deftag (name closingp)
   `(defmacro ,name (attri &body body)
      `(progn
-        (format *html-output* "~(<~A ~{~{~A = \"~A\"~}~}~A>~)~%" ',',name ',attri
+        (format *html-output* "~(<~A~{~{ ~A=\"~A\"~}~}~A>~)~%" ',',name ',attri
                 (if ',',closingp "" "/"))
         (text-node ,@body)
         (when ',',closingp
@@ -51,6 +51,9 @@
   (html ((lang ja))
         (head ()
               (meta ((charset utf-8)))
-              (title () "html test"))
+              (title ()
+                     "html test"))
         (body ()
-              (p () "hello world"))))
+              (div ((class container) (id container))
+                   (p ()
+                      "hello world")))))
