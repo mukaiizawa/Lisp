@@ -76,7 +76,7 @@
 
 ; }}}
 ; search utils {{{
-; find2, before, after, last-member
+; find2, before, after, last-member, most
 
 (defun find2 (fn lst)
   (if (null lst)
@@ -124,17 +124,61 @@
 ; (print (most #'values '(1 2 3 4 5)))
 
 
+; }}}
+; map utils {{{
+; map0-n, map1-n, mapa-b, map-rec
 
+(defun map0-n (fn n)
+  (mapa-b fn 0 n))
+; (map0-n #'print 10)
 
+(defun map1-n (fn n)
+  (mapa-b fn 1 n))
+; (map1-n #'print 10)
+
+(defun mapa-b (fn a b &optional (step 1))
+  (do ((i a (+ i step))
+       (result nil))
+    ((> i b) (nreverse result))
+    (push (funcall fn i) result)))
+; (mapa-b #'print 1 10 0.5)
+
+(defun map-rec (fn &rest args)
+  (if (some #'atom args)
+    (apply fn args)
+    (apply #'mapcar
+           (lambda (&rest args)
+             (apply #'map-rec fn args))
+           args)))
+; (map-rec #'princ '(1 2 (3 4) (5 6 (7 8)) 9))
 
 
 
 ; }}}
+; memo utils {{{
 
+(defun memoize (fn)
+  (let ((cache (make-hash-table :test #'equal)))
+    (lambda (&rest args)
+      (multiple-value-bind (val win) (gethash args cache)
+        (if win
+          val
+          (setf (gethash args cache)
+                (apply fn args)))))))
+; demo {{{
+; (defun fib (x)
+;   (case x
+;     (1 1)
+;     (2 1)
+;     (t (+ (fib (1- x)) (fib (- x 2))))))
+; (print (time (fib 30)))
+; (print (time (fib 30)))
+; (defparameter *fib* nil)
+; (setq *fib* (memoize (function fib)))
+; (print (time (funcall *fib* 30)))
+; (print (time (funcall *fib* 30)))
+; }}}
 
-
-
-
-
+; }}}
 
 

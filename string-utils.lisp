@@ -1,10 +1,23 @@
+(defun mkstr (&rest args)
+  (with-output-to-string (str)
+    (dolist (i args)
+      (princ i str))))
+; (print (mkstr pi " pieces of " 'Pi))
+
+
 (defun replace-string (from to tar-str)
   (labels ((rec (str acc)
-                (if (string= "" str)
-                  acc
-                  (if (string= from (subseq str 0 1))
-                    (rec (subseq str 1) (format nil "~A~A" acc to))
-                    (rec (subseq str 1) (format nil "~A~A" acc (subseq str 0 1)))))))
+                (let ((from-len (length from))
+                      (str-len  (length str)))
+                  (if (< str-len from-len)
+                    (mkstr acc str)
+                    (if (string= from (subseq str 0 from-len))
+                      (rec (subseq str from-len)
+                           (mkstr acc to))
+                      (rec (subseq str from-len)
+                           (mkstr acc (subseq str 0 from-len))))))))
     (rec tar-str "")))
+; (print (replace-string "asd" "b" "asdf"))
+
 
 
