@@ -1,5 +1,19 @@
-(load "../lib/std-lib")
+(load "./lib/std-lib")
 
+
+(set-dispatch-macro-character #\# #\p
+  (lambda (stream char1 char2)
+    (declare (ignore char1 char2))
+    (print (macroexpand-1 (read stream t nil t)))))
+
+(set-macro-character #\]
+  (get-macro-character #\)))
+
+(set-dispatch-macro-character #\# #\[
+  (lambda (stream char1 char2)
+    (declare (ignore char1 char2))
+    (let ((pair (read-delimited-list #\] stream t)))
+      (list 'quote (iota (car pair) (cadr pair))))))
 
 (defmacro getopt (opts &body body)
   `(destructuring-bind ,opts
@@ -18,14 +32,15 @@
           opts))
 
 
-(echo (macroexpand-1
-  '(getopt (a n+)
-           (print n+)
-           (print a))))
+; (echo (macroexpand-1
+;   '(getopt (a n+)
+;            (print n+)
+;            (print a))))
 
-(getopt (a n+)
+#p(getopt (a n+)
         (print n+)
         (print a))
+
 
 
 ;; 内部でgetoptが展開されてbindされる
