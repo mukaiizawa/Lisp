@@ -1,11 +1,6 @@
 (load "./lib/std-lib")
 
 
-(set-dispatch-macro-character #\# #\p
-  (lambda (stream char1 char2)
-    (declare (ignore char1 char2))
-    (print (macroexpand-1 (read stream t nil t)))))
-
 (set-macro-character #\]
   (get-macro-character #\)))
 
@@ -13,7 +8,7 @@
   (lambda (stream char1 char2)
     (declare (ignore char1 char2))
     (let ((pair (read-delimited-list #\] stream t)))
-      (list 'quote (iota (car pair) (cadr pair))))))
+      (list 'quote (iota (first pair) (last1 pair))))))
 
 (defmacro getopt (opts &body body)
   `(destructuring-bind ,opts
