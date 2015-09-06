@@ -16,8 +16,8 @@
           opts))
 
 
-#p(BM (mkstr 'a) (apply #'mkstr (list "-a" "-n" "10" "fname")) :ignore-case t)
-#p(apply #'mkstr (list "-a" "-n" "10" "fname"))
+; #p(BM (mkstr 'a) (apply #'mkstr (list "-a" "-n" "10" "fname")) :ignore-case t)
+; #p(apply #'mkstr (list "-a" "-n" "10" "fname"))
 
 ; #m(parse-args '(a n+) (list "-a" "-n" "10" "fname"))
 ; (princln "---")
@@ -37,4 +37,5 @@
 ;;    (print b?)
 ;;    (print c+)))
 
-
+#p(BM "2" "11111111111111picled_peprper" :ignore-case t)
+#p(char-downcase #\3)
