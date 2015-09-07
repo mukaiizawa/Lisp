@@ -1,42 +1,35 @@
 (load "./lib/std-lib")
 
 
-(set-macro-character #\]
-  (get-macro-character #\)))
-
-(set-dispatch-macro-character #\# #\[
-  (lambda (stream char1 char2)
-    (declare (ignore char1 char2))
-    (let ((pair (read-delimited-list #\] stream t)))
-      (list 'quote (iota (first pair) (last1 pair))))))
-
 (defmacro getopt (opts &body body)
   `(destructuring-bind ,opts
-     (parse-arg ',opts (list "-a" "-n" "10" "fname"))
+     (parse-args ',opts (list "-a" "-n" "10" "fname"))
      ,@body))
 ;; command line args {{{
 ;; <= "-a -n 10 fname"
 ;; (args)
 ;; => ("-a" "-n" "10" "fname") }}}
 
-(defun parse-arg (opts args)
-  (echo "args:" args)
+(defun parse-args (opts args)
   (mapcar (lambda (opt)
-            (print opt)
-            t)
+            (BM (mkstr opt) (apply #'mkstr args)))
           opts))
 
+
+#p(BM (mkstr 'a) (apply #'mkstr (list "-a" "-n" "10" "fname")) :ignore-case t)
+#p(apply #'mkstr (list "-a" "-n" "10" "fname"))
+
+; #m(parse-args '(a n+) (list "-a" "-n" "10" "fname"))
+; (princln "---")
+; #p(parse-args '(a n+) (list "-a" "-n" "10" "fname"))
 
 ; (echo (macroexpand-1
 ;   '(getopt (a n+)
 ;            (print n+)
 ;            (print a))))
 
-#p(getopt (a n+)
-        (print n+)
-        (print a))
-
-
+(getopt (a n+)
+          (list a n+))
 
 ;; 内部でgetoptが展開されてbindされる
 ;;  (defapp test(a b? c+)
