@@ -10,26 +10,26 @@
 ;; (args)
 ;; => ("-a" "-n" "10" "fname") }}}
 
+;; 指定オプションは英小文字のみ有効
 (defun parse-args (opts args)
   (mapcar (lambda (opt)
-            (BM (mkstr opt) (apply #'mkstr args)))
+            (let ((opt (string-downcase (mkstr opt))))
+              (cond ((not (boyer-moore opt (apply #'mkstr args) :ignore-case t)) nil)
+                    ((= (length opt) 1) t)
+                    ((before #\+ opt) t)
+                    ((before #\? opt) t)
+                    (t (echo "illegal option")))))
           opts))
 
-
-; #p(BM (mkstr 'a) (apply #'mkstr (list "-a" "-n" "10" "fname")) :ignore-case t)
-; #p(apply #'mkstr (list "-a" "-n" "10" "fname"))
-
-; #m(parse-args '(a n+) (list "-a" "-n" "10" "fname"))
-; (princln "---")
-; #p(parse-args '(a n+) (list "-a" "-n" "10" "fname"))
+#p(parse-args '(a n+ f+ x) (list "-a" "-n+" "10" "fname"))
 
 ; (echo (macroexpand-1
 ;   '(getopt (a n+)
 ;            (print n+)
 ;            (print a))))
 
-(getopt (a n+)
-          (list a n+))
+; (getopt (a n+)
+;           (list a n+))
 
 ;; 内部でgetoptが展開されてbindされる
 ;;  (defapp test(a b? c+)
@@ -37,5 +37,3 @@
 ;;    (print b?)
 ;;    (print c+)))
 
-#p(BM "2" "11111111111111picled_peprper" :ignore-case t)
-#p(char-downcase #\3)
