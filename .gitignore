@@ -1,7 +1,6 @@
 
-work/*
+work/
 *.exe
 *.cache
-
 app/*
 !*.lisp
