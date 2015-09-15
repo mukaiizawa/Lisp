@@ -1,3 +1,7 @@
 
 work/*
 *.exe
+*.cache
+
+app/*
+!*.lisp
