@@ -6,3 +6,5 @@ app/*
 !*.lisp
 *.tab
 *.tabs
+*.csv
+*.sql
