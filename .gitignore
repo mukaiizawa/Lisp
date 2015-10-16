@@ -1,10 +1,10 @@
-
-work/
 *.exe
-*.cache
-app/*
-!*.lisp
 *.tab
 *.tabs
 *.csv
 *.sql
+*.cache
+
+work/
+
+!*.lisp
