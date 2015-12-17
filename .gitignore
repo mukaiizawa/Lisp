@@ -6,5 +6,6 @@
 *.cache
 
 work/
+bin/!*.lisp
 
 !*.lisp
