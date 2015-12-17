@@ -1,11 +1,6 @@
 *.exe
-*.tab
-*.tabs
-*.csv
-*.sql
-*.cache
-
 work/
-bin/!*.lisp
-
+bin/
 !*.lisp
+!*.csv
+!*.sql
