@@ -1,6 +1,7 @@
 *.exe
 work/
 bin/
+*.*fsl
 !*.lisp
 !*.csv
 !*.sql
