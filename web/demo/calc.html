@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <script src="calc.js">
+    </script>
+    <meta charset="utf-8" />
+    <title>
+      Page Title
+    </title>
+  </head>
+  <body>
+    <form id="theForm">
+      <div>
+        <label for="quantity">
+          注文数
+        </label>
+        <input type="number" name="quantity" id="quantity" value="1" min="1" required />
+      </div>
+      <div>
+        <label for="price">
+          単価
+        </label>
+        <input type="text" name="price" id="price" value="1.00" required />
+      </div>
+      <div>
+        <label for="tax">
+          税率(%)
+        </label>
+        <input type="text" name="tax" id="tax" value="0.0" required />
+      </div>
+      <div>
+        <label for="discount">
+          値引き額
+        </label>
+        <input type="text" name="discount" id="discount" value="0.00" required />
+      </div>
+      <div>
+        <label for="total">
+          合計
+        </label>
+        <input type="text" name="total" id="total" value="0.00" required />
+      </div>
+      <div>
+        <input type="submit" value="計算" id="submmit" />
+      </div>
+    </form>
+  </body>
+</html>
