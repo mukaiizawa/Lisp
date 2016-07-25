@@ -3,6 +3,7 @@
 (load "to-html" :if-does-not-exist nil)
 
 (defstruct (node (:conc-name nil))
+  (name-space nil)
   (name nil)
   (attr nil)
   (child-nodes nil))
