@@ -99,10 +99,7 @@
 ;; <subgraph> : [ <subgraph> [ ID ] ] '{' <stmt_list> '}'
 ;; <compass_pt> : (n | ne | e | se | s | sw | w | nw | c | _)
 
-(defstruct graphviz
-  (input-file-name "graph.dot" :type string)
-  (output-file-name "graph.gif" :type string)
-  (digraph? t :type boolean)
+(defstruct graph
   (global-graph-conf nil :type list)
   (global-node-conf nil :type list)
   (global-edge-conf nil :type list)
@@ -114,19 +111,32 @@
 (defstruct edge from to attr directed?)
 (defstruct attr key value)
 
-(defun mknode (values &rest attr)
+(defun replace-low-line (str)
+  (replstr "-" "_" str))
+
+;; make-nodes {{{
+
+(defun make-nodes (values &rest attr)
   (mapcar (lambda (value)
             (make-node :value value
                        :attr attr))
           (mklist values)))
 
-(defun replace-low-line (str)
-  (replstr "-" "_" str))
+;; }}}
+;; make-nodes {{{
 
+(defun make-edges (from-to-list &rest attr)
+  (mapcar (lambda (from-to)
+            (make-edge :from (first from-to)
+                       :to (second from-to)
+                       :attr attr))
+          (mklist from-to-list)))
+
+;; }}}
 ;; to-string attr {{{
 
-(defmethod to-string ((a attr))
-  (format nil "~A = \"~A\"" (attr-key a) (attr-value a)))
+(defmethod to-string ((alist list))
+  (format nil "[~{~{~(~A~)=\"~A\"~}~^,~%~}]" alist))
 
 ;; }}}
 ;; to-string edge {{{
@@ -134,47 +144,60 @@
 (defmethod to-string ((e edge))
   (concatenate 'string
                (edge-from e)
-               (if (edge-directed? e) "->" "--")
-               (edge-to e)
+               (if (edge-directed? e) " -> " " -- ")
+               (edge-to e) " "
                (to-string (edge-attr e))))
 ;; }}}
 ;; to-string node {{{
 
 (defmethod to-string ((n node))
   (concatenate 'string
-               (node-value n)
+               (node-value n) " "
                (to-string (node-attr n))))
-;; }}}
-;; attrlist->string {{{
-
-(defmethod attrlist->string (alist)
-  (format nil " [~{~{~A=\"~A\"~}~^,~%~}]~%" alist))
 
 ;; }}}
 
-(defmethod graphviz->dot ((g graphviz))
+(defmethod to-string ((g graph))
   (with-output-to-string (out)
-    (format out "~Agraph g {~%" (if (graphviz-digraph? g) "di" ""))
-    (mapcar (lambda (key val)
-              (format out "~A ~A;~%" key (attrlist->string val)))
+    (mapcar (lambda (key attr)
+              (format out "~A ~A;~%" key (to-string attr)))
             '("graph" "node" "edge" )
-            (list (graphviz-global-graph-conf g)
-                  (graphviz-global-node-conf g)
-                  (graphviz-global-edge-conf g)))
-    (format out "~{~A;~%~}" (graphviz-nodes g))
-    (format out "~{~{~A -> ~A;~%~}~}" (graphviz-edges g))
-    (format out "}" )))
+            (list (graph-global-graph-conf g)
+                  (graph-global-node-conf g)
+                  (graph-global-edge-conf g)))
+    (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))
+                                    (mapcar #'to-string (graph-edges g))))))
 
-(defmethod main ((g graphviz))
-  (write-to! (graphviz->dot g) (graphviz-input-file-name g))
-  (call "dot" (list "-Tgif" (graphviz-input-file-name g)
-                    "-o" (graphviz-output-file-name g))
-        *standard-output*))
+(defmethod main ((g graph) &key (digraph? t) (file "graph"))
+  (let ((input-file (mkstr file ".dot"))
+        (output-file (mkstr file ".gif"))
+        (dot (with-output-to-string (out)
+               (format out "~Agraph g {~%" (if digraph? "di" ""))
+               (format out (to-string g))
+               (format out "}" ))))
+    (write-to! dot input-file)
+    (call "dot" (list "-Tgif" input-file
+                      "-o" output-file)
+          *standard-output*)))
 
+(princ (main (make-graph
+                     :global-graph-conf '((charset "UTF-8"))
+                     :global-node-conf '((shape "record") ("fontname" "meiryo"))
+                     :global-edge-conf '((fontname "meiryo"))
+                     :nodes (make-nodes '("a" "b" "c" "d") '(shape "record"))
+                     :edges (make-edges '(("a" "b") ("c" "d")) '(shape "record")))
+             :digraph? nil))
 
-(print (graphviz->dot (make-graphviz
-                        :global-graph-conf '(("charset" "UTF-8"))
-                        :global-node-conf '(("shape" "record") ("fontname" "meiryo"))
-                        :global-edge-conf '(("fontname" "meiryo"))
-                        :nodes (mknode '(a b c d)))))
+; circo	円形のグラフ.
+; dot	階層型のグラフ. 有向グラフ向き. デフォルトのレイアウトエンジン
+; fdp	スプリング(ばね)モデルのグラフ. 無向グラフ向き.
+; neato	スプリング(ばね)モデルのグラフ. 無向グラフ向き.
+; osage	配列型のグラフ.
+; sfdp	fdpのマルチスケール版. 大きな無向グラフ向き.
+; twopi	放射型のグラフ. ノードは同心円状に配置される.
+
+; // define subgraph
+; subgraph cluster_sub1 [
+;    // ここにサブグラフの属性を設定します。
+; ];
 
