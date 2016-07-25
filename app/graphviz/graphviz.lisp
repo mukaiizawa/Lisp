@@ -111,22 +111,34 @@
   (rank nil :type list))
 
 (defstruct node value attr)
-(defstruct edge from to attr)
+(defstruct edge from to attr directed?)
 (defstruct attr key value)
 
-(defun attr->string (lis)
-  (format nil "[~{~{~A = \"~A\",~%~}~}]" (graphviz-edges g)))
+(defmethod to-string ((a attr))
+  (format nil "~A = \"~A\"" (attr-key a) (attr-value a)))
+
+(defmethod to-string ((e edge))
+  (concatenate 'string
+               (edge-from e)
+               (if (edge-directed? e) "->" "--")
+               (edge-to e)
+               (to-string (edge-attr e))))
+
+(defmethod to-string ((n node))
+  (concatenate 'string
+               (node-value n)
+               (to-string (node-attr n))))
 
 (defmethod graphviz->dot ((g graphviz))
   (with-output-to-string (out)
     (format out "~Agraph g {~%" (if (graphviz-digraph? g) "di" ""))
-    (mapcar (lambda (str)
-              (format out 
-              )
-            '("graph" "node" "edge"))
-    (format out "graph ~A;~%" (attr->string (graphviz-global-graph-conf g)))
-    (format out "node [~{~A~^,~%~}];~%" (graphviz-global-node-conf g))
-    (format out "edge [~{~A~^,~%~}];~%" (graphviz-global-edge-conf g))
+    (mapcar (lambda (key val)
+              (format out "~A [~{~A,~%~}];~%"
+                      key val))
+            '("graph" "node" "edge" )
+            (list (graphviz-global-graph-conf g)
+                  (graphviz-global-node-conf g)
+                  (graphviz-global-edge-conf g)))
     (format out "~{~A~%;~%~}" (graphviz-nodes g))
     (format out "~{~{~A -> ~A;~%~}~}" (graphviz-edges g))
     (format out "}" )))
