@@ -114,11 +114,11 @@
 (defstruct edge from to attr directed?)
 (defstruct attr key value)
 
-(defun mknode (nodes value)
-  (mapcar (lambda (node)
+(defun mknode (values &rest attr)
+  (mapcar (lambda (value)
             (make-node :value value
-                       :attr value))
-          (mklist nodes)))
+                       :attr attr))
+          (mklist values)))
 
 (defun replace-low-line (str)
   (replstr "-" "_" str))
@@ -150,13 +150,13 @@
   (with-output-to-string (out)
     (format out "~Agraph g {~%" (if (graphviz-digraph? g) "di" ""))
     (mapcar (lambda (key val)
-              (format out "~A [~{~A,~%~}];~%"
+              (format out "~A [~{~{~A=\"~A\"~^,~%~}~}];~%"
                       key val))
             '("graph" "node" "edge" )
             (list (graphviz-global-graph-conf g)
                   (graphviz-global-node-conf g)
                   (graphviz-global-edge-conf g)))
-    (format out "~{~A~%;~%~}" (graphviz-nodes g))
+    (format out "~{~A;~%~}" (graphviz-nodes g))
     (format out "~{~{~A -> ~A;~%~}~}" (graphviz-edges g))
     (format out "}" )))
 
@@ -166,5 +166,10 @@
                     "-o" (graphviz-output-file-name g))
         *standard-output*))
 
-(print (graphviz->dot (make-graphviz)))
+
+(print (graphviz->dot (make-graphviz
+                        :global-graph-conf '(("charset" "UTF-8"))
+                        :global-node-conf '(("shape" "record") ("fontname" "meiryo"))
+                        :global-edge-conf '(("fontname" "meiryo"))
+                        :nodes (mknode '(a b c d)))))
 
