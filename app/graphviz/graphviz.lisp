@@ -114,8 +114,22 @@
 (defstruct edge from to attr directed?)
 (defstruct attr key value)
 
+(defun mknode (nodes value)
+  (mapcar (lambda (node)
+            (make-node :value value
+                       :attr value))
+          (mklist nodes)))
+
+(defun replace-low-line (str)
+  (replstr "-" "_" str))
+
+;; to-string attr {{{
+
 (defmethod to-string ((a attr))
   (format nil "~A = \"~A\"" (attr-key a) (attr-value a)))
+
+;; }}}
+;; to-string edge {{{
 
 (defmethod to-string ((e edge))
   (concatenate 'string
@@ -123,11 +137,14 @@
                (if (edge-directed? e) "->" "--")
                (edge-to e)
                (to-string (edge-attr e))))
+;; }}}
+;; to-string node {{{
 
 (defmethod to-string ((n node))
   (concatenate 'string
                (node-value n)
                (to-string (node-attr n))))
+;; }}}
 
 (defmethod graphviz->dot ((g graphviz))
   (with-output-to-string (out)
@@ -142,17 +159,6 @@
     (format out "~{~A~%;~%~}" (graphviz-nodes g))
     (format out "~{~{~A -> ~A;~%~}~}" (graphviz-edges g))
     (format out "}" )))
-
-  ; (let (acc)
-  ;   (push "digraph g {" acc)
-  ;   (mapcar (lambda (node-edge)
-  ;             (push
-  ;               (replstr "-" "_"
-  ;                        (format nil "~A -> ~A;" (first node-edge) (second node-edge)))
-  ;               acc)))
-  ;   node-edges)
-  ; (push "}" acc)
-  ; (nreverse acc)))
 
 (defmethod main ((g graphviz))
   (write-to! (graphviz->dot g) (graphviz-input-file-name g))
