@@ -145,13 +145,18 @@
                (node-value n)
                (to-string (node-attr n))))
 ;; }}}
+;; attrlist->string {{{
+
+(defmethod attrlist->string (alist)
+  (format nil " [~{~{~A=\"~A\"~}~^,~%~}]~%" alist))
+
+;; }}}
 
 (defmethod graphviz->dot ((g graphviz))
   (with-output-to-string (out)
     (format out "~Agraph g {~%" (if (graphviz-digraph? g) "di" ""))
     (mapcar (lambda (key val)
-              (format out "~A [~{~{~A=\"~A\"~^,~%~}~}];~%"
-                      key val))
+              (format out "~A ~A;~%" key (attrlist->string val)))
             '("graph" "node" "edge" )
             (list (graphviz-global-graph-conf g)
                   (graphviz-global-node-conf g)
