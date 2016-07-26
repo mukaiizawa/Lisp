@@ -159,16 +159,29 @@
 ;; }}}
 ;; make-nodes {{{
 
-(defun make-nodes (values &rest attr)
+(defun make-nodes (values &optional attr)
   (mapcar (lambda (value)
             (make-node :value value
                        :attr attr))
           (mklist values)))
 
 ;; }}}
+;; make-record {{{
+
+(defun make-records (lis &optional attr)
+  (let (acc)
+    (mapcar (lambda (lis)
+              (let ((required-attr `((shape "record") (label ,(mkstr "{" (list->string lis :char #\|) "}")))))
+                (push (make-node :value (first lis)
+                                 :attr (if attr (append required-attr attr) required-attr))
+                      acc)))
+            lis)
+    (nreverse acc)))
+
+;; }}}
 ;; make-edges {{{
 
-(defun make-edges (from-to-list &rest attr)
+(defun make-edges (from-to-list &optional attr)
   (mapcar (lambda (from-to)
             (make-edge :from (first from-to)
                        :to (second from-to)
@@ -178,7 +191,7 @@
 ;; }}}
 ;; make-continuous-edges {{{
 
-(defun make-continuous-edges (nodes &rest attr)
+(defun make-continuous-edges (nodes &optional attr)
   (if (rest nodes)
     (cons (make-edge :from (first nodes) :to (second nodes) :attr attr)
           (make-continuous-edges (rest nodes)))
@@ -186,7 +199,7 @@
 
 ;; }}}
 
-(defmethod main ((g graph) &key (digraph? t) (file "graph"))
+(defmethod dot ((g graph) &key (digraph? t) (file "graph"))
   (let ((input-file (mkstr file ".dot"))
         (output-file (mkstr file ".gif"))
         (dot (with-output-to-string (out)

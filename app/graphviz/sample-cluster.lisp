@@ -1,6 +1,7 @@
+
 (load "graphviz")
 
-(main (make-graph :nodes (list (make-node :value "start" :attr '((shape "Mdiamond")))
+(dot (make-graph :nodes (list (make-node :value "start" :attr '((shape "Mdiamond")))
                                (make-node :value "end" :attr '((shape "Msquare"))))
                   :edges (make-edges (group 
                                        '("start" "a0" "start" "b0"
