@@ -85,30 +85,22 @@
 ;;
 ;; }}}
 
-;; <graph> :: [ <strict> ] (graph | digraph) [ ID ] '{' <stmt_list> '}'
-;; <stmt_list> :: [ <stmt> [ ';' ] <stmt_list> ]
-;; <stmt> :: <node_stmt> | <edge_stmt> | <attr_stmt> | ID '=' ID | <subgraph>
-;; <attr_stmt> :: (<graph> | <node> | <edge>) <attr_list>
-;; <attr_list> :: '[' [ <a_list> ] ']' [ <attr_list> ]
-;; <a_list> :: ID '=' ID [ (';' | ',') ] [ <a_list> ]
-;; <edge_stmt> :: (<node_id> | <subgraph>) <edgeRHS> [ <attr_list> ]
-;; <edgeRHS> :: edgeop (<node_id> | <subgraph>) [ <edgeRHS> ]
-;; <node_stmt> :: <node_id> [ <attr_list> ]
-;; <node_id> :: ID [ <port> ]
-;; <port> :: ':' ID [ ':' <compass_pt> ] | ':' <compass_pt>
-;; <subgraph> : [ <subgraph> [ ID ] ] '{' <stmt_list> '}'
-;; <compass_pt> : (n | ne | e | se | s | sw | w | nw | c | _)
+(defparameter *global-graph-conf* '((layout "dot") (charset "UTF-8") (rankdir "TB")))
+(defparameter *global-node-conf* '((shape "record") (fontname "meiryo")))
+(defparameter *global-edge-conf* '((fontname "meiryo")))
+(defparameter *subgraph-count* 0)
 
 (defstruct graph
-  (global-graph-conf nil :type list)
-  (global-node-conf nil :type list)
-  (global-edge-conf nil :type list)
+  (global-graph-conf *global-graph-conf* :type list)
+  (global-node-conf *global-node-conf* :type list)
+  (global-edge-conf *global-edge-conf* :type list)
+  (subgraph nil :type list)
   (nodes nil :type list)
   (edges nil :type list)
   (rank nil :type list))
 
 (defstruct node value attr)
-(defstruct edge from to attr directed?)
+(defstruct edge from to attr (directed? t :type boolean))
 (defstruct attr key value)
 
 (defun replace-low-line (str)
@@ -142,18 +134,24 @@
 ;; to-string edge {{{
 
 (defmethod to-string ((e edge))
-  (concatenate 'string
-               (edge-from e)
-               (if (edge-directed? e) " -> " " -- ")
-               (edge-to e) " "
-               (to-string (edge-attr e))))
+  (mkstr (edge-from e)
+         (if (edge-directed? e) " -> " " -- ")
+         (edge-to e) " "
+         (to-string (edge-attr e))))
 ;; }}}
 ;; to-string node {{{
 
 (defmethod to-string ((n node))
-  (concatenate 'string
-               (node-value n) " "
-               (to-string (node-attr n))))
+  (mkstr (node-value n) " " (to-string (node-attr n))))
+
+;; }}}
+;; set-attr key val alist {{{
+
+(defun set-attr (key val alist)
+  (if (assoc key alist)
+    (rplacd (assoc key alist) (list val))
+    (nconc alist (list (list key val))))
+  (values alist))
 
 ;; }}}
 
@@ -166,7 +164,10 @@
                   (graph-global-node-conf g)
                   (graph-global-edge-conf g)))
     (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))
-                                    (mapcar #'to-string (graph-edges g))))))
+                                    (mapcar #'to-string (graph-edges g))))
+    (mapcar (lambda (graph)
+              (format out "subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (to-string graph)))
+              (graph-subgraph g))))
 
 (defmethod main ((g graph) &key (digraph? t) (file "graph"))
   (let ((input-file (mkstr file ".dot"))
@@ -180,24 +181,12 @@
                       "-o" output-file)
           *standard-output*)))
 
-(princ (main (make-graph
-                     :global-graph-conf '((charset "UTF-8"))
-                     :global-node-conf '((shape "record") ("fontname" "meiryo"))
-                     :global-edge-conf '((fontname "meiryo"))
-                     :nodes (make-nodes '("a" "b" "c" "d") '(shape "record"))
-                     :edges (make-edges '(("a" "b") ("c" "d")) '(shape "record")))
-             :digraph? nil))
 
-; circo	円形のグラフ.
-; dot	階層型のグラフ. 有向グラフ向き. デフォルトのレイアウトエンジン
-; fdp	スプリング(ばね)モデルのグラフ. 無向グラフ向き.
-; neato	スプリング(ばね)モデルのグラフ. 無向グラフ向き.
-; osage	配列型のグラフ.
-; sfdp	fdpのマルチスケール版. 大きな無向グラフ向き.
-; twopi	放射型のグラフ. ノードは同心円状に配置される.
-
-; // define subgraph
-; subgraph cluster_sub1 [
-;    // ここにサブグラフの属性を設定します。
-; ];
+; (princ (main (make-graph
+;                      :global-graph-conf *global-graph-conf*
+;                      :global-node-conf *global-node-conf*
+;                      :global-edge-conf *global-edge-conf*
+;                      :nodes (make-nodes '("a" "b" "c" "d") '(shape "record"))
+;                      :edges (make-edges '(("a" "b") ("c" "d")) '(shape "record")))
+;              :digraph? nil))
 
