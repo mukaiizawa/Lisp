@@ -91,40 +91,26 @@
 (defparameter *subgraph-count* 0)
 
 (defstruct graph
-  (global-graph-conf *global-graph-conf* :type list)
-  (global-node-conf *global-node-conf* :type list)
-  (global-edge-conf *global-edge-conf* :type list)
-  (subgraph nil :type list)
+  (graph-conf *global-graph-conf* :type list)
+  (node-conf *global-node-conf* :type list)
+  (edge-conf *global-edge-conf* :type list)
   (nodes nil :type list)
   (edges nil :type list)
+  (subgraph nil :type list)
   (rank nil :type list))
+
+(defstruct (subgraph (:include graph
+                               (graph-conf nil :type list)
+                               (node-conf nil :type list)
+                               (edge-conf nil :type list))))
 
 (defstruct node value attr)
 (defstruct edge from to attr (directed? t :type boolean))
 (defstruct attr key value)
 
 (defun replace-low-line (str)
-  (replstr "-" "_" str))
+  (replstr "-" "_" (mkstr str)))
 
-;; make-nodes {{{
-
-(defun make-nodes (values &rest attr)
-  (mapcar (lambda (value)
-            (make-node :value value
-                       :attr attr))
-          (mklist values)))
-
-;; }}}
-;; make-nodes {{{
-
-(defun make-edges (from-to-list &rest attr)
-  (mapcar (lambda (from-to)
-            (make-edge :from (first from-to)
-                       :to (second from-to)
-                       :attr attr))
-          (mklist from-to-list)))
-
-;; }}}
 ;; to-string attr {{{
 
 (defmethod to-string ((alist list))
@@ -134,18 +120,35 @@
 ;; to-string edge {{{
 
 (defmethod to-string ((e edge))
-  (mkstr (edge-from e)
+  (mkstr (replace-low-line (edge-from e))
          (if (edge-directed? e) " -> " " -- ")
-         (edge-to e) " "
+         (replace-low-line (edge-to e)) " "
          (to-string (edge-attr e))))
 ;; }}}
 ;; to-string node {{{
 
 (defmethod to-string ((n node))
-  (mkstr (node-value n) " " (to-string (node-attr n))))
+  (mkstr (replace-low-line (node-value n)) " " (to-string (node-attr n))))
 
 ;; }}}
-;; set-attr key val alist {{{
+;; to-string graph{{{
+
+(defmethod to-string ((g graph))
+  (with-output-to-string (out)
+    (mapcar (lambda (key value)
+              (format out "~A ~A;~%"
+                      key (to-string value)))
+            '("graph" "node" "edge")
+            (list (graph-graph-conf g) (graph-node-conf g) (graph-edge-conf g)))
+    (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))
+                                    (mapcar #'to-string (graph-edges g))))
+    (mapcar (lambda (graph)
+              (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (to-string graph)))
+            (graph-subgraph g))))
+
+;; }}}
+
+;; set-attr {{{
 
 (defun set-attr (key val alist)
   (if (assoc key alist)
@@ -154,20 +157,34 @@
   (values alist))
 
 ;; }}}
+;; make-nodes {{{
 
-(defmethod to-string ((g graph))
-  (with-output-to-string (out)
-    (mapcar (lambda (key attr)
-              (format out "~A ~A;~%" key (to-string attr)))
-            '("graph" "node" "edge" )
-            (list (graph-global-graph-conf g)
-                  (graph-global-node-conf g)
-                  (graph-global-edge-conf g)))
-    (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))
-                                    (mapcar #'to-string (graph-edges g))))
-    (mapcar (lambda (graph)
-              (format out "subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (to-string graph)))
-              (graph-subgraph g))))
+(defun make-nodes (values &rest attr)
+  (mapcar (lambda (value)
+            (make-node :value value
+                       :attr attr))
+          (mklist values)))
+
+;; }}}
+;; make-edges {{{
+
+(defun make-edges (from-to-list &rest attr)
+  (mapcar (lambda (from-to)
+            (make-edge :from (first from-to)
+                       :to (second from-to)
+                       :attr attr))
+          (mklist from-to-list)))
+
+;; }}}
+;; make-continuous-edges {{{
+
+(defun make-continuous-edges (nodes &rest attr)
+  (if (rest nodes)
+    (cons (make-edge :from (first nodes) :to (second nodes) :attr attr)
+          (make-continuous-edges (rest nodes)))
+    nil))
+
+;; }}}
 
 (defmethod main ((g graph) &key (digraph? t) (file "graph"))
   (let ((input-file (mkstr file ".dot"))
@@ -180,13 +197,4 @@
     (call "dot" (list "-Tgif" input-file
                       "-o" output-file)
           *standard-output*)))
-
-
-; (princ (main (make-graph
-;                      :global-graph-conf *global-graph-conf*
-;                      :global-node-conf *global-node-conf*
-;                      :global-edge-conf *global-edge-conf*
-;                      :nodes (make-nodes '("a" "b" "c" "d") '(shape "record"))
-;                      :edges (make-edges '(("a" "b") ("c" "d")) '(shape "record")))
-;              :digraph? nil))
 
