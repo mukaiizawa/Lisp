@@ -6,7 +6,7 @@
   (push (make-edge :from #\A :to c) *edges*))
 
 (dolist (layout (list "circo" "dot" "fdp" "neato" "osage" "sfdp" "twopi"))
-  (main (make-graph :global-graph-conf (set-attr 'layout layout *global-graph-conf*)
+  (main (make-graph :graph-conf (set-attr 'layout layout *global-graph-conf*)
                     :edges (reverse *edges*))
         :file (mkstr "sample-layout-" layout)))
 
