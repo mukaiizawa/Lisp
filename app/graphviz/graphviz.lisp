@@ -54,8 +54,8 @@
   (with-output-to-string (out)
     (mapcar (lambda (key value)
               (when value
-                (format out "~A~A;~%"
-                        key (to-string value))))
+                (format out "~A ~^[~{~{~(~A~)=\"~A\"~}~^, ~}];~%"
+                        key value)))
             '("graph" "node" "edge")
             (list (graph-graph-conf g) (graph-node-conf g) (graph-edge-conf g)))
     (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))

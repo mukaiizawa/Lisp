@@ -2,7 +2,6 @@
 (load "graphviz")
 
 (set-attr! 'shape "plaintext" *global-node-conf*)
-(set-attr! 'arrowhead "vee" *global-edge-conf*)
 
 (defstruct table
   (phisical-name "" :type string)
