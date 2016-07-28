@@ -546,6 +546,14 @@
     (list obj)))
 
 ;; }}}
+;; mkalist {{{
+
+(defun mkalist (obj)
+  (if (alist? obj)
+    obj
+    (list obj)))
+
+;; }}}
 ;; iota {{{
 
 (defun iota (from to &optional step)
