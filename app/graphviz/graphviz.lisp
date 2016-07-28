@@ -30,7 +30,8 @@
 ;; to-string attr {{{
 
 (defmethod to-string ((alist list))
-  (format nil "[~{~{~(~A~)=\"~A\"~}~^,~%~}]" alist))
+  (when alist
+    (format nil " [~{~{~(~A~)=\"~A\"~}~^,~%~}]" alist)))
 
 ;; }}}
 ;; to-string edge {{{
@@ -38,13 +39,13 @@
 (defmethod to-string ((e edge))
   (mkstr (replace-low-line (edge-from e))
          (if (edge-directed? e) " -> " " -- ")
-         (replace-low-line (edge-to e)) " "
+         (replace-low-line (edge-to e))
          (to-string (edge-attr e))))
 ;; }}}
 ;; to-string node {{{
 
 (defmethod to-string ((n node))
-  (mkstr (replace-low-line (node-value n)) " " (to-string (node-attr n))))
+  (mkstr (replace-low-line (node-value n)) (to-string (node-attr n))))
 
 ;; }}}
 ;; to-string graph{{{
@@ -52,12 +53,14 @@
 (defmethod to-string ((g graph))
   (with-output-to-string (out)
     (mapcar (lambda (key value)
-              (format out "~A ~A;~%"
-                      key (to-string value)))
+              (when value
+                (format out "~A~A;~%"
+                        key (to-string value))))
             '("graph" "node" "edge")
             (list (graph-graph-conf g) (graph-node-conf g) (graph-edge-conf g)))
     (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))
                                     (mapcar #'to-string (graph-edges g))))
+    (format out "~{{rank=same;~{ ~A;~}}~%~}" (graph-rank g))
     (mapcar (lambda (graph)
               (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (to-string graph)))
             (graph-subgraph g))))
@@ -73,6 +76,8 @@
   (values alist))
 
 ;; }}}
+
+;; list->structure
 ;; make-nodes {{{
 
 (defun make-nodes (values &optional attr)
@@ -112,6 +117,16 @@
     (cons (make-edge :from (first nodes) :to (second nodes) :attr attr)
           (make-continuous-edges (rest nodes)))
     nil))
+
+;; }}}
+
+;; structure->list
+;; nodes->node-names {{{
+
+(defun nodes->node-names (nodes)
+  (mapcar (lambda (node)
+            (node-value node))
+          nodes))
 
 ;; }}}
 
