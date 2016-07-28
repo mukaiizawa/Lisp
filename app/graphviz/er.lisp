@@ -18,7 +18,8 @@
   (required? nil :type boolean)
   (default-value "" :type string)
   (type "" :type string)
-  (length 0 :type number))
+  (length 0 :type number)
+  (remarks "" :type string))
 
 (defmacro deftable (table-phisical-name table-logical-name &rest columns)
   `(make-table :phisical-name (mkstr ',table-phisical-name)
