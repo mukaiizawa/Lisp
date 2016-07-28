@@ -7,6 +7,6 @@
 
 (dolist (layout (list "circo" "dot" "fdp" "neato" "osage" "sfdp" "twopi"))
   (dot (make-graph :graph-conf (set-attr! 'layout layout *global-graph-conf*)
-                    :edges (reverse *edges*))
-        :file (mkstr "sample-layout-" layout)))
+                   :edges (reverse *edges*))
+       :file (mkstr "sample-layout-" layout)))
 
