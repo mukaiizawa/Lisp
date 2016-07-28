@@ -1,7 +1,7 @@
 
 (load "../../lib/stdlib")
 
-(defparameter *global-graph-conf* '((layout "dot") (charset "UTF-8") (rankdir "TB")))
+(defparameter *global-graph-conf* '((layout "dot") (charset "UTF8") (rankdir "TB")))
 (defparameter *global-node-conf* '((shape "record") (fontname "meiryo")))
 (defparameter *global-edge-conf* '((fontname "meiryo")))
 (defparameter *subgraph-count* 0)
@@ -31,7 +31,7 @@
 
 (defmethod to-string ((alist list))
   (when alist
-    (format nil " [~{~{~(~A~)=\"~A\"~}~^,~%~}]" alist)))
+    (format nil " [~{~{~(~A~)=~A~}~^,~}]" alist)))
 
 ;; }}}
 ;; to-string edge {{{
