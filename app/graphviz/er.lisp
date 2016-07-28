@@ -2,7 +2,7 @@
 (load "graphviz")
 
 (set-attr! 'shape "record" *global-node-conf*)
-(set-attr! 'style "vee" *global-edge-conf*)
+(set-attr! 'arrowhead "vee" *global-edge-conf*)
 
 (defstruct table name columns)
 
