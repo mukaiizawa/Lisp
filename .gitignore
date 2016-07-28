@@ -3,3 +3,4 @@ work/
 *.*fsl
 !*.csv
 !*.sql
+*work*.*
