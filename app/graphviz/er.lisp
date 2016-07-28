@@ -19,12 +19,14 @@
   (required? nil :type boolean)
   (foreignkey nil :type list))
 
-(defmacro deftable (table-phisical-name &rest columns)
+(defmacro deftable (table-phisical-name table-logical-name &rest columns)
   `(make-table :phisical-name (mkstr ',table-phisical-name)
+               :logical-name (mkstr ',table-logical-name)
                :columns (list ,@(mapcar (lambda (col)
                                           `(make-column
                                              :phisical-name ,(mkstr (first col))
-                                             ,@(rest col)))
+                                             :logical-name ,(mkstr (second col))
+                                             ,@(nthcdr 2 col)))
                                         columns))))
 
 (defmacro deftables (&rest tables)
