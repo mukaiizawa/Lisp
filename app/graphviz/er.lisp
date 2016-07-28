@@ -43,6 +43,7 @@
     (dolist (table tables)
       (dolist (column (table-columns table))
         (awhen (column-foreignkey column)
-          (push (list (table-name table) (first it)) acc))))
+          (dolist (foreignkey (mkalist it))
+            (push (list (table-name table) (first foreignkey)) acc)))))
     (make-edges acc)))
 
