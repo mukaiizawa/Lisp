@@ -1,7 +1,7 @@
 
 (load "graphviz")
 
-(set-attr! 'shape "record" *global-node-conf*)
+(set-attr! 'shape "plaintext" *global-node-conf*)
 (set-attr! 'arrowhead "vee" *global-edge-conf*)
 
 (defstruct table name columns)
@@ -31,19 +31,34 @@
                tables)))
 
 (defun tables->nodes (tables)
-  (make-records (mapcar (lambda (table)
-                          (cons (table-name table)
-                                (mapcar (lambda (column)
-                                          (column-phisical-name column))
-                                        (table-columns table))))
-                        tables)))
+  (let (nodes)
+    (dolist (table tables)
+      (let* ((table-name (mkstr (table-name table)))
+             (attr (list
+                     (list 'label
+                           (with-output-to-string (attr)
+                             (format attr "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>")
+                             (format attr "<TR><TD BGCOLOR='GRAY' WIDTH='200'>~A</TD></TR>" table-name)
+                             (dolist (column (table-columns table))
+                               (format attr "<TR><TD PORT='~A' ALIGN='LEFT'><FONT COLOR='~A'>~A</FONT></TD></TR>"
+                                       (mkstr table-name "_" (column-phisical-name column))
+                                       (if (column-primarykey? column) "RED" "BLACK")
+                                       (column-phisical-name column)))
+                             (format attr "</TABLE>>"))))))
+        (push (make-node :value table-name :attr attr) nodes)))
+    (nreverse nodes)))
 
 (defun tables->edges (tables)
-  (let (acc)
+  (let (edges)
     (dolist (table tables)
       (dolist (column (table-columns table))
         (awhen (column-foreignkey column)
-          (dolist (foreignkey (mkalist it))
-            (push (list (table-name table) (first foreignkey)) acc)))))
-    (make-edges acc)))
+          (let* ((table-name-from (table-name table))
+                 (port-name-from (mkstr table-name-from "_" (column-phisical-name column)))
+                 (table-name-to (first (column-foreignkey column)))
+                 (port-name-to (mkstr table-name-to "_" (second (column-foreignkey column)))))
+            (push (make-edge :from (mkstr table-name-from ":" port-name-from)
+                             :to (mkstr table-name-to ":" port-name-to))
+                  edges)))))
+    (nreverse edges)))
 
