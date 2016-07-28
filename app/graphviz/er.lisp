@@ -47,9 +47,14 @@
                              (format attr "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>")
                              (format attr "<TR><TD BGCOLOR='GRAY' WIDTH='200'>~A</TD></TR>" table-phisical-name)
                              (dolist (column (table-columns table))
-                               (format attr "<TR><TD PORT='~A' ALIGN='LEFT'><FONT COLOR='~A'>~A</FONT></TD></TR>"
+                               (format attr "<TR><TD PORT='~A' BGCOLOR='~A' ALIGN='LEFT'><FONT COLOR='~A'>~A</FONT></TD></TR>"
                                        (mkstr table-phisical-name "_" (column-phisical-name column))
-                                       (if (column-primarykey? column) "RED" "BLACK")
+                                       (if (column-primarykey? column)
+                                         "#E0FFFF"
+                                         "#FFFFFF")
+                                       (if (or (column-primarykey? column)
+                                               (column-required? column))
+                                         "RED" "BLACK")
                                        (column-phisical-name column)))
                              (format attr "</TABLE>>"))))))
         (push (make-node :value table-phisical-name :attr attr) nodes)))
