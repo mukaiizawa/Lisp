@@ -1,7 +1,7 @@
 
 (load "graphviz")
 
-(set-attr 'shape "record" *global-node-conf*)
+(set-attr! 'shape "record" *global-node-conf*)
 
 
 ; (dot (make-graph :nodes (append (make-records '(("q_and_a" "q_and_a_no" "title")) '((color "grey")))
@@ -33,4 +33,6 @@
                                                                     (t (list (first col-exclude-phisical-name) (mkstr (second col-exclude-phisical-name))))))
                                                                 (group (rest col) 2)))))
                                         columns))))
+
+; (defmethod table->dot ((table table))
 
