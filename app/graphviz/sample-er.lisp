@@ -13,4 +13,4 @@
 (dot (make-graph :nodes (tables->nodes tables)
                  :edges (tables->edges tables))
      :file "sample-er")
-#o'finish
+
