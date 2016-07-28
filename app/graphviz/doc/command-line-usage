@@ -1,0 +1,4 @@
+
+dot -Tgif sample.dot -o sample.gif
+dot -Tpng sample.dot -o sample.png
+
