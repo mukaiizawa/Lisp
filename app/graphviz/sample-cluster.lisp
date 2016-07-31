@@ -1,13 +1,15 @@
 
 (load "graphviz")
 
-(dot (make-graph :nodes (list (make-node :value "start" :attr '((shape "Mdiamond")))
-                              (make-node :value "end" :attr '((shape "Msquare"))))
-                 :edges (make-edges (group 
-                                      '("start" "a0" "start" "b0"
-                                        "a3" "end" "b3" "end"
-                                        "a1" "b3" "b2" "a3" "b0" "a1")
-                                      2))
+(dot (make-graph :nodes '(("start" (shape "Mdiamond"))
+                          ("end" (shape "Msquare")))
+                 :edges '(("start" "a0")
+                          ("start" "b0")
+                          ("a3" "end")
+                          ("b3" "end")
+                          ("a1" "b3")
+                          ("b2" "a3")
+                          ("b0" "a1"))
                  :subgraph (list (make-subgraph  
                                    :graph-conf '((label "process1") (style "filled") (color "coral"))
                                    :node-conf '((color "white"))

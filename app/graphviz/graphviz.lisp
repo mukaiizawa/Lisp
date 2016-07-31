@@ -27,43 +27,58 @@
 (defun replace-low-line (str)
   (replstr "-" "_" (mkstr str)))
 
-;; to-string attr {{{
+;; attrs->dot {{{
 
-(defmethod to-string ((alist list))
-  (when alist
-    (format nil " [~{~{~(~A~)=~A~}~^,~}]" alist)))
-
-;; }}}
-;; to-string edge {{{
-
-(defmethod to-string ((e edge))
-  (mkstr (replace-low-line (edge-from e))
-         (if (edge-directed? e) " -> " " -- ")
-         (replace-low-line (edge-to e))
-         (to-string (edge-attr e))))
-;; }}}
-;; to-string node {{{
-
-(defmethod to-string ((n node))
-  (mkstr (replace-low-line (node-value n)) (to-string (node-attr n))))
+(defun attrs->dot (attrs &optional (with-double-quote? t))
+  (let ((canonical-attrs (mkalist attrs)))
+    (cond ((null attrs)
+           "")
+          (with-double-quote?
+            (format nil " [~{~{~(~A~)=\"~A\"~}~^,~}]" canonical-attrs))
+          (t
+            (format nil " [~{~{~(~A~)=~A~}~^,~}]" canonical-attrs)))))
 
 ;; }}}
-;; to-string graph{{{
+;; nodes->dot {{{
 
-(defmethod to-string ((g graph))
+(defun nodes->dot (nodes)
+  (with-output-to-string (out)
+    (mapcar (lambda (node)
+              (format out "~A~A;~%"
+                      (replace-low-line (first node))
+                      (attrs->dot (rest node) nil)))
+            (mkalist nodes))))
+
+;; }}}
+;; edges->dot {{{
+
+(defun edges->dot (edges &optional (directed? t))
+  (with-output-to-string (out)
+    (mapcar (lambda (edge)
+              (format out
+                      "~A -~A ~A~A;~%"
+                      (replace-low-line (first edge))
+                      (if directed? ">" "-")
+                      (replace-low-line (second edge))
+                      (attrs->dot (nthcdr 2 edge) nil)))
+            (mkalist edges))))
+
+;; }}}
+;; graph->dot {{{
+
+(defun graph->dot (graph)
   (with-output-to-string (out)
     (mapcar (lambda (key value)
               (when value
-                (format out "~A ~^[~{~{~(~A~)=\"~A\"~}~^, ~}];~%"
-                        key value)))
+                (format out "~A~A;~%" key (attrs->dot value))))
             '("graph" "node" "edge")
-            (list (graph-graph-conf g) (graph-node-conf g) (graph-edge-conf g)))
-    (format out "~{~A;~%~}" (append (mapcar #'to-string (graph-nodes g))
-                                    (mapcar #'to-string (graph-edges g))))
-    (format out "~{{rank=same;~{ ~A;~}}~%~}" (graph-rank g))
+            (list (graph-graph-conf graph) (graph-node-conf graph) (graph-edge-conf graph)))
+    (format out "~A~%" (nodes->dot (graph-nodes graph)))
+    (format out "~A~%" (edges->dot (graph-edges graph)))
+    (format out "~{{rank=same;~{ ~A;~}}~%~}" (graph-rank graph))
     (mapcar (lambda (graph)
-              (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (to-string graph)))
-            (graph-subgraph g))))
+              (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (graph->dot graph)))
+            (graph-subgraph graph))))
 
 ;; }}}
 
@@ -76,57 +91,13 @@
   (values alist))
 
 ;; }}}
-
-;; list->structure
-;; make-nodes {{{
-
-(defun make-nodes (values &optional attr)
-  (mapcar (lambda (value)
-            (make-node :value value
-                       :attr attr))
-          (mklist values)))
-
-;; }}}
-;; make-record {{{
-
-(defun make-records (lis &optional attr)
-  (let (acc)
-    (mapcar (lambda (lis)
-              (let ((required-attr `((shape "record") (label ,(mkstr "{" (list->string lis :char #\|) "}")))))
-                (push (make-node :value (first lis)
-                                 :attr (if attr (append required-attr attr) required-attr))
-                      acc)))
-            lis)
-    (nreverse acc)))
-
-;; }}}
-;; make-edges {{{
-
-(defun make-edges (from-to-list &optional attr)
-  (mapcar (lambda (from-to)
-            (make-edge :from (first from-to)
-                       :to (second from-to)
-                       :attr attr))
-          (mklist from-to-list)))
-
-;; }}}
 ;; make-continuous-edges {{{
 
 (defun make-continuous-edges (nodes &optional attr)
   (if (rest nodes)
-    (cons (make-edge :from (first nodes) :to (second nodes) :attr attr)
+    (cons (append (list (first nodes) (second nodes)) attr)
           (make-continuous-edges (rest nodes)))
     nil))
-
-;; }}}
-
-;; structure->list
-;; nodes->node-names {{{
-
-(defun nodes->node-names (nodes)
-  (mapcar (lambda (node)
-            (node-value node))
-          nodes))
 
 ;; }}}
 
@@ -135,7 +106,7 @@
         (output-file (mkstr file ".gif"))
         (dot (with-output-to-string (out)
                (format out "~Agraph g {~%" (if digraph? "di" ""))
-               (format out (to-string g))
+               (format out (graph->dot g))
                (format out "}" ))))
     (write-to! dot input-file)
     (call "dot" (list "-Tgif" input-file

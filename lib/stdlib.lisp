@@ -548,10 +548,13 @@
 ;; }}}
 ;; mkalist {{{
 
-(defun mkalist (obj)
-  (if (alist? obj)
-    obj
-    (list obj)))
+(defun mkalist (lis)
+  (if lis
+    (cons
+      (if (listp (car lis))
+        (car lis)
+        (list (car lis)))
+      (mkalist (cdr lis)))))
 
 ;; }}}
 ;; iota {{{
