@@ -1,41 +1,8 @@
 
+(load "../../lib/database-manager")
 (load "graphviz")
 
 (set-attr! 'shape "plaintext" *global-node-conf*)
-
-(defstruct table
-  (phisical-name "" :type string)
-  (logical-name "" :type string)
-  (schema "" :type string)
-  (columns nil :type list))
-
-(defstruct column
-  (phisical-name "" :type string)
-  (logical-name "" :type string)
-  (primarykey? nil :type boolean)
-  (foreignkey nil :type list)
-  (required? nil :type boolean)
-  (default-value "" :type string)
-  (type "" :type string)
-  (length 0 :type number)
-  (remarks "" :type string))
-
-(defmacro deftable (table-phisical-name table-logical-name &rest columns)
-  `(make-table :phisical-name (mkstr ',table-phisical-name)
-               :logical-name (mkstr ',table-logical-name)
-               :columns (list ,@(mapcar (lambda (col)
-                                          `(make-column
-                                             :phisical-name ,(mkstr (first col))
-                                             :logical-name ,(mkstr (second col))
-                                             ,@(nthcdr 2 col)))
-                                        columns))))
-
-(defmacro deftables (&rest tables)
-  `(list
-     ,@(mapcar (lambda (table) 
-                 `(deftable ,(first table)
-                    ,@(rest table)))
-               tables)))
 
 (defun tables->nodes (tables)
   (let (nodes)
