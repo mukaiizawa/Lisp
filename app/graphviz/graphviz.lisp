@@ -13,7 +13,7 @@
   (nodes nil :type list)
   (edges nil :type list)
   (subgraph nil :type list)
-  (rank nil :type list))
+  (ranks nil :type list))
 
 (defstruct (subgraph (:include graph
                                (graph-conf nil :type list)
@@ -75,7 +75,7 @@
             (list (graph-graph-conf graph) (graph-node-conf graph) (graph-edge-conf graph)))
     (format out "~A~%" (nodes->dot (graph-nodes graph)))
     (format out "~A~%" (edges->dot (graph-edges graph)))
-    (format out "~{{rank=same;~{ ~A;~}}~%~}" (graph-rank graph))
+    (format out "~{{rank=same;~{ ~A;~}}~%~}" (graph-ranks graph))
     (mapcar (lambda (graph)
               (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (graph->dot graph)))
             (graph-subgraph graph))))

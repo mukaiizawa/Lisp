@@ -18,7 +18,7 @@
                                    :graph-conf '((label "process2") (style "filled") (color "aquamarine"))
                                    :node-conf '((color "black"))
                                    :edges (make-continuous-edges '("b0" "b1" "b2" "b3"))))
-                 :rank '(("start" "a0" "a1" "a2" "a3")
+                 :ranks '(("start" "a0" "a1" "a2" "a3")
                          ("b0" "b1" "b2" "b3" "end")))
      :file "sample-cluster")
 
