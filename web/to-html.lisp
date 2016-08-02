@@ -1,4 +1,7 @@
 
+(defstruct tag
+  (namespace "" :type string)
+  (name "" :type string))
 
 ;; global variables
 ;; *html-tags* {{{
@@ -176,7 +179,6 @@
 
 ;; }}}
 
-
 ;; macro, function
 ;; deftag {{{
 
@@ -306,7 +308,6 @@
           (t c))
         buf))))
 
-
 ;; }}}
 ;; with-html-output {{{
 
@@ -314,10 +315,8 @@
   `(let ((*html-stream* ,stream))
      ,@body))
 
-
 ;; }}}
 
 ;; define html tags
 (deftags #.*html-tags* #.*single-tags* #.*no-encode-tags*)
-
 
