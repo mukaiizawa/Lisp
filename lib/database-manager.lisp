@@ -53,6 +53,7 @@
                  (table-columns table))))
 
 ;; }}}
+;; tables->create-sql {{{
 
 (defun tables->create-sql (tables)
   (with-output-to-string (out)
@@ -75,4 +76,5 @@
               (get-primarykeys table))
       (format out ");~%"))))
 
+;; }}}
 
