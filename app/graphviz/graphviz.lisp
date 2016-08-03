@@ -75,10 +75,10 @@
             (list (graph-graph-conf graph) (graph-node-conf graph) (graph-edge-conf graph)))
     (format out "~A~%" (nodes->dot (graph-nodes graph)))
     (format out "~A~%" (edges->dot (graph-edges graph)))
-    (format out "~{{rank=same;~{ ~A;~}}~%~}" (graph-ranks graph))
+    (format out "~{{rank=same;~{ ~A;~}}~%~}" (mklist (graph-ranks graph)))
     (mapcar (lambda (graph)
               (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (graph->dot graph)))
-            (graph-subgraph graph))))
+            (mklist (graph-subgraph graph)))))
 
 ;; }}}
 
