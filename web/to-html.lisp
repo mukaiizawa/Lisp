@@ -1,11 +1,4 @@
 
-(defstruct tag
-  (key nil :type symbol)
-  (namespace "" :type string)
-  (name "" :type string)
-  (attr nil :type list)
-  (children nil :type list))
-
 ;; global variables
 ;; *html-tags* {{{
 

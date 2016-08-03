@@ -6,14 +6,14 @@
   (name-space nil)
   (name nil)
   (attr nil)
-  (child-nodes nil))
+  (chldern nil))
 
 (defmethod node->string ((node node))
   (format nil "(:~A (~{~{(~A \"~A\")~}~}) ~A)"
           (name node) (attr node)
           (format nil "~{~A~}" (mapcar (lambda (node)
                                          (node->string node))
-                                       (child-nodes node)))))
+                                       (chldern node)))))
 
 
 (defvar li1 (make-node :name "li" :attr '((class "test-li") (name "li1"))))
