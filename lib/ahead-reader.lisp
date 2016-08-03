@@ -1,5 +1,6 @@
 
-(load "stdlib" :if-does-not-exist nil)
+(require "stdlib" *module-stdlib*)
+(provide "ahead-reader")
 
 (defconstant +null-character+ (code-char 0))
 (defconstant +escape-character+ #\\)

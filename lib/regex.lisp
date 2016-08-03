@@ -1,7 +1,8 @@
 
-(load "stdlib" :if-does-not-exist nil)
-(load "ahead-reader" :if-does-not-exist nil)
-(load "test-utils" :if-does-not-exist nil)
+(require "stdlib" *module-stdlib*)
+(require "ahead-reader" *module-ahead-reader*)
+(require "test-utils" *module-test-utils*)
+(provide "regex")
 
 ;; read-macro #~ {{{
 

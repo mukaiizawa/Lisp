@@ -1,4 +1,6 @@
 
+(provide "stdlib")
+
 ;; read macro
 ;; #m {{{
 

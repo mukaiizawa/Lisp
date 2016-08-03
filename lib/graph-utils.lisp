@@ -1,10 +1,11 @@
 
-(load "../../lib/stdlib")
+(require "stdlib" *module-stdlib*)
+(provide "graph-utils")
 
 (defparameter *global-graph-conf* '((layout "dot") (charset "UTF8") (rankdir "TB")))
 (defparameter *global-node-conf* '((shape "record") (fontname "meiryo")))
 (defparameter *global-edge-conf* '((fontname "meiryo")))
-(defparameter *subgraph-count* 0)
+(defparameter *subgraphs-count* 0)
 
 (defstruct graph
   (graph-conf *global-graph-conf* :type list)
@@ -12,7 +13,7 @@
   (edge-conf *global-edge-conf* :type list)
   (nodes nil :type list)
   (edges nil :type list)
-  (subgraph nil :type list)
+  (subgraphs nil :type list)
   (ranks nil :type list))
 
 (defstruct (subgraph (:include graph
@@ -77,8 +78,8 @@
     (format out "~A~%" (edges->dot (graph-edges graph)))
     (format out "~{{rank=same;~{ ~A;~}}~%~}" (mklist (graph-ranks graph)))
     (mapcar (lambda (graph)
-              (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraph-count*) (graph->dot graph)))
-            (mklist (graph-subgraph graph)))))
+              (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraphs-count*) (graph->dot graph)))
+            (mklist (graph-subgraphs graph)))))
 
 ;; }}}
 

@@ -1,5 +1,6 @@
 
-(load "stdlib" :if-does-not-exist nil)
+(require "stdlib" *module-stdlib*)
+(provide "xml-manager")
 
 ;; *html-tags* {{{
 

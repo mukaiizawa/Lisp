@@ -1,5 +1,6 @@
 
-(load "stdlib" :if-does-not-exist nil)
+(require "stdlib" *module-stdlib*)
+(provide "test-utils")
 
 (defmacro test-all (&body tests)
   `(progn ,@(mapcar (lambda (test)
@@ -10,7 +11,7 @@
 (defmacro test (expr)
   (with-gensyms (fn result)
     (let ((title (first expr))
-          (fn `(mlist ,(second expr)))
+          (fn `(multiple-value-list ,(second expr)))
           (result (cons 'list (nthcdr 2 expr))))
       `(unless (equal ,fn ,result)
          (echo (make-string 80 :initial-element #\- ))
