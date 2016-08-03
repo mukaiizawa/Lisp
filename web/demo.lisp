@@ -11,14 +11,9 @@
       (:meta ((charset "utf-8")))
       (:title "Page Title"))
     (:body
-      (:!-- "this is a comment")
-      "content start"
-      (:br)
-      (:dir)
-      (:h1 pi "is" 3.14)
-      (:input ((id "hiddenBox")
-               (type "hidden")
-               (value "hidden")
-               (required))))))
-
-
+      (:table ((border 0) (cellpadding 40))
+        (dotimes (i 5)
+        (:tr ((align "right"))
+          (dotimes (j 5)
+            (:td ((bgcolor (if (oddp (1+ j)) "pink" "green")))
+              (format nil "~@R" (* (1+ i) (1+ j )))))))))))
