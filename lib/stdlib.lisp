@@ -1284,7 +1284,7 @@
           (t (error "ls: please chose file or dir.")))))
 
 ;; }}}
-;; map-file {{{
+;; mapfile {{{
 
 (defun mapfile (fn &key (extension nil) (directory "./") (recursive nil))
   (let ((files (ls directory :dir nil))
