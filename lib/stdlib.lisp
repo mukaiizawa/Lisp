@@ -1239,7 +1239,7 @@
 ;; }}}
 ;; mkfile, mkfile! {{{
 
-;; create a file when it does'nt exist.
+;; create a file when it does not exist.
 (defun mkfile (pathname &key (if-exists :append))
   (with-open-file (out pathname
                        :direction :output
