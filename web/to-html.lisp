@@ -187,14 +187,14 @@
 
 (defmacro deftag (tag single? encode?)
   `(defmacro ,(mkkey tag) (&optional first &body rest)
-     (with-gensyms (attri body)
-       (let* ((attri (when (alist? first) first))
-              (body (if attri rest (cons first rest))))
-         `(let ,attri
+     (with-gensyms (attr body)
+       (let* ((attr (when (alist? first) first))
+              (body (if attr rest (cons first rest))))
+         `(let ,attr
             (format *html-stream* "~A<~(~A~)~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
                     *html-indent-manager* ',',tag (list ,@(mapcar (lambda (x)
                                                                     `(remove nil (list ',x ,x)))
-                                                                  (mapcar #'car attri)))
+                                                                  (mapcar #'car attr)))
                     (mkstr (and ',',single? " /")))
             (indent-level *html-indent-manager* 'inc)
             (unless ',',single?
