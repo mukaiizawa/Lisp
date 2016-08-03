@@ -1,7 +1,6 @@
 
-(load "../lib/stdlib" :if-does-not-exist nil)
-(load "../lib/test-utils" :if-does-not-exist nil)
-
+(require "stdlib" *module-stdlib*)
+(require "test-utils" *module-test-utils*)
 
 (defun match? (pat line &key (start 0))
   (when (<= start (length line))

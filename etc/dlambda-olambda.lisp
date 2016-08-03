@@ -1,5 +1,5 @@
 
-(load "../lib/stdlib")
+(require "stdlib" *module-stdlib*)
 
 (defmacro dlambda (&rest body)
   (with-gensyms (args)
@@ -16,7 +16,7 @@
                             `(cdr ,args)))))
              body)))))
 
-;; Examples
+;; Examples:
 (setf (symbol-function 'count-test)
       (let ((count 0))
         (dlambda

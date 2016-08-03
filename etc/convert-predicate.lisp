@@ -1,6 +1,5 @@
 
-(load "../lib/stdlib")
-
+(require "stdlib" *module-stdlib*)
 
 (defmacro abbrev (short long)
   `(defmacro ,short (&rest args)
@@ -123,4 +122,10 @@
   null)
 
   ;; }}}
+
+;; Examples:
+(eq 'a 'a)
+;; ==
+(eq? 'a 'a)
+;; => t
 

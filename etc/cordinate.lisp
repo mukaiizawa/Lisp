@@ -1,12 +1,13 @@
-(load "../lib/stdlib")
 
-(defstruct point ()
-  (x 0)
-  (y 0)
-  (z 0))
+(require "stdlib" *module-stdlib*)
 
-(defmethod p-print ((p point))
-  (echo "(" (point-x p) "," (point-y p) "," (point-z p) ")"))
+(defstruct point
+  (x 0 :type number)
+  (y 0 :type number)
+  (z 0 :type number))
+
+(defmethod point->string ((p point))
+  (mkstr "(" (point-x p) "," (point-y p) "," (point-z p) ")"))
 
 (defmethod norm ((p point))
   (sqrt
@@ -16,13 +17,10 @@
                              (point-y p)
                              (point-z p))))))
 
-(defstruct segment ()
-  p1
-  p2)
-
-
 (defvar p1 (make-point :x 1 :y 2 :z 3))
 (defvar p2 (make-point))
-(defvar s1 (make-segment)) 
-(p-print p1)
+
+;; Examples:
+(point->string p1)
+;; => (1,2,3)
 

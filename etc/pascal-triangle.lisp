@@ -1,4 +1,5 @@
-(load "../lib/stdlib")
+
+(require "stdlib" *module-stdlib*)
 
 (defun pascal (i j)
   (when (<= j i )
@@ -6,17 +7,14 @@
       1
       (+ (pascal (1- i) (1- j))
          (pascal (1- i) j)))))
-; (print (pascal 3 3))
 
 (defun pascal-line (i)
-  (mapa-b (lambda (j)
+  (mapcar (lambda (j)
             (pascal i j))
-          0 i))
-; (print (pascal-line 3))
-
+          (iota 0 i)))
 
 (defun pascal-triangle (i)
-  (mapa-b #'pascal-line 0 i))
+  (mapcar #'pascal-line (iota 0 i)))
 
 (mapcar #'print (pascal-triangle 10))
 

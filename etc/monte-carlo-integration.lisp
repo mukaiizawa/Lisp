@@ -1,5 +1,5 @@
 
-(load "../lib/stdlib")
+(require "stdlib" *module-stdlib*)
 
 (defmacro bind-cordinate (area &body body)
   `(destructuring-bind
@@ -14,18 +14,18 @@
 ;; from area to ordered-area(p1:bottm-left, p2:top-right)
 (defun ordered-area (area)
   (bind-cordinate area
-                  ; Two points to determine a rectangle domain uniquely
-                  (cond ((and (< x1 x2)    ; p1:bottom-left, p2:top-right
+                  ;; Two points to determine a rectangle domain uniquely
+                  (cond ((and (< x1 x2)    ;; p1:bottom-left, p2:top-right
                               (< y1 y2))
                          area)
-                        ((and (> x1 x2)    ; p1:top-right, p2:bottom-left
+                        ((and (> x1 x2)    ;; p1:top-right, p2:bottom-left
                               (> y1 y2))
                          (make-area (area-p2 area) (area-p1 area)))
-                        ((and (< x1 x2)    ; p1:top-left, p2:bottom-right
+                        ((and (< x1 x2)    ;; p1:top-left, p2:bottom-right
                               (> y1 y2))
                          (make-area (make-point x1 y2)
                                     (make-point x2 y1)))
-                        ((and (> x1 x2)    ; p1:bottom-right, p2:top-left
+                        ((and (> x1 x2)    ;; p1:bottom-right, p2:top-left
                               (< y1 y2))
                          (make-area (make-point x2 y1)
                                     (make-point x1 y2)))
@@ -88,29 +88,24 @@
 ;; プロット数は多い方が制度が高い
 ;;
 
-#o(monte-carlo-integration (lambda (x)
-                             x)
-                           (make-point 0 0) (make-point 1 1)
-                           :trial-time 10)
-; => 0.5
+(monte-carlo-integration (lambda (x)
+                           x)
+                         (make-point 0 0) (make-point 1 1)
+                         :trial-time 10)
+;; ~= 0.5
 
-#o(monte-carlo-integration (lambda (x)
-                             x)
-                           (make-point 0 0) (make-point 1 1))
-; => 0.5
+(monte-carlo-integration (lambda (x)
+                           x)
+                         (make-point 0 0) (make-point 1 1))
+;; ~= 0.5
 
-#o(monte-carlo-integration (lambda (x)
-                             (* x x))
-                           (make-point 0 0) (make-point 6 36))
-; => 72
+(monte-carlo-integration (lambda (x)
+                           (* x x))
+                         (make-point 0 0) (make-point 6 36))
+;; =~ 72
 
-#o(monte-carlo-integration (lambda (x)
-                             (- 1 (* x x)))
-                           (make-point -1 -1) (make-point 1 1))
-; => 4/3
-
-#o(monte-carlo-integration (lambda (x)
-                             1)
-                           (make-point 0 0) (make-point 2 2))
-; => 2
+(monte-carlo-integration (lambda (x)
+                           (- 1 (* x x)))
+                         (make-point -1 -1) (make-point 1 1))
+;; ~= 4/3
 

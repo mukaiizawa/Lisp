@@ -1,5 +1,5 @@
 
-(load "../lib/stdlib" :if-does-not-exist nil)
+(require "stdlib" *module-stdlib*)
 
 (defvar *box-size* 3)
 (defparameter *board-size* nil)

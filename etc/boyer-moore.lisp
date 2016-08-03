@@ -1,12 +1,11 @@
-(load "../lib/stdlib")
 
-;; boyer-moore
+(require "stdlib" *module-stdlib*)
+
 ;; Boyer-Moore String Search Algorithm
-
 (defun boyer-moore (pat str &key (ignore-case nil))
   (labels ((make-table (pat)
                        (let* ((pat-length (length pat))
-                              (table (mkhash :size pat-length)))
+                              (table (make-hash-table :size pat-length)))
                          (dotimes (i (1- pat-length))
                            (setf (gethash (char pat i) table) (- pat-length i 1)))
                          (setf (gethash t table) pat-length)
@@ -28,7 +27,7 @@
                     (gethash t table)))))
       nil)))
 
-;; Demo
+;; Examples:
 (boyer-moore "pep" "picled_pepper")
 ;; => 7
 (boyer-moore  "ba" "ba")

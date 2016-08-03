@@ -1,5 +1,5 @@
 
-(load "../lib/stdlib")
+(require "stdlib" *module-stdlib*)
 
 (defparameter *time-limit* 6)
 (defparameter *dice-num* 2)
@@ -60,5 +60,4 @@
         (read-line)))))
 
 (dice-with-timer)
-
 
