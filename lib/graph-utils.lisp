@@ -21,10 +21,6 @@
                                (node-conf nil :type list)
                                (edge-conf nil :type list))))
 
-(defstruct node value attr)
-(defstruct edge from to attr (directed? t :type boolean))
-(defstruct attr key value)
-
 (defun replace-low-line (str)
   (replstr "-" "_" (mkstr str)))
 
