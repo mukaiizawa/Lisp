@@ -149,7 +149,7 @@
 (defparameter *indent* t)
 
 (defstruct xml-node
-  (name-space "" :type string)
+  (namespace "" :type string)
   (name "" :type string)
   (attrs nil :type list)
   (children nil :type list)
@@ -162,14 +162,14 @@
 
 ;; defnode {{{
 
-(defmacro defnode (name-space name single?)
+(defmacro defnode (namespace name single?)
   `(defmacro ,(mkkey name) (&optional first &body rest)
      (with-gensyms (attr body)
        (let* ((attr (when (alist? first) first))
               (body (if attr rest (cons first rest))))
          `(let ,attr
             (make-xml-node
-              :name-space ,',name-space
+              :namespace ,',namespace
               :name ,',(mkstr name)
               :attrs (list ,@(mapcar (lambda (x)
                                        `(list ',x ,x))
@@ -180,9 +180,9 @@
 ;; }}}
 ;; defnodes {{{
 
-(defmacro defnodes (name-space node-names single-tags)
+(defmacro defnodes (namespace node-names single-tags)
   `(progn ,@(mapcar (lambda (name)
-                      `(defnode ,name-space ,name ,(when (find name single-tags) t)))
+                      `(defnode ,namespace ,name ,(when (find name single-tags) t)))
                     node-names)))
 
 ;; }}}
@@ -234,8 +234,8 @@
 
 (defun get-node-name (node)
   (with-output-to-string (out)
-    (unless (empty? (xml-node-name-space node))
-      (format out "~(~A~):" (xml-node-name-space node)))
+    (unless (empty? (xml-node-namespace node))
+      (format out "~(~A~):" (xml-node-namespace node)))
     (format out "~(~A~)" (xml-node-name node))))
 
 ;; }}}
