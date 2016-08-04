@@ -21,9 +21,12 @@
                                (node-conf nil :type list)
                                (edge-conf nil :type list))))
 
+;; replace-low-line {{{
+
 (defun replace-low-line (str)
   (replstr "-" "_" (mkstr str)))
 
+;; }}}
 ;; attrs->dot {{{
 
 (defun attrs->dot (attrs &optional (with-double-quote? t))
