@@ -31,7 +31,6 @@
          (when (open-stream? ,stream)
            (close ,stream))))))
 
-;; The Ahead-readers dictionary
 ;; get-curr {{{
 
 (defmethod get-curr ((reader ahead-reader))
