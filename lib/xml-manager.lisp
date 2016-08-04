@@ -146,156 +146,72 @@
      :source))
 
 ;; }}}
-;; *no-encode-tags* {{{
-
-(defparameter *no-encode-tags*
-  '( :script
-     :style))
-
-;; }}}
-;; *html-stream* {{{
-
-; default stream is *standard-output*
-(defparameter *html-stream* *standard-output*)
-
-;; }}}
-;; *indent-manager* {{{
-
-(defparameter *indent-manager* nil)
-
-;; }}}
-;; *indent* {{{
-
-; set `nil' to disable indent.
 (defparameter *indent* t)
 
-;; }}}
-
-(defstruct (node (:print-object node->string))
+(defstruct xml-node
   (name-space "" :type string)
   (name "" :type string)
   (attrs nil :type list)
-  (children nil :type list))
+  (children nil :type list)
+  (single? nil :type boolean))
 
-(defun node->string (node)
-  (format nil "(~A:~A (~{~{(~(~A~) \"~A\")~}~^ ~})~A~A)~%"
-          (node-name-space node)
-          (node-name node)
-          (node-attrs node)
-          (if (node-children node) #\Newline "")
-          (format nil "~{~A~}" (mapcar (lambda (node)
-                                         (node->string node))
-                                       (node-children node)))))
-
-(defstruct (indent (:print-object indent->string))
+(defstruct indent-manager
   (indent "" :type string)
-  (level 0 :type number)
+  (indent-level 0 :type number)
   (tab-space 2 :type number))
 
-(defun indent->string (indent stream)
-  (if *indent*
-    (format stream (indent-indent indent))
-    ""))
-
-;; macro, function
 ;; defnode {{{
 
-(defmacro defnode (tag single? encode?)
-  `(defmacro ,(mkkey tag) (&optional first &body rest)
+(defmacro defnode (name-space name single?)
+  `(defmacro ,(mkkey name) (&optional first &body rest)
      (with-gensyms (attr body)
        (let* ((attr (when (alist? first) first))
               (body (if attr rest (cons first rest))))
          `(let ,attr
-            (format *html-stream* "~A<~(~A~)~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
-                    *indent-manager* ',',tag (list ,@(mapcar (lambda (x)
-                                                                    `(remove nil (list ',x ,x)))
-                                                                  (mapcar #'car attr)))
-                    (mkstr (and ',',single? " /")))
-            (change-indent-level *indent-manager* 'inc)
-            (unless ',',single?
-              (parse-inner-tag ,',encode? ,@body))
-            (change-indent-level *indent-manager* 'dec)
-            (unless ',',single?
-              (format *html-stream* "~A</~(~A~)>~%" *indent-manager* ',',tag )))))))
+            (make-xml-node
+              :name-space ,',name-space
+              :name ,',(mkstr name)
+              :attrs (list ,@(mapcar (lambda (x)
+                                       `(list ',x ,x))
+                                     (mapcar #'car attr)))
+              :children (remove nil (list ,@body))
+              :single? ',',single?))))))
 
 ;; }}}
 ;; defnodes {{{
 
-(defmacro defnodes (tags single-tags no-encode-tags)
-  `(progn ,@(mapcar (lambda (tag)
-                      `(defnode ,tag
-                               ,(find tag single-tags)
-                               ,(not (find tag no-encode-tags))))
-                    tags)))
+(defmacro defnodes (name-space node-names single-tags)
+  `(progn ,@(mapcar (lambda (name)
+                      `(defnode ,name-space ,name ,(when (find name single-tags) t)))
+                    node-names)))
 
 ;; }}}
-;; definition of other tags {{{
+;; :!DOCTYPE {{{
 
-(defmacro :!DOCTYPE (str)
-  `(format *html-stream* "<!DOCTYPE ~A>~%" ,str))
-
-(defmacro :!-- (str)
-  `(format *html-stream* "~A<!-- ~A -->~%" *indent-manager* ,str))
+;; support only html5
+(defmacro :!DOCTYPE ()
+  `(make-xml-node :name "doctype"))
 
 ;; }}}
-;; parse-inner-tag {{{
+;; :!-- {{{
 
-(defmacro parse-inner-tag (encode? &body body)
-  (with-gensyms (fn)
-    (let ((fn (if encode?
-                #'with-html-encode
-                #'identity)))
-      `(progn
-         ,@(mapcar (lambda (x)
-                     (when x
-                       (cond ((stringp x)
-                              `(format *html-stream* "~A~A~%"
-                                       *indent-manager* (funcall (compose ,fn #'trim-newline) ,x)))
-                             ((or (atom x)
-                                  (s-expr? x))
-                              `(format *html-stream*  "~A~A~%"
-                                       *indent-manager* (funcall ,fn ,x)))
-                             (t `,x))))
-                   body)))))
-
+(defmacro :!-- (&rest str)
+  `(make-xml-node :name "comment" :children (list ,@str)))
 
 ;; }}}
-;; trim-new-line {{{
-
-(defun trim-newline (str)
-  (if *indent*
-    (let (ignore-space?)
-      (with-output-to-string (buf)
-        (dostring (c (mkstr str))
-          (cond ((char= c #\Newline)
-                 (setq ignore-space? t)
-                 (princ #\Space buf))
-                ((and ignore-space?
-                      (char= c #\Space))
-                 (values))
-                ((and ignore-space?
-                      (char/= c #\Space))
-                 (setq ignore-space? nil)
-                 (princ c buf))
-                (t (princ c buf))))))
-    str))
-
-;; }}}
-;; for indent {{{
+;; change-indent-level {{{
 
 (defun change-indent-level (indent direction)
   (when *indent*
     (if (eq direction 'inc)
-      (incf (indent-level indent))
-      (decf (indent-level indent)))
-    (setf (indent-indent indent)
+      (incf (indent-manager-indent-level indent))
+      (decf (indent-manager-indent-level indent)))
+    (setf (indent-manager-indent indent)
           (make-string
-            (* (indent-tab-space indent)
-               (indent-level indent))
+            (* (indent-manager-tab-space indent)
+               (indent-manager-indent-level indent))
             :initial-element #\Space)))
   (values))
-
-(setq *indent-manager* (make-indent))
 
 ;; }}}
 ;; with-html-encode {{{
@@ -313,14 +229,51 @@
         buf))))
 
 ;; }}}
-;; with-html-output {{{
 
-(defmacro with-html-output ((&optional (stream *standard-output*)) &body body)
-  `(let ((*html-stream* ,stream))
-     ,@body))
+;; get-node-name {{{
+
+(defun get-node-name (node)
+  (with-output-to-string (out)
+    (unless (empty? (xml-node-name-space node))
+      (format out "~(~A~):" (xml-node-name-space node)))
+    (format out "~(~A~)" (xml-node-name node))))
+
+;; }}}
+;; xml-nodes->string {{{
+
+(defun xml-nodes->string (nodes &optional (indent (make-indent-manager)))
+  (with-output-to-string (out)
+    (cond ((null nodes)
+           (error "xml-node->string: null pointer exeption"))
+          ((stringp nodes)    ; text-node
+           (format out "~A~A~%" (indent-manager-indent indent) (with-html-encode nodes)))
+          ((and (typep nodes 'xml-node)
+                (string= (xml-node-name nodes) "doctype"))
+           (format out "<!DOCTYPE html>~%"))
+          ((and (typep nodes 'xml-node)
+                (string= (xml-node-name nodes) "comment"))
+           (format out "~A<!-- ~{~A~^~%~} -->~%" (indent-manager-indent indent) (xml-node-children nodes)))
+          (t
+            (dolist (node (mklist nodes))
+              (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
+                      (indent-manager-indent indent)
+                      (get-node-name node)
+                      (xml-node-attrs node)
+                      (if (xml-node-single? node) "/" ""))
+              (change-indent-level indent 'inc)
+              (awhen (xml-node-children node)
+                (format out "~{~^~A~}"
+                        (mapcar (lambda (node)
+                                  (xml-nodes->string node indent))
+                                it)))
+              (change-indent-level indent 'dec)
+              (unless (xml-node-single? node)
+                (format out "~A</~A>~%"
+                        (indent-manager-indent indent)
+                        (get-node-name node))))))))
 
 ;; }}}
 
 ;; define html tags
-(defnodes #.*html-tags* #.*single-tags* #.*no-encode-tags*)
+(defnodes "" #.*html-tags* #.*single-tags*)
 
