@@ -1,4 +1,0 @@
-
-/* graph */
-layout,Specifies the name of the layout algorithm to use, such as "dot" or "neato". 
-rankdir,Sets direction of graph layout, such as "TB", "LR", "BT", "RL".
