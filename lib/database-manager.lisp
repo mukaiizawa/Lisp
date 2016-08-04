@@ -86,8 +86,8 @@
   (let (nodes)
     (dolist (table tables)
       (let* ((table-phisical-name (mkstr (table-phisical-name table)))
-             (attr (list (list 'shape "plaintext")
-                         (list 'label
+             (attr-shape (list 'shape "plaintext"))
+             (attr-label (list 'label
                                (with-output-to-string (out)
                                  (format out "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>")
                                  (format out "<TR><TD BGCOLOR='GRAY' WIDTH='200'>~A</TD></TR>" table-phisical-name)
@@ -101,8 +101,8 @@
                                                    (column-required? column))
                                              "RED" "BLACK")
                                            (column-phisical-name column)))
-                                 (format out "</TABLE>>"))))))
-        (push (list table-phisical-name attr) nodes)))
+                                 (format out "</TABLE>>")))))
+        (push (list table-phisical-name attr-shape attr-label) nodes)))
     (nreverse nodes)))
 
 ;; }}}
