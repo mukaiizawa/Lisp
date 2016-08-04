@@ -123,4 +123,11 @@
     (nreverse edges)))
 
 ;; }}}
+;; tables->graph {{{
+
+(defun tables->graph (tables)
+  (make-graph :nodes (tables->nodes tables)
+              :edges (tables->edges tables)))
+
+;; }}}
 
