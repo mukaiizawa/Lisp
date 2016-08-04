@@ -36,6 +36,7 @@
                     ,@(rest table)))
                tables)))
 
+;; utility
 ;; get-table-name {{{
 
 (defun get-table-name (table)
@@ -49,37 +50,13 @@
 
 (defun get-primarykeys (table)
   (mapcar #'column-phisical-name
-          (prune (lambda (column)
-                   (not (column-primarykey? column)))
-                 (table-columns table))))
-
-;; }}}
-;; tables->create-sql {{{
-
-(defun tables->create-sql (tables)
-  (with-output-to-string (out)
-    (dolist (table (mklist tables))
-      (format out "~%DROP TABLE ~A CASCADE CONSTRAINTS;~%" (get-table-name table))
-      (format out "CREATE TABLE ~A (~%" (get-table-name table))
-      (dolist (column (table-columns table))
-        (write-string
-          (mkstr (column-phisical-name column) " " (column-type column)
-                 (when (/= (column-length column) -1)
-                   (mkstr "(" (column-length column) ")"))
-                 (unless (empty? (column-default-value column))
-                   (mkstr " DEFAULT " (column-default-value column)))
-                 (when (column-required? column)
-                   " NOT NULL")
-                 #\, #\Newline)
-          out))
-      (format out "CONSTRAINT PK_~A (~{~A~^,~})~%"
-              (table-phisical-name table)
-              (get-primarykeys table))
-      (format out ");~%"))))
+          (remove-if (lambda (column)
+                       (not (column-primarykey? column)))
+                     (table-columns table))))
 
 ;; }}}
 
-;; extension of graph-utils
+;; extension
 ;; tables->nodes {{{
 
 (defun tables->nodes (tables)
@@ -128,6 +105,30 @@
 (defun tables->graph (tables)
   (make-graph :nodes (tables->nodes tables)
               :edges (tables->edges tables)))
+
+;; }}}
+;; tables->create-sql {{{
+
+(defun tables->create-sql (tables)
+  (with-output-to-string (out)
+    (dolist (table (mklist tables))
+      (format out "~%DROP TABLE ~A CASCADE CONSTRAINTS;~%" (get-table-name table))
+      (format out "CREATE TABLE ~A (~%" (get-table-name table))
+      (dolist (column (table-columns table))
+        (write-string
+          (mkstr (column-phisical-name column) " " (column-type column)
+                 (when (/= (column-length column) -1)
+                   (mkstr "(" (column-length column) ")"))
+                 (unless (empty? (column-default-value column))
+                   (mkstr " DEFAULT " (column-default-value column)))
+                 (when (column-required? column)
+                   " NOT NULL")
+                 #\, #\Newline)
+          out))
+      (format out "CONSTRAINT PK_~A (~{~A~^,~})~%"
+              (table-phisical-name table)
+              (get-primarykeys table))
+      (format out ");~%"))))
 
 ;; }}}
 
