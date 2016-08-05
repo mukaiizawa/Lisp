@@ -90,7 +90,7 @@
 (defmethod read-space ((reader ahead-reader) &key (cache t))
   (read-if (lambda (c)
              (char= c #\Space))
-           reader :cache t)
+           reader :cache cache)
   (values reader))
 
 ;; }}}
