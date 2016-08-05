@@ -1,8 +1,8 @@
 
-(load "../lib/stdlib")
-(load "../lib/ahead-reader")
-(load "../lib/regex")
-(load "../lib/test-utils")
+(require "stdlib" *module-stdlib*)
+(require "ahead-reader" *module-ahead-reader*)
+(require "regex" *module-regex*)
+(require "test-utils" *module-test-utils*)
 
 ;; (trace match?)
 ;; (trace anchored-match?)
