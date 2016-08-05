@@ -149,8 +149,10 @@
 (defparameter *indent* t)
 
 (defstruct xml-node
-  (namespace "" :type string)
-  (name "" :type string)
+  (phisical-namespace nil :type symbol)
+  (logical-namespace "" :type string)
+  (phisical-name nil :type symbol)
+  (logical-name "" :type string)
   (attrs nil :type list)
   (children nil :type list)
   (single? nil :type boolean))
@@ -162,41 +164,50 @@
 
 ;; defnode {{{
 
-(defmacro defnode (namespace name single?)
-  `(defmacro ,(mkkey name) (&optional first &body rest)
+(defmacro defnode (phisical-namespace logical-namespace phisical-name logical-name single?)
+  `(defmacro ,(mkkey phisical-name) (&optional first &body rest)
      (with-gensyms (attr body)
        (let* ((attr (when (alist? first) first))
               (body (if attr rest (cons first rest))))
          `(let ,attr
             (make-xml-node
-              :namespace ,',namespace
-              :name ,',(mkstr name)
+              :phisical-namespace ',',(mksym phisical-namespace)
+              :logical-namespace ,',logical-namespace
+              :phisical-name ',',(mksym phisical-name)
+              :logical-name ,',logical-name
               :attrs (list ,@(mapcar (lambda (x)
                                        `(list ',x ,x))
                                      (mapcar #'car attr)))
-              :children (remove nil (list ,@body))
+              :children (mapcar (lambda (node)
+                                  (if (stringp node)
+                                    (make-xml-node :phisical-name 'text-node :children (list node))
+                                    node))
+                                (remove nil (list ,@body)))
               :single? ',',single?))))))
 
 ;; }}}
 ;; defnodes {{{
 
-(defmacro defnodes (namespace node-names single-tags)
-  `(progn ,@(mapcar (lambda (name)
-                      `(defnode ,namespace ,name ,(when (find name single-tags) t)))
-                    node-names)))
+(defmacro defnodes (phisical-namespace logical-namespace phisical-names logical-names single-tags)
+  `(progn
+     ,@(mapcar (lambda (phisical-name logical-name)
+                 `(defnode ,phisical-namespace ,logical-namespace
+                           ,phisical-name ,logical-name
+                           ,(when (find phisical-name single-tags) t)))
+               phisical-names logical-names)))
 
 ;; }}}
 ;; :!DOCTYPE {{{
 
 ;; support only html5
 (defmacro :!DOCTYPE ()
-  `(make-xml-node :name "doctype"))
+  `(make-xml-node :phisical-name 'doctype))
 
 ;; }}}
 ;; :!-- {{{
 
 (defmacro :!-- (&rest str)
-  `(make-xml-node :name "comment" :children (list ,@str)))
+  `(make-xml-node :phisical-name 'comment :children (list ,@str)))
 
 ;; }}}
 ;; change-indent-level {{{
@@ -214,11 +225,11 @@
   (values))
 
 ;; }}}
-;; with-html-encode {{{
+;; with-xml-encode {{{
 
-(defun with-html-encode (str)
+(defun with-xml-encode (str)
   (with-output-to-string (buf)
-    (dostring (c (mkstr str))
+    (dostring (c str)
       (princ
         (case c
           (#\" "&quot;")
@@ -230,50 +241,56 @@
 
 ;; }}}
 
-;; get-node-name {{{
+;; get-logical-fullname {{{
 
-(defun get-node-name (node)
+(defun get-logical-fullname (node)
   (with-output-to-string (out)
-    (unless (empty? (xml-node-namespace node))
-      (format out "~(~A~):" (xml-node-namespace node)))
-    (format out "~(~A~)" (xml-node-name node))))
+    (unless (empty? (xml-node-logical-namespace node))
+      (format out "~A:" (xml-node-logical-namespace node)))
+    (format out "~A" (xml-node-logical-name node))))
 
 ;; }}}
 ;; xml-nodes->string {{{
 
-(defun xml-nodes->string (nodes &optional (indent (make-indent-manager)))
+(defun xml-nodes->string (nodes &optional (indent-manager (make-indent-manager)))
   (with-output-to-string (out)
-    (cond ((null nodes)
-           (error "xml-node->string: null pointer exeption"))
-          ((stringp nodes)    ; text-node
-           (format out "~A~A~%" (indent-manager-indent indent) (with-html-encode nodes)))
-          ((and (typep nodes 'xml-node)
-                (string= (xml-node-name nodes) "doctype"))
-           (format out "<!DOCTYPE html>~%"))
-          ((and (typep nodes 'xml-node)
-                (string= (xml-node-name nodes) "comment"))
-           (format out "~A<!-- ~{~A~^~%~} -->~%" (indent-manager-indent indent) (xml-node-children nodes)))
-          (t
-            (dolist (node (mklist nodes))
+    (let ((indent (indent-manager-indent indent-manager)))
+      (cond ((or (null nodes)
+                 (and (not (listp nodes))
+                      (not (typep nodes 'xml-node))))
+             (error "xml-node->string: `~A' unexpected token." nodes))
+            ((listp nodes)
+             (format out "~{~A~}"
+                     (mapcar (lambda (node)
+                               (xml-nodes->string node indent-manager))
+                             nodes)))
+            ((eq (xml-node-phisical-name nodes) 'text-node)
+             (format out "~A~{~A~}~%" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
+            ((eq (xml-node-phisical-name nodes) 'doctype)
+             (format out "~%<!DOCTYPE html>~%"))
+            ((eq (xml-node-phisical-name nodes) 'comment)
+             (format out "~A<!-- ~{~A~^~%~} -->~%" indent (xml-node-children nodes)))
+            (t
               (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
-                      (indent-manager-indent indent)
-                      (get-node-name node)
-                      (xml-node-attrs node)
-                      (if (xml-node-single? node) "/" ""))
-              (change-indent-level indent 'inc)
-              (awhen (xml-node-children node)
-                (format out "~{~^~A~}"
-                        (mapcar (lambda (node)
-                                  (xml-nodes->string node indent))
-                                it)))
-              (change-indent-level indent 'dec)
-              (unless (xml-node-single? node)
+                      indent
+                      (get-logical-fullname nodes)
+                      (xml-node-attrs nodes)
+                      (if (xml-node-single? nodes) "/" ""))
+              (change-indent-level indent-manager 'inc)
+              (awhen (xml-node-children nodes)
+                (format out "~A" (xml-nodes->string it indent-manager)))
+              (change-indent-level indent-manager 'dec)
+              (unless (xml-node-single? nodes)
                 (format out "~A</~A>~%"
-                        (indent-manager-indent indent)
-                        (get-node-name node))))))))
+                        indent
+                        (get-logical-fullname nodes))))))))
 
 ;; }}}
 
 ;; define html tags
-(defnodes "" #.*html-tags* #.*single-tags*)
+(defnodes nil ""
+          #.*html-tags* #.(mapcar (lambda (tag)
+                                    (string-downcase (mkstr tag)))
+                                  *html-tags*)
+          #.*single-tags*)
 
