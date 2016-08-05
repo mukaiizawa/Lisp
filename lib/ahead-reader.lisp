@@ -64,25 +64,26 @@
 ;; read-next {{{
 
 (defmethod read-next ((reader ahead-reader) &key (cache t))
-  (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
-    (when (char= c #\\)
-      (let ((escape-sequence (read-char (ahead-reader-stream reader) nil +null-character+)))
-        (setq c (case escape-sequence
-                  (#\n #\Newline)
-                  (#\t #\Tab)
-                  (t escape-sequence)))))
-    (setf (ahead-reader-curr reader) c)
-    (when cache (add-char reader c)))
-  (values reader))
+  (if (reach-eof? reader)
+    (error "ahead-reader read-next: already reach eof.")
+    (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
+      (when (char= c #\\)
+        (let ((escape-sequence (read-char (ahead-reader-stream reader) nil +null-character+)))
+          (setq c (case escape-sequence
+                    (#\n #\Newline)
+                    (#\t #\Tab)
+                    (t escape-sequence)))))
+      (setf (ahead-reader-curr reader) c)
+      (when cache (add-char reader c))
+      reader)))
 
 ;; }}}
 ;; read-if {{{
 
 (defmethod read-if ((fn function) (reader ahead-reader) &key (cache t))
-  (while (and (not (reach-eof? reader))
-              (funcall fn (get-next reader)))
+  (while (funcall fn (get-next reader))
     (read-next reader :cache cache))
-  (values reader))
+  reader)
 
 ;; }}}
 ;; read-space {{{
@@ -91,7 +92,7 @@
   (read-if (lambda (c)
              (char= c #\Space))
            reader :cache cache)
-  (values reader))
+  reader)
 
 ;; }}}
 ;; read-number {{{
@@ -101,7 +102,7 @@
   (when (char= (get-next reader) #\.)
     (read-next reader :cache t)
     (read-if #'digit-char-p reader :cache t))
-  (values reader))
+  reader)
 
 ;; }}}
 ;; read-paren {{{
@@ -118,14 +119,14 @@
                (char/= c right-paren))
              reader
              :cache cache))
-  (values (read-next reader :cache nil)))
+  (read-next reader :cache nil))
 
 ;; }}}
 ;; add-char {{{
 
 (defmethod add-char ((reader ahead-reader) (c character))
   (push c (ahead-reader-buf reader))
-  (values reader))
+  reader)
 
 ;; }}}
 ;; append-str {{{
@@ -133,7 +134,7 @@
 (defmethod append-str ((reader ahead-reader) (str string))
   (dostring (c str)
     (push c (ahead-reader-buf reader)))
-  (values reader))
+  reader)
 
 ;; }}}
 ;; get-buf {{{
