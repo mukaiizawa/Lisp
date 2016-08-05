@@ -1,6 +1,6 @@
 
-(load "../lib/stdlib")
-(load "../lib/test-utils")
+(require "stdlib" *module-stdlib*)
+(require "test-utils" *module-test-utils*)
 
 ;; Attention: ccl bug -b option can't use.
 
