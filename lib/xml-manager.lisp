@@ -260,8 +260,13 @@
 ;; }}}
 ;; get-node-name-mapping {{{
 
-(defun get-node-name-mapping (namespace name)
-  (gethash (merge-node-name namespace name) *node-name-mapping*))
+(defun get-node-name-mapping (namespace-name)
+  (gethash
+    (apply #'merge-node-name 
+           (if (position #\: namespace-name)
+             (string->list #\: namespace-name)
+             (list nil namespace-name)))
+    *node-name-mapping*))
 
 ;; }}}
 ;; xml-nodes->string {{{
