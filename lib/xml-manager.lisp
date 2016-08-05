@@ -146,17 +146,12 @@
      :source))
 
 ;; }}}
-;; *node-name-mapping* {{{
-
 (defparameter *node-name-mapping* (make-hash-table :test 'equal))
-
-;; }}}
 (defparameter *indent* t)
 
 (defstruct xml-node
   (type 'unspecified :type symbol)
-  (name :unspecified :type keyword)
-  (mapping-name "" :type string)
+  (name "" :type string)
   (attrs nil :type list)
   (children nil :type list)
   (single? nil :type boolean))
@@ -177,8 +172,7 @@
          `(let ,attr
             (make-xml-node
               :type 'element
-              :name ',',mapping-name
-              :mapping-name ',',(merge-node-name namespace name)
+              :name ',',(merge-node-name namespace name)
               :attrs (list ,@(mapcar (lambda (x)
                                        `(list ',x ,x))
                                      (mapcar #'car attr)))
@@ -293,7 +287,7 @@
             (t
               (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
                       indent
-                      (xml-node-mapping-name nodes)
+                      (xml-node-name nodes)
                       (xml-node-attrs nodes)
                       (if (xml-node-single? nodes) "/" ""))
               (change-indent-level indent-manager 'inc)
@@ -303,7 +297,7 @@
               (unless (xml-node-single? nodes)
                 (format out "~A</~A>~%"
                         indent
-                        (xml-node-mapping-name nodes))))))))
+                        (xml-node-name nodes))))))))
 
 ;; }}}
 
