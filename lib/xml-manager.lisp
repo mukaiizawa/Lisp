@@ -253,9 +253,9 @@
 ;; set-node-name-mapping {{{
 
 (defun set-node-name-mapping (namespace name mapping-name)
-  (push mapping-name
-        (gethash (merge-node-name namespace name)
-                 *node-name-mapping*)))
+  (setf (gethash (merge-node-name namespace name)
+                 *node-name-mapping*)
+        mapping-name))
 
 ;; }}}
 ;; get-node-name-mapping {{{
