@@ -261,12 +261,14 @@
 ;; get-node-name-mapping {{{
 
 (defun get-node-name-mapping (namespace-name)
-  (gethash
-    (apply #'merge-node-name 
-           (if (position #\: namespace-name)
-             (string->list #\: namespace-name)
-             (list nil namespace-name)))
-    *node-name-mapping*))
+  (aif (gethash
+         (apply #'merge-node-name 
+                (if (position #\: namespace-name)
+                  (string->list #\: namespace-name)
+                  (list nil namespace-name)))
+         *node-name-mapping*)
+    (string-downcase (mkstr it))
+    (error "parse-inner-paren: undefined element `~A'." namespace-name)))
 
 ;; }}}
 ;; xml-nodes->string {{{
