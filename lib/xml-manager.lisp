@@ -146,13 +146,17 @@
      :source))
 
 ;; }}}
+;; *node-name-mapping* {{{
+
+(defparameter *node-name-mapping* (make-hash-table :test 'equal))
+
+;; }}}
 (defparameter *indent* t)
 
 (defstruct xml-node
-  (phisical-namespace nil :type symbol)
-  (logical-namespace "" :type string)
-  (phisical-name nil :type symbol)
-  (logical-name "" :type string)
+  (type 'unspecified :type symbol)
+  (name :unspecified :type keyword)
+  (mapping-name "" :type string)
   (attrs nil :type list)
   (children nil :type list)
   (single? nil :type boolean))
@@ -162,52 +166,53 @@
   (indent-level 0 :type number)
   (tab-space 2 :type number))
 
-;; defnode {{{
+;; defelement {{{
 
-(defmacro defnode (phisical-namespace logical-namespace phisical-name logical-name single?)
-  `(defmacro ,(mkkey phisical-name) (&optional first &body rest)
+(defmacro defelement (namespace name mapping-name single?)
+  (set-node-name-mapping namespace name mapping-name)
+  `(defmacro ,mapping-name (&optional first &body rest)
      (with-gensyms (attr body)
        (let* ((attr (when (alist? first) first))
               (body (if attr rest (cons first rest))))
          `(let ,attr
             (make-xml-node
-              :phisical-namespace ',',(mksym phisical-namespace)
-              :logical-namespace ,',logical-namespace
-              :phisical-name ',',(mksym phisical-name)
-              :logical-name ,',logical-name
+              :type 'element
+              :name ',',mapping-name
+              :mapping-name ',',(merge-node-name namespace name)
               :attrs (list ,@(mapcar (lambda (x)
                                        `(list ',x ,x))
                                      (mapcar #'car attr)))
               :children (mapcar (lambda (node)
                                   (if (stringp node)
-                                    (make-xml-node :phisical-name 'text-node :children (list node))
+                                    (make-xml-node :type 'text :children (list node))
                                     node))
                                 (remove nil (list ,@body)))
               :single? ',',single?))))))
 
 ;; }}}
-;; defnodes {{{
+;; defelements {{{
 
-(defmacro defnodes (phisical-namespace logical-namespace phisical-names logical-names single-tags)
+(defmacro defelements (namespace names mapping-names single-tags)
   `(progn
-     ,@(mapcar (lambda (phisical-name logical-name)
-                 `(defnode ,phisical-namespace ,logical-namespace
-                           ,phisical-name ,logical-name
-                           ,(when (find phisical-name single-tags) t)))
-               phisical-names logical-names)))
+     ,@(mapcar (lambda (name mapping-name)
+                 `(defelement ,namespace
+                              ,name
+                              ,mapping-name
+                              ,(when (find mapping-name single-tags) t)))
+               names mapping-names)))
 
 ;; }}}
 ;; :!DOCTYPE {{{
 
 ;; support only html5
 (defmacro :!DOCTYPE ()
-  `(make-xml-node :phisical-name 'doctype))
+  `(make-xml-node :type 'document-type))
 
 ;; }}}
 ;; :!-- {{{
 
 (defmacro :!-- (&rest str)
-  `(make-xml-node :phisical-name 'comment :children (list ,@str)))
+  `(make-xml-node :node-type 'comment :children (list ,@str)))
 
 ;; }}}
 ;; change-indent-level {{{
@@ -241,13 +246,28 @@
 
 ;; }}}
 
-;; get-logical-fullname {{{
+;; merge-node-name {{{
 
-(defun get-logical-fullname (node)
+(defun merge-node-name (namespace name)
   (with-output-to-string (out)
-    (unless (empty? (xml-node-logical-namespace node))
-      (format out "~A:" (xml-node-logical-namespace node)))
-    (format out "~A" (xml-node-logical-name node))))
+    (when (not (empty? namespace))
+      (write-string namespace out)
+      (write-string ":" out))
+    (write-string name out)))
+
+;; }}}
+;; set-node-name-mapping {{{
+
+(defun set-node-name-mapping (namespace name mapping-name)
+  (push mapping-name
+        (gethash (merge-node-name namespace name)
+                 *node-name-mapping*)))
+
+;; }}}
+;; get-node-name-mapping {{{
+
+(defun get-node-name-mapping (namespace name)
+  (gethash (merge-node-name namespace name) *node-name-mapping*))
 
 ;; }}}
 ;; xml-nodes->string {{{
@@ -264,16 +284,16 @@
                      (mapcar (lambda (node)
                                (xml-nodes->string node indent-manager))
                              nodes)))
-            ((eq (xml-node-phisical-name nodes) 'text-node)
+            ((eq (xml-node-type nodes) 'text)
              (format out "~A~{~A~}~%" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
-            ((eq (xml-node-phisical-name nodes) 'doctype)
+            ((eq (xml-node-type nodes) 'document-type)
              (format out "~%<!DOCTYPE html>~%"))
-            ((eq (xml-node-phisical-name nodes) 'comment)
+            ((eq (xml-node-type nodes) 'comment)
              (format out "~A<!-- ~{~A~^~%~} -->~%" indent (xml-node-children nodes)))
             (t
               (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
                       indent
-                      (get-logical-fullname nodes)
+                      (xml-node-mapping-name nodes)
                       (xml-node-attrs nodes)
                       (if (xml-node-single? nodes) "/" ""))
               (change-indent-level indent-manager 'inc)
@@ -283,14 +303,10 @@
               (unless (xml-node-single? nodes)
                 (format out "~A</~A>~%"
                         indent
-                        (get-logical-fullname nodes))))))))
+                        (xml-node-mapping-name nodes))))))))
 
 ;; }}}
 
 ;; define html tags
-(defnodes nil ""
-          #.*html-tags* #.(mapcar (lambda (tag)
-                                    (string-downcase (mkstr tag)))
-                                  *html-tags*)
-          #.*single-tags*)
+(defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
