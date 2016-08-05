@@ -85,6 +85,15 @@
   (values reader))
 
 ;; }}}
+;; read-space {{{
+
+(defmethod read-space ((reader ahead-reader) &key (cache t))
+  (read-if (lambda (c)
+             (char= c #\Space))
+           reader :cache t)
+  (values reader))
+
+;; }}}
 ;; read-number {{{
 
 (defmethod read-number ((reader ahead-reader))
