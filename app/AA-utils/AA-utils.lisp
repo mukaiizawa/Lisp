@@ -1,15 +1,14 @@
-(load "../../lib/stdlib")
 
+(require "stdlib" *module-stdlib*)
 
 (defun string->char-list (str)
-  (if (emptyp str)
+  (if (empty? str)
     (list #\Space)
     (concatenate 'list
                  (list (char str 0))
                  (string->char-list (subseq str 1)))))
 
-
-(let ((table (mkhash :size 80)))
+(let ((table (make-hash-table :size 80)))
   ;; number {{{
   (push (list "        "
               "   _|   "
@@ -710,5 +709,4 @@
       (surround (echo surround-str)
         (dolist (i aa-list)
           (echo i))))))
-
 
