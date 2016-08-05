@@ -1,5 +1,7 @@
 
 (require "stdlib" *module-stdlib*)
+(require "ahead-reader" *module-ahead-reader*)
+(require "regex" *module-regex*)
 (provide "xml-manager")
 
 ;; *html-tags* {{{
