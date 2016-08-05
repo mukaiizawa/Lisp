@@ -146,8 +146,6 @@
      :source))
 
 ;; }}}
-(defparameter *node-name-mapping* (make-hash-table :test 'equal))
-(defparameter *indent* t)
 
 (defstruct xml-node
   (type 'unspecified :type symbol)
@@ -156,11 +154,42 @@
   (children nil :type list)
   (single? nil :type boolean))
 
+;; indent manager 
+;; *indent* {{{
+
+(defparameter *indent* t)
+
+;; }}}
+;; indent-manager {{{
+
 (defstruct indent-manager
   (indent "" :type string)
   (indent-level 0 :type number)
   (tab-space 2 :type number))
 
+;; }}}
+;; change-indent-level {{{
+
+(defun change-indent-level (indent direction)
+  (when *indent*
+    (if (eq direction 'inc)
+      (incf (indent-manager-indent-level indent))
+      (decf (indent-manager-indent-level indent)))
+    (setf (indent-manager-indent indent)
+          (make-string
+            (* (indent-manager-tab-space indent)
+               (indent-manager-indent-level indent))
+            :initial-element #\Space)))
+  (values))
+
+;; }}}
+
+;; define element
+;; *node-name-mapping* {{{
+
+(defparameter *node-name-mapping* (make-hash-table :test 'equal))
+
+;; }}}
 ;; defelement {{{
 
 (defmacro defelement (namespace name mapping-name single?)
@@ -209,21 +238,6 @@
   `(make-xml-node :node-type 'comment :children (list ,@str)))
 
 ;; }}}
-;; change-indent-level {{{
-
-(defun change-indent-level (indent direction)
-  (when *indent*
-    (if (eq direction 'inc)
-      (incf (indent-manager-indent-level indent))
-      (decf (indent-manager-indent-level indent)))
-    (setf (indent-manager-indent indent)
-          (make-string
-            (* (indent-manager-tab-space indent)
-               (indent-manager-indent-level indent))
-            :initial-element #\Space)))
-  (values))
-
-;; }}}
 ;; with-xml-encode {{{
 
 (defun with-xml-encode (str)
@@ -239,7 +253,6 @@
         buf))))
 
 ;; }}}
-
 ;; merge-node-name {{{
 
 (defun merge-node-name (namespace name)
@@ -271,6 +284,8 @@
     (error "parse-inner-paren: undefined element `~A'." namespace-name)))
 
 ;; }}}
+
+;; lisp->xml
 ;; xml-nodes->string {{{
 
 (defun xml-nodes->string (nodes &optional (indent-manager (make-indent-manager)))
@@ -308,6 +323,98 @@
 
 ;; }}}
 
+;; xml->lisp
+;; string->xml-nodes {{{
+
+(defun string->xml-nodes (str)
+  (let (nodes)
+    (with-string-ahead-reader (reader str)
+      (while (not (reach-eof? reader))
+        (cond ((reader-next-in? reader #\Newline #\Space)
+               (read-if (lambda (c)
+                          (or (char= c #\Newline)
+                              (char= c #\Space)))
+                        reader
+                        :cache nil))
+              ((reader-next-in? reader #\<)
+               ;; element-node
+               (let ((node (parse-inner-paren (get-buf (read-paren reader)))))
+                 (if (xml-node-single? node)
+                   (push node nodes)
+                   (progn
+                     (setf (xml-node-children node)
+                           (string->xml-nodes (read-element reader (xml-node-name node))))
+                     (push node nodes)))))
+              (t
+                ;; text-node
+                (push
+                  (make-xml-node
+                    :type 'text
+                    :children (list (get-buf
+                                      (read-if (lambda (c)
+                                                 (char/= c #\<))
+                                               reader))))
+                  nodes)))))
+    (nreverse nodes)))
+
+;; }}}
+;; read-element {{{
+
+(defmethod read-element ((reader ahead-reader) (element-name string))
+  (let ((matcher (string-downcase (mkstr "</" element-name " *>")))
+        (acc))
+    (while (not (match?->string matcher (apply #'mkstr (reverse acc))))
+      (push (get-buf (read-next reader)) acc))
+    (match?->replace matcher "" (apply #'mkstr (nreverse acc)))))
+
+;; }}}
+;; parse-inner-paren {{{
+
+(defun parse-inner-paren (str)
+  (with-string-ahead-reader (reader str)
+    (let* ((namespace-name (get-buf
+                             (read-space
+                               (read-if (lambda (c)
+                                          (char/= c #\Space))
+                                        reader)
+                               :cache nil)))
+           (attrs-part (get-buf (read-if (lambda (c)
+                                           (char/= c #\/))
+                                         reader)))
+           (single? (char= (char str (1- (length str))) #\/)))
+      (make-xml-node :type 'element
+                     :name (get-node-name-mapping namespace-name)
+                     :attrs (parse-attrs attrs-part)
+                     :single? single?))))
+
+;; }}}
+;; parse-attrs {{{
+
+(defun parse-attrs (str)
+  (with-string-ahead-reader (reader str)
+    '((1 1) (2 2))))
+
+;; }}}
+
 ;; define html tags
+;; lisp dnl must be keyword parameter
 (defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
+; test code
+; (defparameter dom
+; ; <!DOCTYPE html>
+; "
+; <html>
+; <meta charset='utf-8'  chaa='as'/>
+; <head>
+; <link href='css/common.css' rel='stylesheet' media='screen' />
+; </head>
+; <body>
+; <p>
+; <img src='img/image003.png' />
+; </p>
+; <a href='top.html'>トップ画面</a>
+; </body>
+; </html>")
+; #o(xml-nodes->string (string->xml-nodes dom))
+; ; #o(string->xml-nodes dom)
