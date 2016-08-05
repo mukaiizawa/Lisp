@@ -81,7 +81,8 @@
 ;; read-if {{{
 
 (defmethod read-if ((fn function) (reader ahead-reader) &key (cache t))
-  (while (funcall fn (get-next reader))
+  (while (and (not (reach-eof? reader))
+              (funcall fn (get-next reader)))
     (read-next reader :cache cache))
   reader)
 
