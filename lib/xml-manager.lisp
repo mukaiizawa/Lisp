@@ -381,42 +381,63 @@
                                         reader)
                                :cache nil)))
            (attrs-part (get-buf (read-if (lambda (c)
-                                           (char/= c #\/))
+                                           (char/= c +null-character+))
                                          reader)))
            (single? (char= (char str (1- (length str))) #\/)))
       (make-xml-node :type 'element
                      :name (get-node-name-mapping namespace-name)
-                     :attrs (parse-attrs attrs-part)
+                     :attrs (parse-attrs (if single?
+                                           (before #\/ attrs-part :from-end t)
+                                           attrs-part))
                      :single? single?))))
 
 ;; }}}
 ;; parse-attrs {{{
 
 (defun parse-attrs (str)
-  (with-string-ahead-reader (reader str)
-    '((1 1) (2 2))))
+  (with-string-ahead-reader (reader (funcall #~s/\n//g str))
+    (do ((key) (value) (attrs))
+      ((reach-eof? reader) (nreverse attrs))
+      (setq key (get-buf
+                  (read-next-unless-eof
+                    (read-if (lambda (c)
+                               (and (char/= c #\Space)
+                                    (char/= c #\=)))
+                             (read-space reader :cache nil))
+                    :cache nil))
+            value (and (reader-next-in? (read-space reader :cache nil) #\' #\")
+                       (get-buf (read-segment reader))))
+      (push (delete nil (list key value)) attrs))))
 
 ;; }}}
+
+; (trace parse-attrs)
+; (trace parse-inner-paren)
+; (trace xml-nodes->string)
+; (trace read-element)
 
 ;; define html tags
 ;; lisp dnl must be keyword parameter
 (defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
 ; test code
-; (defparameter dom
-; ; <!DOCTYPE html>
-; "
-; <html>
-; <meta charset='utf-8'  chaa='as'/>
-; <head>
-; <link href='css/common.css' rel='stylesheet' media='screen' />
-; </head>
-; <body>
-; <p>
-; <img src='img/image003.png' />
-; </p>
-; <a href='top.html'>トップ画面</a>
-; </body>
-; </html>")
-; #o(xml-nodes->string (string->xml-nodes dom))
-; ; #o(string->xml-nodes dom)
+(defparameter dom
+; <!DOCTYPE html>
+"
+<html>
+<meta charset='utf-8'  chaa='as'/>
+<head>
+<link href='css/common.css' rel='stylesheet' media='screen' />
+</head>
+<body>
+<p>
+<img src='img/image003.png' />
+</p>
+<a href='top.html'>
+</a>
+</body>
+</html>
+"
+)
+#o(xml-nodes->string (string->xml-nodes dom))
+; #o(string->xml-nodes dom)
