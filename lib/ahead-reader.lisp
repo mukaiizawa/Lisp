@@ -78,6 +78,14 @@
       reader)))
 
 ;; }}}
+;; read-next-unless-eof {{{
+
+(defmethod read-next-unless-eof ((reader ahead-reader) &key (cache t))
+  (if (reach-eof? reader)
+    reader
+    (read-next reader :cache cache)))
+
+;; }}}
 ;; read-if {{{
 
 (defmethod read-if ((fn function) (reader ahead-reader) &key (cache t))
