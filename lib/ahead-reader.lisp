@@ -98,11 +98,11 @@
 ;; }}}
 ;; read-number {{{
 
-(defmethod read-number ((reader ahead-reader))
-  (read-if #'digit-char-p reader :cache t)
+(defmethod read-number ((reader ahead-reader) &key (cache t))
+  (read-if #'digit-char-p reader :cache cache)
   (when (char= (get-next reader) #\.)
-    (read-next reader :cache t)
-    (read-if #'digit-char-p reader :cache t))
+    (read-next reader :cache cache)
+    (read-if #'digit-char-p reader :cache cache))
   reader)
 
 ;; }}}
@@ -121,6 +121,17 @@
              reader
              :cache cache))
   (read-next reader :cache nil))
+
+;; }}}
+;; read-segment {{{
+
+(defmethod read-segment ((reader ahead-reader) &key (cache t))
+  (let ((segment (get-curr (read-next reader :cache nil))))
+    (read-next (read-if (lambda (c)
+                          (char/= c segment))
+                        reader
+                        :cache cache)
+               :cache nil)))
 
 ;; }}}
 ;; add-char {{{
@@ -144,6 +155,12 @@
   (prog1
     (coerce (nreverse (ahead-reader-buf reader)) 'string)
     (setf (ahead-reader-buf reader) nil)))
+
+;; }}}
+;; refer-buf {{{
+
+(defmethod refer-buf ((reader ahead-reader))
+  (coerce (reverse (ahead-reader-buf reader)) 'string))
 
 ;; }}}
 
