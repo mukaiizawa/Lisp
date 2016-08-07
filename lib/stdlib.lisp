@@ -1086,7 +1086,8 @@
 ;; for debug util
 (defun show-hash (hash)
   (maphash (lambda (k v)
-             (echo k " : " v)) hash))
+             (print (mkstr k ":" v)))
+           hash))
 
 ;; }}}
 ;; princln {{{
