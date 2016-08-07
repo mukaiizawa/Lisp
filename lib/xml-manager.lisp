@@ -324,8 +324,14 @@
                         (xml-node-name nodes))))))))
 
 ;; }}}
-
 ;; xml->lisp
+;; string->xml-nodes {{{
+
+(defun string->xml-nodes ())
+
+;; }}}
+
+;; xml-parser
 ;; parse-xml {{{
 
 (defun parse-xml (str)
@@ -416,16 +422,16 @@
 
 ;; }}}
 
-; (trace parse-attrs)
-; (trace parse-element)
-; (trace xml-nodes->string)
-; (trace read-element)
-
 ;; define html tags
-;; lisp dnl must be keyword parameter
+;; mapping-names must be keyword parameter
 (defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
-; test code
+;; todo
+;; xml-parser 
+;; 1.parse comment-node and document-type-node
+;; 2.implement string->xml-nodes
+
+;; test code
 (defparameter dom
 ; <!DOCTYPE html>
 "
@@ -445,4 +451,4 @@
 "
 )
 #o(xml-nodes->string (parse-xml dom))
-; #o(parse-xml dom)
+
