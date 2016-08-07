@@ -325,9 +325,22 @@
 
 ;; }}}
 ;; xml->lisp
-;; string->xml-nodes {{{
+;; xml-nodes->tree {{{
 
-(defun string->xml-nodes ())
+(defun xml-nodes->tree (nodes)
+  (with-output-to-string (out)
+    (mapcar (lambda (node)
+              (print (xml-node-attrs node))
+              (format out "(:~A (~{~{(~A \"~A\")~}~^ ~})~A)"
+                      (xml-node-name node)
+                      (xml-node-attrs node)
+                      (if (xml-node-children node)
+                        (format nil "~{~%~A~}"
+                                (mapcar (lambda (child-node)
+                                          (xml-nodes->tree child-node))
+                                        (xml-node-children node)))
+                        +empty-string+)))
+            (mklist nodes))))
 
 ;; }}}
 
@@ -429,7 +442,6 @@
 ;; todo
 ;; xml-parser 
 ;; 1.parse comment-node and document-type-node
-;; 2.implement string->xml-nodes
 
 ;; test code
 (defparameter dom
@@ -450,5 +462,7 @@
 </html>
 "
 )
-#o(xml-nodes->string (parse-xml dom))
+; #o(xml-nodes->string (parse-xml dom))
+#o(xml-nodes->tree (parse-xml dom))
+; #o(parse-xml dom)
 
