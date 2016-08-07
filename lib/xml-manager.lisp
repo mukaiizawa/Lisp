@@ -283,7 +283,7 @@
                   (list nil namespace-name)))
          *node-name-mapping*)
     (string-downcase (mkstr it))
-    (error "parse-inner-paren: undefined element `~A'." namespace-name)))
+    (error "get-node-name-mappin: undefined element `~A'." namespace-name)))
 
 ;; }}}
 
@@ -326,9 +326,9 @@
 ;; }}}
 
 ;; xml->lisp
-;; string->xml-nodes {{{
+;; parse-xml {{{
 
-(defun string->xml-nodes (str)
+(defun parse-xml (str)
   (let (nodes)
     (with-string-ahead-reader (reader str)
       (while (not (reach-eof? reader))
@@ -340,12 +340,12 @@
                         :cache nil))
               ((reader-next-in? reader #\<)
                ;; element-node
-               (let ((node (parse-inner-paren (get-buf (read-paren reader)))))
+               (let ((node (parse-element (get-buf (read-paren reader)))))
                  (if (xml-node-single? node)
                    (push node nodes)
                    (progn
                      (setf (xml-node-children node)
-                           (string->xml-nodes (read-element reader (xml-node-name node))))
+                           (parse-xml (read-children reader (xml-node-name node))))
                      (push node nodes)))))
               (t
                 ;; text-node
@@ -360,19 +360,20 @@
     (nreverse nodes)))
 
 ;; }}}
-;; read-element {{{
+;; read-children {{{
 
-(defmethod read-element ((reader ahead-reader) (element-name string))
-  (let ((matcher (string-downcase (mkstr "</" element-name " *>")))
-        (acc))
-    (while (not (match?->string matcher (apply #'mkstr (reverse acc))))
-      (push (get-buf (read-next reader)) acc))
-    (match?->replace matcher "" (apply #'mkstr (nreverse acc)))))
+(defmethod read-children ((reader ahead-reader) (element-name string))
+  (let ((matcher (mkstr "</" element-name " *>")))
+    (while (not (or (reach-eof? reader)
+                    (match?->string matcher (refer-buf (read-next reader))))))
+    (if (match?->string matcher (refer-buf reader))
+      (match?->replace matcher "" (get-buf reader))
+      (error "read-children: Closing tag of `~A' was not found." element-name))))
 
 ;; }}}
-;; parse-inner-paren {{{
+;; parse-element {{{
 
-(defun parse-inner-paren (str)
+(defun parse-element (str)
   (with-string-ahead-reader (reader str)
     (let* ((namespace-name (get-buf
                              (read-space
@@ -397,22 +398,26 @@
 (defun parse-attrs (str)
   (with-string-ahead-reader (reader (funcall #~s/\n//g str))
     (do ((key) (value) (attrs))
-      ((reach-eof? reader) (nreverse attrs))
+      ((reach-eof? (read-space reader :cache nil))
+       (nreverse attrs))
       (setq key (get-buf
-                  (read-next-unless-eof
-                    (read-if (lambda (c)
-                               (and (char/= c #\Space)
-                                    (char/= c #\=)))
-                             (read-space reader :cache nil))
-                    :cache nil))
-            value (and (reader-next-in? (read-space reader :cache nil) #\' #\")
+                  (read-if (lambda (c)
+                             (and (char/= c #\Space)
+                                  (char/= c #\=)))
+                           reader
+                           :cache nil))
+            value (and (reader-next-in? (read-if (lambda (c)
+                                                   (or (char= c #\=)
+                                                       (char= c #\Space)))
+                                                 reader :cache nil)
+                                        #\' #\")
                        (get-buf (read-segment reader))))
       (push (delete nil (list key value)) attrs))))
 
 ;; }}}
 
 ; (trace parse-attrs)
-; (trace parse-inner-paren)
+; (trace parse-element)
 ; (trace xml-nodes->string)
 ; (trace read-element)
 
@@ -439,5 +444,5 @@
 </html>
 "
 )
-#o(xml-nodes->string (string->xml-nodes dom))
-; #o(string->xml-nodes dom)
+#o(xml-nodes->string (parse-xml dom))
+; #o(parse-xml dom)
