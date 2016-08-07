@@ -423,8 +423,7 @@
                   (read-if (lambda (c)
                              (and (char/= c #\Space)
                                   (char/= c #\=)))
-                           reader
-                           :cache nil))
+                           reader))
             value (and (reader-next-in? (read-if (lambda (c)
                                                    (or (char= c #\=)
                                                        (char= c #\Space)))
