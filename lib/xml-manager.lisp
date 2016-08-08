@@ -325,12 +325,13 @@
 ;; read-children {{{
 
 (defmethod read-children ((reader ahead-reader) (element-name string))
-  (let ((matcher (mkstr "</" element-name " *>")))
+  (let ((linecount (get-linecount reader))
+        (matcher (mkstr "</" element-name " *>")))
     (while (not (or (reach-eof? reader)
                     (match?->string matcher (refer-buf (read-next reader))))))
     (if (match?->string matcher (refer-buf reader))
       (match?->replace matcher "" (get-buf reader))
-      (error "read-children: Closing tag of `~A' was not found." element-name))))
+      (error "read-children: Closing tag of `~A' at line: ~A was not found." element-name linecount))))
 
 ;; }}}
 ;; parse-element {{{
@@ -459,9 +460,10 @@
 <img src='img/image003.png' />
 </p>
 <a href='top.html'>
-</a>
 </body>
 </html>
 "
 )
+
+#o(xml->DSL dom)
 
