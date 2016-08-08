@@ -8,7 +8,8 @@
 
 (defstruct ahead-reader
   (stream nil :type stream)
-  (buf nil)
+  (buf nil :type list)
+  (linecount 0 :type number)
   (curr +null-character+ :type character))
 
 (defmacro with-ahead-reader ((reader &optional (stream *standard-input*)) &body body)
@@ -68,6 +69,8 @@
   (if (reach-eof? reader)
     (error "ahead-reader read-next: already reach eof.")
     (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
+      (when (char= c #\Newline)
+        (incf (ahead-reader-linecount reader)))
       (when (char= c #\\)
         (let ((escape-sequence (read-char (ahead-reader-stream reader) nil +null-character+)))
           (setq c (case escape-sequence
