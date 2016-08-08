@@ -230,8 +230,8 @@
 ;; :!DOCTYPE {{{
 
 ;; support only html5
-(defmacro :!DOCTYPE ()
-  `(make-xml-node :type 'document-type))
+(defmacro :!DOCTYPE (&optional (str "html"))
+  `(make-xml-node :type 'document-type :children (list ,str)))
 
 ;; }}}
 ;; :!-- {{{
@@ -300,25 +300,39 @@
                               (char= c #\Space)))
                         reader
                         :cache nil))
-              ((reader-next-in? reader #\<)
-               ;; element-node
-               (let ((node (parse-element (get-buf (read-paren reader)))))
-                 (if (xml-node-single? node)
-                   (push node nodes)
-                   (progn
-                     (setf (xml-node-children node)
-                           (parse-xml (read-children reader (xml-node-name node))))
-                     (push node nodes)))))
+              ((not (reader-next-in? reader #\<))
+               ;; text-node
+               (push
+                 (make-xml-node
+                   :type 'text
+                   :children (list (get-buf
+                                     (read-if (lambda (c)
+                                                (char/= c #\<))
+                                              reader))))
+                 nodes))
               (t
-                ;; text-node
-                (push
-                  (make-xml-node
-                    :type 'text
-                    :children (list (get-buf
-                                      (read-if (lambda (c)
-                                                 (char/= c #\<))
-                                               reader))))
-                  nodes)))))
+                (let ((inner-paren (get-buf (read-paren reader))))
+                  (cond ((funcall #~m/^!-- .* --$/ inner-paren)
+                         ;; comment-node
+                         (push (make-xml-node
+                                 :type 'comment
+                                 :children (list (subseq inner-paren 3 (- (length inner-paren) 2))))
+                               nodes))
+                        ((funcall #~m/^!DOCTYPE/ inner-paren)
+                         ;; document-node
+                         (push (make-xml-node
+                                 :type 'document-type
+                                 :children (list (subseq inner-paren 9)))
+                               nodes))
+                        (t
+                          ;; element-node
+                          (let ((node (parse-element inner-paren)))
+                            (if (xml-node-single? node)
+                              (push node nodes)
+                              (progn
+                                (setf (xml-node-children node)
+                                      (parse-xml (read-children reader (xml-node-name node))))
+                                (push node nodes)))))))))))
     (nreverse nodes)))
 
 ;; }}}
@@ -377,58 +391,68 @@
       (push (delete nil (list key value)) attrs))))
 
 ;; }}}
-
-;; xml-nodes->xml {{{
-
-(defun xml-nodes->xml (nodes &optional (indent-manager (make-indent-manager)))
-  (with-output-to-string (out)
-    (let ((indent (indent-manager-indent indent-manager)))
-      (cond ((or (null nodes)
-                 (and (not (listp nodes))
-                      (not (typep nodes 'xml-node))))
-             (error "DSL->xml: `~A' unexpected token." nodes))
-            ((listp nodes)
-             (format out "~{~A~}"
-                     (mapcar (lambda (node)
-                               (xml-nodes->xml node indent-manager))
-                             nodes)))
-            ((eq (xml-node-type nodes) 'text)
-             (format out "~A~{~A~}~%" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
-            ((eq (xml-node-type nodes) 'document-type)
-             (format out "~%<!DOCTYPE html>~%"))
-            ((eq (xml-node-type nodes) 'comment)
-             (format out "~A<!-- ~{~A~^~%~} -->~%" indent (xml-node-children nodes)))
-            (t
-              (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
-                      indent
-                      (xml-node-name nodes)
-                      (xml-node-attrs nodes)
-                      (if (xml-node-single? nodes) "/" ""))
-              (change-indent-level indent-manager 'inc)
-              (awhen (xml-node-children nodes)
-                (format out "~A" (xml-nodes->xml it indent-manager)))
-              (change-indent-level indent-manager 'dec)
-              (unless (xml-node-single? nodes)
-                (format out "~A</~A>~%"
-                        indent
-                        (xml-node-name nodes))))))))
-
-;; }}}
 ;; xml-nodes->DSL {{{
 
 (defun xml-nodes->DSL (nodes)
   (with-output-to-string (out)
     (mapcar (lambda (node)
-              (format out "(:~A (~{~{(~A \"~A\")~}~^ ~})~A)"
-                      (xml-node-name node)
-                      (xml-node-attrs node)
-                      (if (xml-node-children node)
-                        (format nil "~{~%~A~}"
-                                (mapcar (lambda (child-node)
-                                          (xml-nodes->DSL child-node))
-                                        (xml-node-children node)))
-                        +empty-string+)))
+              (case (xml-node-type node)
+                ((element)
+                 (format out "(:~A (~{~{(~A \"~A\")~}~^ ~})~A)"
+                         (xml-node-name node)
+                         (xml-node-attrs node)
+                         (if (xml-node-children node)
+                           (format nil "~{~%~A~}"
+                                   (mapcar (lambda (child-node)
+                                             (xml-nodes->DSL child-node))
+                                           (xml-node-children node)))
+                           +empty-string+)))
+                ((text)
+                 (format out "~{\"~A\"~}~%" (xml-node-children node)))
+                ((document-type)
+                 (format out "(:!DOCTYPE \"~{~A~}\")~%" (xml-node-children node)))
+                (t
+                  (error "xml-nodes->DSL: unknown node type ~A" (xml-node-type node)))))
             (mklist nodes))))
+
+;; }}}
+
+;; DSL->xml {{{
+
+(defun DSL->xml (&rest nodes)
+  (labels ((rec (nodes indent-manager)
+                (with-output-to-string (out)
+                  (let ((indent (indent-manager-indent indent-manager)))
+                    (cond ((or (null nodes)
+                               (and (not (listp nodes))
+                                    (not (typep nodes 'xml-node))))
+                           (error "DSL->xml: `~A' unexpected token." nodes))
+                          ((listp nodes)
+                           (format out "~{~A~}"
+                                   (mapcar (lambda (node)
+                                             (rec node indent-manager))
+                                           nodes)))
+                          ((eq (xml-node-type nodes) 'text)
+                           (format out "~A~{~A~}~%" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
+                          ((eq (xml-node-type nodes) 'document-type)
+                           (format out "~%<!DOCTYPE ~{~A~}>~%" (xml-node-children nodes)))
+                          ((eq (xml-node-type nodes) 'comment)
+                           (format out "~A<!-- ~{~A~^~%~} -->~%" indent (xml-node-children nodes)))
+                          (t
+                            (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
+                                    indent
+                                    (xml-node-name nodes)
+                                    (xml-node-attrs nodes)
+                                    (if (xml-node-single? nodes) "/" ""))
+                            (change-indent-level indent-manager 'inc)
+                            (awhen (xml-node-children nodes)
+                              (format out "~A" (rec it indent-manager)))
+                            (change-indent-level indent-manager 'dec)
+                            (unless (xml-node-single? nodes)
+                              (format out "~A</~A>~%"
+                                      indent
+                                      (xml-node-name nodes)))))))))
+    (rec nodes (make-indent-manager))))
 
 ;; }}}
 ;; xml->DSL {{{
@@ -442,14 +466,11 @@
 ;; mapping-names must be keyword parameter
 (defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
-;; todo
-;; xml-parser 
-;; 1.parse comment-node and document-type-node
-
 ;; test code
 (defparameter dom
-; <!DOCTYPE html>
 "
+<html>
+<!DOCTYPE html>
 <html>
 <meta charset='utf-8'  chaa='as'/>
 <head>
@@ -457,13 +478,18 @@
 </head>
 <body>
 <p>
+inner
+ptag
 <img src='img/image003.png' />
 </p>
 <a href='top.html'>
+</a>
 </body>
+</html>
 </html>
 "
 )
-
 #o(xml->DSL dom)
-
+#o(read-from-string (xml->DSL dom))
+; #o(dsl->xml (eval (read-from-string (xml->DSL dom))))
+; #o(dsl->xml (read-from-string (xml->DSL dom)))
