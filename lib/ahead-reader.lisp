@@ -33,6 +33,12 @@
          (when (open-stream? ,stream)
            (close ,stream))))))
 
+;; get-linecount {{{
+
+(defmethod get-linecount ((reader ahead-reader))
+  (ahead-reader-linecount reader))
+
+;; }}}
 ;; get-curr {{{
 
 (defmethod get-curr ((reader ahead-reader))
