@@ -313,9 +313,9 @@
     (make-xml-node
       :type 'text
       :value (funcall #~s/(\n| )*$// (get-buf
-                                   (read-if (lambda (c)
-                                              (char/= c #\<))
-                                            (read-space reader :cache nil)))))
+                                       (read-if (lambda (c)
+                                                  (char/= c #\<))
+                                                (read-space reader :cache nil)))))
     (let ((linecount-at-open-tag (1+ (get-linecount reader)))
           (tag (parse-tag reader)))
       (cond ((eq (xml-node-type tag) 'etag)
@@ -336,13 +336,13 @@
                           (error?)
                           (node (parse-node reader) (parse-node reader))
                           (nodes))
-                      ((let ((match-etag?  (and (eq (xml-node-type node) 'etag)
-                                                (string= (xml-node-name node) (xml-node-name tag)))))
+                      ((let ((match-etag? (and (eq (xml-node-type node) 'etag)
+                                               (string= (xml-node-name node) (xml-node-name tag)))))
                          (cond ((and error? (reach-eof? reader))
                                 (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
                                ((and error? match-etag?)
                                 (error "parse-nodes: Missing start `~A' tag at line: ~A" (xml-node-name (first error?)) (second error?)))
-                               (match-etag? t)
+                               ((or match-etag?  (reach-eof? reader)) t)
                                (t nil)))
                        (nreverse nodes))
                       (if (eq (xml-node-type node) 'etag)
@@ -486,7 +486,6 @@
   <img src='img/image003.png' />
   <p>
   inner
-  ptag
   </p>
   <div>
   </div>
@@ -496,74 +495,7 @@
   </html>"
   )
 
-; #o(xml->dsl dom)
+#o(xml->dsl dom)
 ; #o(dsl->xml (:html))
 ; #o(dsl->xml (eval (read-from-string (xml->dsl dom))))
-
-#o(xml->dsl
-"<html lang=\"ja\">
-  <head>
-    <meta charset=\"utf-8\"/>
-    <title>
-      Page Title
-    </title>
-  </head>
-  <body>
-    <table border=\"0\" cellpadding=\"10\">
-      <tr align=\"right\">
-        hello world
-        1
-      </tr>
-      <tr align=\"right\">
-        hello world
-        2
-      </tr>
-      <tr align=\"right\">
-        hello world
-        3
-      </tr>
-      <tr align=\"right\">
-        hello world
-        4
-      </tr>
-      <tr align=\"right\">
-        hello world
-        5
-      </tr>
-      <tr align=\"right\">
-        hello world
-        6
-      </tr>
-      <tr align=\"right\">
-        hello world
-        7
-      </tr>
-      <tr align=\"right\">
-        hello world
-        8
-      </tr>
-      <tr align=\"right\">
-        hello world
-        9
-      </tr>
-      <tr align=\"right\">
-        hello world
-        10
-      </tr>
-    </table>
-  </body>
-</html>
-"
-)
-
-#o
-(dsl->xml
-    (:html ((lang "ja"))
-      (:head
-        (:meta ((charset "utf-8")))
-        (:title "Page Title"))
-      (:body
-        (:table ((border 0) (cellpadding 10))
-          (loop for i from 1 to 10 collect
-            (:tr ((align "right")) "hello world" (mkstr i)))))))
 
