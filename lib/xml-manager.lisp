@@ -333,14 +333,21 @@
                     'element
                     (xml-node-children tag)
                     (do* ((linecount-at-child (get-linecount reader) (get-linecount reader))
+                          (error?)
                           (node (parse-node reader) (parse-node reader))
                           (nodes))
-                      ((and (eq (xml-node-type node) 'etag)
-                            (string= (xml-node-name node) (xml-node-name tag)))
+                      ((let ((match-etag?  (and (eq (xml-node-type node) 'etag)
+                                                (string= (xml-node-name node) (xml-node-name tag)))))
+                         (cond ((and error? (reach-eof? reader))
+                                (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
+                               ((and error? match-etag?)
+                                (error "parse-nodes: Missing start `~A' tag at line: ~A" (xml-node-name (first error?)) (second error?)))
+                               (match-etag? t)
+                               (t nil)))
                        (nreverse nodes))
-                      (when (eq (xml-node-type node) 'etag)
-                        (error "parse-nodes: Missing close `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
-                      (push node nodes)))
+                      (if (eq (xml-node-type node) 'etag)
+                        (setq error? (list node (1+ linecount-at-child)))
+                        (push node nodes))))
               tag)))))
 
 ;; }}}
@@ -479,16 +486,11 @@ inner
 ptag
 </p>
 <div>
-outer
-<div>
-inner
-</div>
-outer
 </div>
 <a href='top.html'>
 </a>
 </body>
-</html> "
+</html>"
 )
 
 #o(parse-xml dom)
