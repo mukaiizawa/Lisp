@@ -291,104 +291,105 @@
 ;; parse-xml {{{
 
 (defun parse-xml (str)
-  (let (nodes)
-    (with-string-ahead-reader (reader str)
-      (while (not (reach-eof? reader))
-        (cond ((reader-next-in? reader #\Newline #\Space)
-               (read-if (lambda (c)
-                          (find c '(#\Newline #\Space)))
-                        reader
-                        :cache nil))
-              ((not (reader-next-in? reader #\<))
-               ;; text-node
-               (push
-                 (make-xml-node
-                   :type 'text
-                   :children (list (get-buf
-                                     (read-if (lambda (c)
-                                                (char/= c #\<))
-                                              reader))))
-                 nodes))
-              (t
-                (let ((inner-paren (get-buf (read-paren reader))))
-                  (cond ((funcall #~m/^!-- .* --$/ inner-paren)
-                         ;; comment-node
-                         (push (make-xml-node
-                                 :type 'comment
-                                 :children (list (subseq inner-paren 3 (- (length inner-paren) 2))))
-                               nodes))
-                        ((funcall #~m/^!DOCTYPE/ inner-paren)
-                         ;; document-node
-                         (push (make-xml-node
-                                 :type 'document-type
-                                 :children (list (subseq inner-paren 9)))
-                               nodes))
-                        (t
-                          ;; element-node
-                          (let ((node (parse-element inner-paren)))
-                            (if (xml-node-single? node)
-                              (push node nodes)
-                              (progn
-                                (setf (xml-node-children node)
-                                      (parse-xml (read-children reader (xml-node-name node))))
-                                (push node nodes)))))))))))
-    (nreverse nodes)))
-
-;; }}}
-;; read-children {{{
-
-(defmethod read-children ((reader ahead-reader) (element-name string))
-  (let ((linecount (get-linecount reader))
-        (matcher (mkstr "</" element-name " *>")))
-    (while (not (or (reach-eof? reader)
-                    (match?->string matcher (refer-buf (read-next reader))))))
-    (if (match?->string matcher (refer-buf reader))
-      (match?->replace matcher "" (get-buf reader))
-      (error "read-children: Closing tag of `~A' at line: ~A was not found." element-name linecount))))
-
-;; }}}
-;; parse-element {{{
-
-(defun parse-element (str)
   (with-string-ahead-reader (reader str)
-    (let* ((namespace-name (get-buf
-                             (read-space
-                               (read-if (lambda (c)
-                                          (char/= c #\Space))
-                                        reader)
-                               :cache nil)))
-           (attrs-part (get-buf (read-if (lambda (c)
-                                           (char/= c +null-character+))
-                                         reader)))
-           (single? (char= (char str (1- (length str))) #\/)))
-      (make-xml-node :type 'element
-                     :name (get-node-name-mapping namespace-name)
-                     :attrs (parse-attrs (if single?
-                                           (before #\/ attrs-part :from-end t)
-                                           attrs-part))
-                     :single? single?))))
+    (do ((nodes))
+      ((reach-eof? (read-if (lambda (c)
+                              (find c '(#\Newline #\Space)))
+                            reader
+                            :cache nil))
+       (nreverse nodes))
+      (push (parse-node reader) nodes))))
+
+;; }}}
+;; parse-node {{{
+
+(defun parse-node (reader)
+  (if (not (reader-next-in? (read-if (lambda (c)
+                                       (find c '(#\Newline #\Space)))
+                                     reader
+                                     :cache nil)
+                            #\<))
+    ;; text-node
+    (make-xml-node
+      :type 'text
+      :children (list (get-buf
+                        (read-if (lambda (c)
+                                   (char/= c #\<))
+                                 reader))))
+    (let ((linecount-at-open-tag (1+ (get-linecount reader)))
+          (tag (parse-tag reader)))
+      (cond ((eq (xml-node-type tag) 'etag)
+             ;; end tag
+             tag)
+            ((find (xml-node-type tag) '(document-type comment))
+             ;; document-node, comment-node
+             tag)
+            ((xml-node-single? tag) 
+             ;; single tag
+             (setf (xml-node-type tag) 'element)
+             tag)
+            (t
+              (setf (xml-node-type tag)
+                    'element
+                    (xml-node-children tag)
+                    (do* ((linecount-at-child (get-linecount reader) (get-linecount reader))
+                          (node (parse-node reader) (parse-node reader))
+                          (nodes))
+                      ((and (eq (xml-node-type node) 'etag)
+                            (string= (xml-node-name node) (xml-node-name tag)))
+                       (nreverse nodes))
+                      (when (eq (xml-node-type node) 'etag)
+                        (error "parse-nodes: Missing close `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
+                      (push node nodes)))
+              tag)))))
+
+;; }}}
+;; parse-tag {{{
+
+(defun parse-tag (reader)
+  (let ((etag?) (name) (attrs) (single?))
+    (setq etag? (reader-curr-in? (read-if (lambda (c)    ; skip `<' or `</'
+                                            (find c '(#\Newline #\Space #\< #\/)))
+                                          reader
+                                          :cache nil)
+                                 #\/)
+          name (get-buf
+                 (read-space
+                   (read-if (lambda (c)
+                              (not (find c '(#\Space #\/ #\>))))
+                            reader)
+                   :cache nil))
+          attrs (parse-attrs reader)
+          single? (and (reader-next-in? reader #\/) t))
+    (read-n-times reader (if single? 2 1) :cache nil)    ; skip `>' or `/>'
+    (make-xml-node :type (if etag? 'etag 'stag)
+                   :name name
+                   :attrs attrs
+                   :single? single?)))
 
 ;; }}}
 ;; parse-attrs {{{
 
-(defun parse-attrs (str)
-  (with-string-ahead-reader (reader (funcall #~s/\n//g str))
-    (do ((key) (value) (attrs))
-      ((reach-eof? (read-space reader :cache nil))
-       (nreverse attrs))
-      (setq key (get-buf
-                  (read-if (lambda (c)
-                             (and (char/= c #\Space)
-                                  (char/= c #\=)))
-                           reader))
-            value (and (reader-next-in? (read-if (lambda (c)
-                                                   (find c '(#\= #\Space)))
-                                                 reader :cache nil)
-                                        #\' #\")
-                       (get-buf (read-segment reader))))
-      (push (delete nil (list key value)) attrs))))
+(defun parse-attrs (reader)
+  (do ((key) (value) (attrs))
+    ((reader-next-in? (read-if (lambda (c)
+                                 (find c '(#\Space #\Newline)))
+                               reader :cache nil)
+                      #\/ #\>)
+     (nreverse attrs))
+    (setq key (get-buf
+                (read-if (lambda (c)
+                           (not (find c '(#\Space #\= #\/ #\>))))
+                         reader))
+          value (and (reader-next-in? (read-if (lambda (c)
+                                                 (find c '(#\= #\Space)))
+                                               reader :cache nil)
+                                      #\' #\")
+                     (get-buf (read-segment reader))))
+    (push (delete nil (list key value)) attrs)))
 
 ;; }}}
+
 ;; xml-nodes->DSL {{{
 
 (defun xml-nodes->DSL (nodes)
@@ -414,7 +415,6 @@
             (mklist nodes))))
 
 ;; }}}
-
 ;; DSL->xml {{{
 
 (defun DSL->xml (&rest nodes)
@@ -464,30 +464,32 @@
 ;; mapping-names must be keyword parameter
 (defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
+; <!DOCTYPE html>
 ;; test code
 (defparameter dom
-"
-<html>
-<!DOCTYPE html>
-<html>
+" <html>
 <meta charset='utf-8'  chaa='as'/>
 <head>
 <link href='css/common.css' rel='stylesheet' media='screen' />
 </head>
 <body>
+<img src='img/image003.png' />
 <p>
 inner
 ptag
-<img src='img/image003.png' />
 </p>
+<div>
+outer
+<div>
+inner
+</div>
+outer
+</div>
 <a href='top.html'>
 </a>
 </body>
-</html>
-</html>
-"
+</html> "
 )
-#o(xml->DSL dom)
-#o(read-from-string (xml->DSL dom))
-; #o(dsl->xml (eval (read-from-string (xml->DSL dom))))
-; #o(dsl->xml (read-from-string (xml->DSL dom)))
+
+#o(parse-xml dom)
+

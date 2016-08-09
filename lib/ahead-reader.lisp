@@ -88,12 +88,12 @@
       reader)))
 
 ;; }}}
-;; read-next-unless-eof {{{
+;; read-n-times {{{
 
-(defmethod read-next-unless-eof ((reader ahead-reader) &key (cache t))
-  (if (reach-eof? reader)
-    reader
-    (read-next reader :cache cache)))
+(defmethod read-n-times ((reader ahead-reader) (n number) &key (cache t))
+  (dotimes (i n)
+    (read-next reader :cache cache))
+  reader)
 
 ;; }}}
 ;; read-if {{{
