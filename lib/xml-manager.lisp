@@ -397,6 +397,7 @@
 
 ;; }}}
 
+;; converter
 ;; xml-nodes->DSL {{{
 
 (defun xml-nodes->DSL (nodes)
@@ -438,7 +439,7 @@
                                              (rec node indent-manager))
                                            nodes)))
                           ((eq (xml-node-type nodes) 'text)
-                           (format out "~A~{~A~}~%" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
+                           (format out "~A~{~A~}" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
                           ((eq (xml-node-type nodes) 'document-type)
                            (format out "~%<!DOCTYPE ~{~A~}>~%" (xml-node-children nodes)))
                           ((eq (xml-node-type nodes) 'comment)
@@ -493,5 +494,7 @@ ptag
 </html>"
 )
 
-#o(parse-xml dom)
+#o(dsl->xml (:html))
+#o(xml->dsl dom)
+; #o(dsl->xml (eval (read-from-string (xml->dsl dom))))
 
