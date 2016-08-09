@@ -152,6 +152,7 @@
 (defstruct xml-node
   (type 'unspecified :type symbol)
   (name "" :type string)
+  (value "" :type string)
   (attrs nil :type list)
   (children nil :type list)
   (single? nil :type boolean))
@@ -209,7 +210,7 @@
                                      (mapcar #'car attr)))
               :children (mapcar (lambda (node)
                                   (if (stringp node)
-                                    (make-xml-node :type 'text :children (list node))
+                                    (make-xml-node :type 'text :value node)
                                     node))
                                 (remove nil (list ,@body)))
               :single? ',',single?))))))
@@ -229,15 +230,14 @@
 ;; }}}
 ;; :!DOCTYPE {{{
 
-;; support only html5
 (defmacro :!DOCTYPE (&optional (str "html"))
-  `(make-xml-node :type 'document-type :children (list ,str)))
+  `(make-xml-node :type 'document-type :value ,str))
 
 ;; }}}
 ;; :!-- {{{
 
-(defmacro :!-- (&rest str)
-  `(make-xml-node :node-type 'comment :children (list ,@str)))
+(defmacro :!-- (str)
+  `(make-xml-node :node-type 'comment :value ,str))
 
 ;; }}}
 ;; with-xml-encode {{{
@@ -312,10 +312,10 @@
     ;; text-node
     (make-xml-node
       :type 'text
-      :children (list (get-buf
-                        (read-if (lambda (c)
-                                   (char/= c #\<))
-                                 reader))))
+      :value (funcall #~s/(\n| )*$// (get-buf
+                                   (read-if (lambda (c)
+                                              (char/= c #\<))
+                                            (read-space reader :cache nil)))))
     (let ((linecount-at-open-tag (1+ (get-linecount reader)))
           (tag (parse-tag reader)))
       (cond ((eq (xml-node-type tag) 'etag)
@@ -415,7 +415,7 @@
                                            (xml-node-children node)))
                            +empty-string+)))
                 ((text)
-                 (format out "~{\"~A\"~}~%" (xml-node-children node)))
+                 (format out "\"~A\"" (xml-node-value node)))
                 ((document-type)
                  (format out "(:!DOCTYPE \"~{~A~}\")~%" (xml-node-children node)))
                 (t
@@ -439,11 +439,11 @@
                                              (rec node indent-manager))
                                            nodes)))
                           ((eq (xml-node-type nodes) 'text)
-                           (format out "~A~{~A~}" indent (mapcar #'with-xml-encode (xml-node-children nodes))))
+                           (format out "~A~A~%" indent (with-xml-encode (xml-node-value nodes))))
                           ((eq (xml-node-type nodes) 'document-type)
-                           (format out "~%<!DOCTYPE ~{~A~}>~%" (xml-node-children nodes)))
+                           (format out "~%<!DOCTYPE ~A>~%" (xml-node-value nodes)))
                           ((eq (xml-node-type nodes) 'comment)
-                           (format out "~A<!-- ~{~A~^~%~} -->~%" indent (xml-node-children nodes)))
+                           (format out "~A<!-- ~A -->~%" indent (xml-node-value nodes)))
                           (t
                             (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
                                     indent
@@ -475,26 +475,95 @@
 ; <!DOCTYPE html>
 ;; test code
 (defparameter dom
-" <html>
-<meta charset='utf-8'  chaa='as'/>
-<head>
-<link href='css/common.css' rel='stylesheet' media='screen' />
-</head>
-<body>
-<img src='img/image003.png' />
-<p>
-inner
-ptag
-</p>
-<div>
-</div>
-<a href='top.html'>
-</a>
-</body>
-</html>"
+  "
+  <!DOCTYPE html>
+  <html>
+  <meta charset='utf-8'  chaa='as'/>
+  <head>
+  <link href='css/common.css' rel='stylesheet' media='screen' />
+  </head>
+  <body>
+  <img src='img/image003.png' />
+  <p>
+  inner
+  ptag
+  </p>
+  <div>
+  </div>
+  <a href='top.html'>
+  </a>
+  </body>
+  </html>"
+  )
+
+; #o(xml->dsl dom)
+; #o(dsl->xml (:html))
+; #o(dsl->xml (eval (read-from-string (xml->dsl dom))))
+
+#o(xml->dsl
+"<html lang=\"ja\">
+  <head>
+    <meta charset=\"utf-8\"/>
+    <title>
+      Page Title
+    </title>
+  </head>
+  <body>
+    <table border=\"0\" cellpadding=\"10\">
+      <tr align=\"right\">
+        hello world
+        1
+      </tr>
+      <tr align=\"right\">
+        hello world
+        2
+      </tr>
+      <tr align=\"right\">
+        hello world
+        3
+      </tr>
+      <tr align=\"right\">
+        hello world
+        4
+      </tr>
+      <tr align=\"right\">
+        hello world
+        5
+      </tr>
+      <tr align=\"right\">
+        hello world
+        6
+      </tr>
+      <tr align=\"right\">
+        hello world
+        7
+      </tr>
+      <tr align=\"right\">
+        hello world
+        8
+      </tr>
+      <tr align=\"right\">
+        hello world
+        9
+      </tr>
+      <tr align=\"right\">
+        hello world
+        10
+      </tr>
+    </table>
+  </body>
+</html>
+"
 )
 
-#o(dsl->xml (:html))
-#o(xml->dsl dom)
-; #o(dsl->xml (eval (read-from-string (xml->dsl dom))))
+#o
+(dsl->xml
+    (:html ((lang "ja"))
+      (:head
+        (:meta ((charset "utf-8")))
+        (:title "Page Title"))
+      (:body
+        (:table ((border 0) (cellpadding 10))
+          (loop for i from 1 to 10 collect
+            (:tr ((align "right")) "hello world" (mkstr i)))))))
 
