@@ -10,6 +10,7 @@
   (stream nil :type stream)
   (buf nil :type list)
   (linecount 0 :type number)
+  (pre +null-character+ :type character)
   (curr +null-character+ :type character))
 
 (defmacro with-ahead-reader ((reader &optional (stream *standard-input*)) &body body)
@@ -39,6 +40,12 @@
   (ahead-reader-linecount reader))
 
 ;; }}}
+;; get-pre {{{
+
+(defmethod get-pre ((reader ahead-reader))
+  (ahead-reader-pre reader))
+
+;; }}}
 ;; get-curr {{{
 
 (defmethod get-curr ((reader ahead-reader))
@@ -49,6 +56,12 @@
 
 (defmethod get-next ((reader ahead-reader))
   (peek-char nil (ahead-reader-stream reader) nil +null-character+))
+
+;; }}}
+;; reader-pre-in? {{{
+
+(defmethod reader-pre-in? ((reader ahead-reader) &rest args)
+  (find (ahead-reader-pre reader) args))
 
 ;; }}}
 ;; reader-curr-in? {{{
@@ -83,7 +96,8 @@
                     (#\n #\Newline)
                     (#\t #\Tab)
                     (t escape-sequence)))))
-      (setf (ahead-reader-curr reader) c)
+      (setf (ahead-reader-pre reader) (ahead-reader-curr reader)
+            (ahead-reader-curr reader) c)
       (when cache (add-char reader c))
       reader)))
 
