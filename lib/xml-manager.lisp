@@ -318,14 +318,9 @@
                                                 (read-space reader :cache nil)))))
     (let ((linecount-at-open-tag (1+ (get-linecount reader)))
           (tag (parse-tag reader)))
-      (cond ((eq (xml-node-type tag) 'etag)
-             ;; end tag
-             tag)
-            ((find (xml-node-type tag) '(document-type comment))
-             ;; document-node, comment-node
+      (cond ((find (xml-node-type tag) '(etag document-type comment))
              tag)
             ((xml-node-single? tag) 
-             ;; single tag
              (setf (xml-node-type tag) 'element)
              tag)
             (t
@@ -338,13 +333,15 @@
                           (nodes))
                       ((let ((match-etag? (and (eq (xml-node-type node) 'etag)
                                                (string= (xml-node-name node) (xml-node-name tag)))))
-                         (cond ((and error? (reach-eof? reader))
-                                (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
-                               ((and error? match-etag?)
+                         (cond ((and error? match-etag?)
                                 (error "parse-nodes: Missing start `~A' tag at line: ~A" (xml-node-name (first error?)) (second error?)))
-                               ((or match-etag?  (reach-eof? reader)) t)
+                               (match-etag? t)
+                               ((and error? (reach-eof? reader))
+                                (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
                                (t nil)))
                        (nreverse nodes))
+                      (when (reach-eof? reader)
+                        (setq error? (list node (1+ linecount-at-child))))
                       (if (eq (xml-node-type node) 'etag)
                         (setq error? (list node (1+ linecount-at-child)))
                         (push node nodes))))
@@ -354,25 +351,48 @@
 ;; parse-tag {{{
 
 (defun parse-tag (reader)
-  (let ((etag?) (name) (attrs) (single?))
-    (setq etag? (reader-curr-in? (read-if (lambda (c)    ; skip `<' or `</'
-                                            (find c '(#\Newline #\Space #\< #\/)))
-                                          reader
-                                          :cache nil)
-                                 #\/)
-          name (get-buf
+  (read-if (lambda (c)    ; skip `<' or `</'
+             (find c '(#\Newline #\Space #\< #\/)))
+           reader
+           :cache nil)
+  (let* ((tag-type (cond ((reader-curr-in? reader #\/) 'etag)
+                         ((not (reader-next-in? reader #\!)) 'stag)
+                         (t 'others)))
+         (name (get-buf
                  (read-space
                    (read-if (lambda (c)
                               (not (find c '(#\Space #\/ #\>))))
                             reader)
-                   :cache nil))
-          attrs (parse-attrs reader)
-          single? (and (reader-next-in? reader #\/) t))
-    (read-n-times reader (if single? 2 1) :cache nil)    ; skip `>' or `/>'
-    (make-xml-node :type (if etag? 'etag 'stag)
-                   :name name
-                   :attrs attrs
-                   :single? single?)))
+                   :cache nil))))
+    (cond ((find tag-type '(stag etag))
+           (let ((attrs) (single?))
+             (setq attrs (parse-attrs reader)
+                   single? (and (reader-next-in? reader #\/) t))
+             (read-n-times reader (if single? 2 1) :cache nil)    ; skip `>' or `/>'
+             (make-xml-node :type tag-type
+                            :name name
+                            :attrs attrs
+                            :single? single?)))
+          ((string= name "!--")
+           (make-xml-node :type 'comment
+                          :value (funcall #~s/ *-//g    ; trim right and remove hyphen
+                                          (get-buf
+                                            (read-next    ; skip `>'
+                                              (read-if (lambda(c)
+                                                         (declare (ignore c))
+                                                         (not (and (reader-pre-in? reader #\-)
+                                                                   (reader-curr-in? reader #\-)
+                                                                   (reader-next-in? reader #\>))))
+                                                       reader)
+                                              :cache nil)))))
+          (t
+            (make-xml-node :type 'document-type
+                           :value (get-buf
+                                    (read-next    ; skip `>'
+                                      (read-if (lambda (c)
+                                                 (char/= c #\>))
+                                               reader)
+                                      :cache nil)))))))
 
 ;; }}}
 ;; parse-attrs {{{
@@ -417,7 +437,9 @@
                 ((text)
                  (format out "\"~A\"" (xml-node-value node)))
                 ((document-type)
-                 (format out "(:!DOCTYPE \"~{~A~}\")~%" (xml-node-children node)))
+                 (format out "(:!DOCTYPE \"~A\")" (xml-node-value node)))
+                ((comment)
+                 (format out "(:!-- \"~A\")" (xml-node-value node)))
                 (t
                   (error "xml-nodes->DSL: unknown node type ~A" (xml-node-type node)))))
             (mklist nodes))))
@@ -472,30 +494,26 @@
 ;; mapping-names must be keyword parameter
 (defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
 
-; <!DOCTYPE html>
-;; test code
 (defparameter dom
   "
-  <!DOCTYPE html>
-  <html>
-  <meta charset='utf-8'  chaa='as'/>
-  <head>
-  <link href='css/common.css' rel='stylesheet' media='screen' />
-  </head>
-  <body>
-  <img src='img/image003.png' />
-  <p>
-  inner
-  </p>
-  <div>
-  </div>
-  <a href='top.html'>
-  </a>
-  </body>
-  </html>"
-  )
+<!DOCTYPE html>
+<html>
+<meta charset='utf-8'/>
+<head>
+<link href='css/common.css' rel='stylesheet' media='screen' />
+</head>
+<body>
+<p>
+<img src='img/image003.png' />
+</p>
+<a href='top.html'>title</a>
+</body>
+</html>
+"
+)
 
-#o(xml->dsl dom)
-; #o(dsl->xml (:html))
-; #o(dsl->xml (eval (read-from-string (xml->dsl dom))))
+; #o(xml->dsl dom)
+; #o(read-from-string (xml->dsl dom))
+; ; #o(dsl->xml (mapcar #'eval (read-from-string (xml->dsl dom))))
+
 
