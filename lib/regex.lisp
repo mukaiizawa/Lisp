@@ -66,16 +66,8 @@
 
 (defstruct regex
   (key nil :type symbol)
-  (pat nil)
-  (closure (make-closure)))
-
-;; regex-key kind
-;; 'grouping
-;; 'selection
-;; 'character
-;; 'start
-;; 'end
-;; 'dot
+  (pat nil :type t)
+  (closure (make-closure) :type closure))
 
 ;; }}}
 ;; closure {{{
@@ -83,8 +75,8 @@
 (defstruct closure
   (key 'none :type symbol)
   (greedy? t :type boolean)
-  (n -1 :type fixnum)
-  (m -1 :type fixnum))
+  (n -1 :type number)
+  (m -1 :type number))
 
 ;; * Matches the preceding element zero or more times.
 ;; ? Matches the preceding element zero or one times.
