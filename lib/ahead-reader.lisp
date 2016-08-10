@@ -2,8 +2,6 @@
 (require "stdlib" *module-stdlib*)
 (provide "ahead-reader")
 
-(defconstant +null-character+ (code-char 0))
-(defconstant +empty-string+ "")
 (defconstant +escape-character+ #\\)
 
 (defstruct ahead-reader
