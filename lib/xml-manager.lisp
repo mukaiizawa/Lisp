@@ -7,145 +7,145 @@
 ;; *html-tags* {{{
 
 (defparameter *html-tags*
-  '( :a
-     :abbr
-     :acronym
-     :address
-     :applet
-     :area
-     :article
-     :aside
-     :audio
-     :b
-     :base
-     :basefont
-     :bdi
-     :bdo
-     :big
-     :blockquote
-     :body
-     :br
-     :button
-     :canvas
-     :caption
-     :center
-     :cite
-     :code
-     :col
-     :colgroup
-     :datalist
-     :dd
-     :del
-     :details
-     :dfn
-     :dialog
-     :dir
-     :div
-     :dl
-     :dt
-     :em
-     :embed
-     :fieldset
-     :figcaption
-     :figure
-     :font
-     :footer
-     :form
-     :frame
-     :frameset
-     :h1
-     :h2
-     :h3
-     :h4
-     :h5
-     :h6
-     :head
-     :header
-     :hr
-     :html
-     :i
-     :iframe
-     :img
-     :input
-     :ins
-     :kbd
-     :keygen
-     :label
-     :legend
-     :li
-     :link
-     :main
-     :map
-     :mark
-     :menu
-     :menuitem
-     :meta
-     :meter
-     :nav
-     :noframes
-     :noscript
-     :object
-     :ol
-     :optgroup
-     :option
-     :output
-     :p
-     :param
-     :pre
-     :progress
-     :q
-     :rp
-     :rt
-     :ruby
-     :s
-     :samp
-     :script
-     :section
-     :select
-     :small
-     :source
-     :span
-     :strike
-     :strong
-     :style
-     :sub
-     :summary
-     :sup
-     :table
-     :tbody
-     :td
-     :textarea
-     :tfoot
-     :th
-     :thead
-     :time
-     :title
-     :tr
-     :track
-     :tt
-     :u
-     :ul
-     :var
-     :video
-     :wbr))
+  '( "a"
+     "abbr"
+     "acronym"
+     "address"
+     "applet"
+     "area"
+     "article"
+     "aside"
+     "audio"
+     "b"
+     "base"
+     "basefont"
+     "bdi"
+     "bdo"
+     "big"
+     "blockquote"
+     "body"
+     "br"
+     "button"
+     "canvas"
+     "caption"
+     "center"
+     "cite"
+     "code"
+     "col"
+     "colgroup"
+     "datalist"
+     "dd"
+     "del"
+     "details"
+     "dfn"
+     "dialog"
+     "dir"
+     "div"
+     "dl"
+     "dt"
+     "em"
+     "embed"
+     "fieldset"
+     "figcaption"
+     "figure"
+     "font"
+     "footer"
+     "form"
+     "frame"
+     "frameset"
+     "h1"
+     "h2"
+     "h3"
+     "h4"
+     "h5"
+     "h6"
+     "head"
+     "header"
+     "hr"
+     "html"
+     "i"
+     "iframe"
+     "img"
+     "input"
+     "ins"
+     "kbd"
+     "keygen"
+     "label"
+     "legend"
+     "li"
+     "link"
+     "main"
+     "map"
+     "mark"
+     "menu"
+     "menuitem"
+     "meta"
+     "meter"
+     "nav"
+     "noframes"
+     "noscript"
+     "object"
+     "ol"
+     "optgroup"
+     "option"
+     "output"
+     "p"
+     "param"
+     "pre"
+     "progress"
+     "q"
+     "rp"
+     "rt"
+     "ruby"
+     "s"
+     "samp"
+     "script"
+     "section"
+     "select"
+     "small"
+     "source"
+     "span"
+     "strike"
+     "strong"
+     "style"
+     "sub"
+     "summary"
+     "sup"
+     "table"
+     "tbody"
+     "td"
+     "textarea"
+     "tfoot"
+     "th"
+     "thead"
+     "time"
+     "title"
+     "tr"
+     "track"
+     "tt"
+     "u"
+     "ul"
+     "var"
+     "video"
+     "wbr"))
 
 ;; }}}
 ;; *single-tags* {{{
 
 (defparameter *single-tags*
-  '( :area
-     :base
-     :br
-     :col
-     :embed
-     :hr
-     :img
-     :input
-     :keygen
-     :link
-     :meta
-     :param
-     :source))
+  '( "area"
+     "base"
+     "br"
+     "col"
+     "embed"
+     "hr"
+     "img"
+     "input"
+     "keygen"
+     "link"
+     "meta"
+     "param"
+     "source"))
 
 ;; }}}
 
@@ -195,7 +195,7 @@
 ;; }}}
 ;; defelement {{{
 
-(defmacro defelement (namespace name mapping-name single?)
+(defmacro defelement (namespace name mapping-name)
   (set-node-name-mapping namespace name mapping-name)
   `(defmacro ,mapping-name (&optional first &body rest)
      (with-gensyms (attr body)
@@ -204,7 +204,7 @@
          `(let ,attr
             (make-xml-node
               :type 'element
-              :name ',',(merge-node-name namespace name)
+              :name ',',(merge-node-name name namespace)
               :attrs (list ,@(mapcar (lambda (x)
                                        `(list ',x ,x))
                                      (mapcar #'car attr)))
@@ -213,18 +213,17 @@
                                     (make-xml-node :type 'text :value node)
                                     node))
                                 (remove nil (list ,@body)))
-              :single? ',',single?))))))
+              :single? ',',(single-tag? name namespace)))))))
 
 ;; }}}
 ;; defelements {{{
 
-(defmacro defelements (namespace names mapping-names single-tags)
+(defmacro defelements (namespace names mapping-names)
   `(progn
      ,@(mapcar (lambda (name mapping-name)
                  `(defelement ,namespace
                               ,name
-                              ,mapping-name
-                              ,(when (find mapping-name single-tags) t)))
+                              ,mapping-name))
                names mapping-names)))
 
 ;; }}}
@@ -257,9 +256,9 @@
 ;; }}}
 ;; merge-node-name {{{
 
-(defun merge-node-name (namespace name)
+(defun merge-node-name (name &optional namespace)
   (with-output-to-string (out)
-    (when (not (empty? namespace))
+    (when namespace
       (write-string namespace out)
       (write-string ":" out))
     (write-string name out)))
@@ -268,22 +267,23 @@
 ;; set-node-name-mapping {{{
 
 (defun set-node-name-mapping (namespace name mapping-name)
-  (setf (gethash (merge-node-name namespace name)
+  (setf (gethash (merge-node-name name namespace)
                  *node-name-mapping*)
         mapping-name))
 
 ;; }}}
 ;; get-node-name-mapping {{{
 
-(defun get-node-name-mapping (namespace-name)
-  (aif (gethash
-         (apply #'merge-node-name 
-                (if (position #\: namespace-name)
-                  (string->list #\: namespace-name)
-                  (list nil namespace-name)))
-         *node-name-mapping*)
+(defun get-node-name-mapping (name &optional namespace)
+  (aif (gethash (merge-node-name name namespace) *node-name-mapping*)
     (string-downcase (mkstr it))
-    (error "get-node-name-mappin: undefined element `~A'." namespace-name)))
+    (error "get-node-name-mappin: undefined element `~A'." (merge-node-name name namespace))))
+
+;; }}}
+;; single-tag? {{{
+
+(defun single-tag? (name &optional namespace)
+  (and (find (get-node-name-mapping name namespace) *single-tags* :test 'equal) t))
 
 ;; }}}
 
@@ -335,16 +335,17 @@
                                                (string= (xml-node-name node) (xml-node-name tag)))))
                          (cond ((and error? match-etag?)
                                 (error "parse-nodes: Missing start `~A' tag at line: ~A" (xml-node-name (first error?)) (second error?)))
+                               (error?
+                                 (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
                                (match-etag? t)
-                               ((and error? (reach-eof? reader))
-                                (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
                                (t nil)))
                        (nreverse nodes))
-                      (when (reach-eof? reader)
-                        (setq error? (list node (1+ linecount-at-child))))
-                      (if (eq (xml-node-type node) 'etag)
-                        (setq error? (list node (1+ linecount-at-child)))
-                        (push node nodes))))
+                      (cond ((reach-eof? reader)
+                             (setq error? (list node (1+ linecount-at-child))))
+                            ((eq (xml-node-type node) 'etag)
+                             (setq error? (list node (1+ linecount-at-child))))
+                            (t
+                              (push node nodes)))))
               tag)))))
 
 ;; }}}
@@ -365,10 +366,12 @@
                             reader)
                    :cache nil))))
     (cond ((find tag-type '(stag etag))
-           (let ((attrs) (single?))
-             (setq attrs (parse-attrs reader)
-                   single? (and (reader-next-in? reader #\/) t))
-             (read-n-times reader (if single? 2 1) :cache nil)    ; skip `>' or `/>'
+           (let ((attrs (parse-attrs reader))
+                 (single? (single-tag? name)))
+             (read-if (lambda (c)
+                        (find c '(#\Newline #\Space #\/ #\>)))
+                      reader
+                      :cache nil)    ; skip `>' or `/>'
              (make-xml-node :type tag-type
                             :name name
                             :attrs attrs
@@ -437,7 +440,7 @@
                 ((text)
                  (format out "\"~A\"" (xml-node-value node)))
                 ((document-type)
-                 (format out "(:!DOCTYPE \"~A\")" (xml-node-value node)))
+                 (format out "(:!DOCTYPE \"~A\")~%" (xml-node-value node)))
                 ((comment)
                  (format out "(:!-- \"~A\")" (xml-node-value node)))
                 (t
@@ -490,30 +493,5 @@
 
 ;; }}}
 
-;; define html tags
-;; mapping-names must be keyword parameter
-(defelements "" #.(mapcar (compose #'string-downcase #'mkstr) *html-tags*) #.*html-tags* #.*single-tags*)
-
-(defparameter dom
-  "
-<!DOCTYPE html>
-<html>
-<meta charset='utf-8'/>
-<head>
-<link href='css/common.css' rel='stylesheet' media='screen' />
-</head>
-<body>
-<p>
-<img src='img/image003.png' />
-</p>
-<a href='top.html'>title</a>
-</body>
-</html>
-"
-)
-
-; #o(xml->dsl dom)
-; #o(read-from-string (xml->dsl dom))
-; ; #o(dsl->xml (mapcar #'eval (read-from-string (xml->dsl dom))))
-
+(defelements nil #.*html-tags* #.(mapcar (compose #'mkkey #'string-upcase) *html-tags*))
 
