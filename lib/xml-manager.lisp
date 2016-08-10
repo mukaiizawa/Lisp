@@ -367,7 +367,7 @@
                    :cache nil))))
     (cond ((find tag-type '(stag etag))
            (let ((attrs (parse-attrs reader))
-                 (single? (or (reader-next-in? reader #\/)
+                 (single? (or (and (reader-next-in? reader #\/) t)
                               (single-tag? name))))    ; defined *single-tag*
              (read-if (lambda (c)
                         (find c '(#\Newline #\Space #\/ #\>)))
