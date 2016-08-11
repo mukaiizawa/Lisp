@@ -8,7 +8,7 @@
                                 "writing to standard output."))))
     (when (or --help errors)
       (funcall usage))
-    (print
+    (princ
       (if args
         (with-input-from-string (in (list->string args))
           (main in))
