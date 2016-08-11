@@ -1,7 +1,6 @@
 
 (require "stdlib" *module-stdlib*)
 
-
 (defun string->char-list (str)
   (if (empty? str)
     (list #\Space)
