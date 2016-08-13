@@ -7,5 +7,5 @@
                       :desc  '("Convert xml to text."))))
     (when (or --help errors)
       (funcall usage))
-    (princ (main *standard-input*))))
+    (main *standard-input*)))
 
