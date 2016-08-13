@@ -18,6 +18,3 @@
 (defun main (stream)
   (get-text (parse-xml (stream->string stream))))
 
-(with-input-from-string (in "<html>hello world</html>")
-  (main in))
-
