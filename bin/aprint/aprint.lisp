@@ -1,889 +1,887 @@
 
 (require "stdlib" *module-stdlib*)
 
-(defun string->char-list (str)
-  (if (empty? str)
-    (list #\Space)
-    (concatenate 'list
-                 (list (char str 0))
-                 (string->char-list (subseq str 1)))))
+(defparameter *surround-character* nil)
+(defparameter *bg-character* #\Space)
 
 (defun make-print-table ()
   (let ((table (make-hash-table :size 80)))
     ;; number {{{
     ;; 0 {{{
 
-    (push (list "        "
+    (setf (gethash #\0 table)
+          (list "        "
                 "   _|   "
                 " _|  _| "
                 " _|  _| "
                 " _|  _| "
                 "   _|   "
                 "        "
-                "        ")
-          (gethash #\0 table))
+                "        "))
 
     ;; }}}
     ;; 1 {{{
 
-    (push (list "        "
+    (setf (gethash #\1 table)
+          (list "        "
                 "   _|   "
                 " _|_|   "
                 "   _|   "
                 "   _|   "
                 "   _|   "
                 "        "
-                "        ")
-          (gethash #\1 table))
+                "        "))
 
     ;; }}}
     ;; 2 {{{
 
-    (push (list "          "
+    (setf (gethash #\2 table)
+          (list "          "
                 "   _|_|   "
                 " _|    _| "
                 "     _|   "
                 "   _|     "
                 " _|_|_|_| "
                 "          "
-                "          ")
-          (gethash #\2 table))
+                "          "))
 
     ;; }}}
     ;; 3 {{{
 
-    (push (list "          "
+    (setf (gethash #\3 table)
+          (list "          "
                 " _|_|_|   "
                 "       _| "
                 "   _|_|   "
                 "       _| "
                 " _|_|_|   "
                 "          "
-                "          ")
-          (gethash #\3 table))
+                "          "))
 
     ;; }}}
     ;; 4 {{{
 
-    (push (list "          "
+    (setf (gethash #\4 table)
+          (list "          "
                 " _|  _|   "
                 " _|  _|   "
                 " _|_|_|_| "
                 "     _|   "
                 "     _|   "
                 "          "
-                "          ")
-          (gethash #\4 table))
+                "          "))
 
     ;; }}}
     ;; 5 {{{
 
-    (push (list "          "
+    (setf (gethash #\5 table)
+          (list "          "
                 " _|_|_|_| "
                 " _|       "
                 " _|_|_|   "
                 "       _| "
                 " _|_|_|   "
                 "          "
-                "          ")
-          (gethash #\5 table))
+                "          "))
 
     ;; }}}
     ;; 6 {{{
 
-    (push (list "          "
+    (setf (gethash #\6 table)
+          (list "          "
                 "   _|_|_| "
                 " _|       "
                 " _|_|_|   "
                 " _|    _| "
                 "   _|_|   "
                 "          "
-                "          ")
-          (gethash #\6 table))
+                "          "))
 
     ;; }}}
     ;; 7 {{{
 
-    (push (list "          "
+    (setf (gethash #\7 table)
+          (list "          "
                 " _|_|_|_| "
                 "      _|  "
                 "    _|    "
                 "   _|     "
                 "  _|      "
                 "          "
-                "          ")
-          (gethash #\7 table))
+                "          "))
 
     ;; }}}
     ;; 8 {{{
 
-    (push (list "          "
+    (setf (gethash #\8 table)
+          (list "          "
                 "   _|_|   "
                 " _|    _| "
                 "   _|_|   "
                 " _|    _| "
                 "   _|_|   "
                 "          "
-                "          ")
-          (gethash #\8 table))
+                "          "))
 
     ;; }}}
     ;; 9 {{{
 
-    (push (list "          "
+    (setf (gethash #\9 table)
+          (list "          "
                 "   _|_|   "
                 " _|    _| "
                 "   _|_|_| "
                 "       _| "
                 " _|_|_|   "
                 "          "
-                "          ")
-          (gethash #\9 table))
+                "          "))
 
     ;; }}}
     ;; }}}
     ;; [a-z] {{{
     ;; a {{{
-    (push (list "          "
+
+    (setf (gethash #\a table)
+          (list "          "
                 "          "
                 "   _|_|_| "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|_| "
                 "          "
-                "          ")
-          (gethash #\a table))
+                "          "))
 
     ;; }}}
     ;; b {{{
 
-    (push (list "          "
+    (setf (gethash #\b table)
+          (list "          "
                 " _|       "
                 " _|_|_|   "
                 " _|    _| "
                 " _|    _| "
                 " _|_|_|   "
                 "          "
-                "          ")
-          (gethash #\b table))
+                "          "))
 
     ;; }}}
     ;; c {{{
 
-    (push (list "          "
+    (setf (gethash #\c table)
+          (list "          "
                 "          "
                 "   _|_|_| "
                 " _|       "
                 " _|       "
                 "   _|_|_| "
                 "          "
-                "          ")
-          (gethash #\c table))
+                "          "))
 
     ;; }}}
     ;; d {{{
 
-    (push (list "       _| "
+    (setf (gethash #\d table)
+          (list "       _| "
                 "       _| "
                 "   _|_|_| "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|_| "
                 "          "
-                "          ")
-          (gethash #\d table))
+                "          "))
 
     ;; }}}
     ;; e {{{
 
-    (push (list "          "
+    (setf (gethash #\e table)
+          (list "          "
                 "          "
                 "   _|_|   "
                 " _|_|_|_| "
                 " _|       "
                 "   _|_|_| "
                 "          "
-                "          ")
-          (gethash #\e table))
+                "          "))
 
     ;; }}}
     ;; f {{{
 
-    (push (list "          "
+    (setf (gethash #\f table)
+          (list "          "
                 "     _|_| "
                 "   _|     "
                 " _|_|_|_| "
                 "   _|     "
                 "   _|     "
                 "          "
-                "          ")
-          (gethash #\f table))
+                "          "))
 
     ;; }}}
     ;; g {{{
 
-    (push (list "          "
+    (setf (gethash #\g table)
+          (list "          "
                 "          "
                 "   _|_|_| "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|_| "
                 "       _| "
-                "   _|_|   ")
-          (gethash #\g table))
+                "   _|_|   "))
 
     ;; }}}
     ;; h {{{
 
-    (push (list "          "
+    (setf (gethash #\h table)
+          (list "          "
                 " _|       "
                 " _|_|_|   "
                 " _|    _| "
                 " _|    _| "
                 " _|    _| "
                 "          "
-                "          ")
-          (gethash #\h table))
+                "          "))
 
     ;; }}}
     ;; i {{{
 
-    (push (list "     "
+    (setf (gethash #\i table)
+          (list "     "
                 "  _| "
                 "     "
                 "  _| "
                 "  _| "
                 "  _| "
                 "     "
-                "     ")
-          (gethash #\i table))
+                "     "))
 
     ;; }}}
     ;; i {{{
 
-    (push (list "      "
+    (setf (gethash #\j table)
+          (list "      "
                 "   _| "
                 "      "
                 "   _| "
                 "   _| "
                 "   _| "
                 "  _|  "
-                " _|   ")
-          (gethash #\j table))
+                " _|   "))
 
     ;; }}}
     ;; k {{{
 
-    (push (list "          "
+    (setf (gethash #\k table)
+          (list "          "
                 " _|       "
                 " _|  _|   "
                 " _|_|     "
                 " _|  _|   "
                 " _|    _| "
                 "          "
-                "          ")
-          (gethash #\k table))
+                "          "))
 
     ;; }}}
     ;; l {{{
 
-    (push (list "     "
+    (setf (gethash #\l table)
+          (list "     "
                 "  _| "
                 "  _| "
                 "  _| "
                 "  _| "
                 "  _| "
                 "     "
-                "     ")
-          (gethash #\l table))
+                "     "))
 
     ;; }}}
     ;; m {{{
 
-    (push (list "              "
+    (setf (gethash #\m table)
+          (list "              "
                 "              "
                 " _|_|_| _|_|  "
                 " _|   _|   _| "
                 " _|   _|   _| "
                 " _|   _|   _| "
                 "              "
-                "              ")
-          (gethash #\m table))
+                "              "))
 
     ;; }}}
     ;; n {{{
 
-    (push (list "          "
+    (setf (gethash #\n table)
+          (list "          "
                 "          "
                 "  _|_|_|  "
                 " _|    _| "
                 " _|    _| "
                 " _|    _| "
                 "          "
-                "          ")
-          (gethash #\n table))
+                "          "))
 
     ;; }}}
     ;; o {{{
 
-    (push (list "          "
+    (setf (gethash #\o table)
+          (list "          "
                 "          "
                 "   _|_|   "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|   "
                 "          "
-                "          ")
-          (gethash #\o table))
+                "          "))
 
     ;; }}}
     ;; p {{{
 
-    (push (list "          "
+    (setf (gethash #\p table)
+          (list "          "
                 "          "
                 " _|_|_|   "
                 " _|    _| "
                 " _|    _| "
                 " _|_|_|   "
                 " _|       "
-                " _|       ")
-          (gethash #\p table))
+                " _|       "))
 
     ;; }}}
     ;; p {{{
 
-    (push (list "          "
+    (setf (gethash #\q table)
+          (list "          "
                 "          "
                 "   _|_|_| "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|_| "
                 "       _| "
-                "       _| ")
-          (gethash #\q table))
+                "       _| "))
 
     ;; }}}
     ;; r {{{
 
-    (push (list "          "
+    (setf (gethash #\r table)
+          (list "          "
                 "          "
                 " _|  _|_| "
                 " _|_|     "
                 " _|       "
                 " _|       "
                 "          "
-                "          ")
-          (gethash #\r table))
+                "          "))
 
     ;; }}}
     ;; s {{{
 
-    (push (list "          "
+    (setf (gethash #\s table)
+          (list "          "
                 "          "
                 "   _|_|_| "
                 " _|_|     "
                 "     _|_| "
                 " _|_|_|   "
                 "          "
-                "          ")
-          (gethash #\s table))
+                "          "))
 
     ;; }}}
     ;; t {{{
 
-    (push (list "          "
+    (setf (gethash #\t table)
+          (list "          "
                 "   _|     "
                 " _|_|_|_| "
                 "   _|     "
                 "   _|     "
                 "     _|_| "
                 "          "
-                "          ")
-          (gethash #\t table))
+                "          "))
 
     ;; }}}
     ;; u {{{
 
-    (push (list "          "
+    (setf (gethash #\u table)
+          (list "          "
                 "          "
                 " _|    _| "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|_| "
                 "          "
-                "          ")
-          (gethash #\u table))
+                "          "))
 
     ;; }}}
     ;; v {{{
 
-    (push (list "               "
+    (setf (gethash #\v table)
+          (list "               "
                 "               "
                 "  _|        _| "
                 "   _|      _|  "
                 "     _|  _|    "
                 "       _|      "
                 "               "
-                "               ")
-          (gethash #\v table))
+                "               "))
 
     ;; }}}
     ;; w {{{
 
-    (push (list "                    "
+    (setf (gethash #\w table)
+          (list "                    "
                 "                    "
                 " _|      _|      _| "
                 "  _|     _|     _|  "
                 "   _|  _|  _|  _|   "
                 "     _|      _|     "
                 "                    "
-                "                    ")
-          (gethash #\w table))
+                "                    "))
 
     ;; }}}
     ;; x {{{
 
-    (push (list "           "
+    (setf (gethash #\x table)
+          (list "           "
                 "           "
                 "  _|    _| "
                 "    _|_|   "
                 "    _|_|   "
                 "  _|    _| "
                 "           "
-                "           ") (gethash #\x table))
+                "           "))
 
     ;; }}}
     ;; y {{{
 
-    (push (list "          "
+    (setf (gethash #\y table)
+          (list "          "
                 "          "
                 " _|    _| "
                 " _|    _| "
                 " _|    _| "
                 "   _|_|_| "
                 "       _| "
-                "   _|_|   ")
-          (gethash #\y table))
+                "   _|_|   "))
 
     ;; }}}
     ;; z {{{
 
-    (push (list "           "
+    (setf (gethash #\z table)
+          (list "           "
                 "           "
                 "  _|_|_|_| "
                 "      _|   "
                 "    _|     "
                 "  _|_|_|_| "
                 "           "
-                "           ")
-          (gethash #\z table))
+                "           "))
 
     ;; }}}
     ;; }}}
     ;; [A-Z] {{{
     ;; A {{{
 
-    (push  (list "          "
+    (setf  (gethash #\A table)
+           (list "          "
                  "   _|_|   "
                  " _|    _| "
                  " _|_|_|_| "
                  " _|    _| "
                  " _|    _| "
                  "          "
-                 "          ")
-           (gethash #\A table))
+                 "          "))
 
     ;; }}}
     ;; B {{{
 
-    (push  (list "          "
+    (setf  (gethash #\B table)
+           (list "          "
                  " _|_|_|   "
                  " _|    _| "
                  " _|_|_|   "
                  " _|    _| "
                  " _|_|_|   "
                  "          "
-                 "          ")
-           (gethash #\B table))
+                 "          "))
 
     ;; }}}
     ;; C {{{
 
-    (push  (list "          "
+    (setf  (gethash #\C table)
+           (list "          "
                  "   _|_|_| "
                  " _|       "
                  " _|       "
                  " _|       "
                  "   _|_|_| "
                  "          "
-                 "          ")
-           (gethash #\C table))
+                 "          "))
 
     ;; }}}
     ;; D {{{
 
-    (push  (list "          "
+    (setf  (gethash #\D table)
+           (list "          "
                  " _|_|_|   "
                  " _|    _| "
                  " _|    _| "
                  " _|    _| "
                  " _|_|_|   "
                  "          "
-                 "          ")
-           (gethash #\D table))
+                 "          "))
 
     ;; }}}
     ;; E {{{
 
-    (push  (list "          "
+    (setf  (gethash #\E table)
+           (list "          "
                  " _|_|_|_| "
                  " _|       "
                  " _|_|_|   "
                  " _|       "
                  " _|_|_|_| "
                  "          "
-                 "          ")
-           (gethash #\E table))
+                 "          "))
 
     ;; }}}
     ;; F {{{
 
-    (push  (list "          "
+    (setf  (gethash #\F table)
+           (list "          "
                  " _|_|_|_| "
                  " _|       "
                  " _|_|_|   "
                  " _|       "
                  " _|       "
                  "          "
-                 "          ")
-           (gethash #\F table))
+                 "          "))
 
     ;; }}}
     ;; G {{{
 
-    (push  (list "          "
+    (setf  (gethash #\G table)
+           (list "          "
                  "   _|_|_| "
                  " _|       "
                  " _|  _|_| "
                  " _|    _| "
                  "   _|_|_| "
                  "          "
-                 "          ")
-           (gethash #\G table))
+                 "          "))
 
     ;; }}}
     ;; H {{{
 
-    (push  (list "          "
+    (setf  (gethash #\H table)
+           (list "          "
                  " _|    _| "
                  " _|    _| "
                  " _|_|_|_| "
                  " _|    _| "
                  " _|    _| "
                  "          "
-                 "          ")
-           (gethash #\H table))
+                 "          "))
 
     ;; }}}
     ;; I {{{
 
-    (push  (list "        "
+    (setf  (gethash #\I table)
+           (list "        "
                  " _|_|_| "
                  "   _|   "
                  "   _|   "
                  "   _|   "
                  " _|_|_| "
                  "        "
-                 "        ")
-           (gethash #\I table))
+                 "        "))
 
     ;; }}}
     ;; J {{{
 
-    (push  (list "          "
+    (setf  (gethash #\J table)
+           (list "          "
                  "       _| "
                  "       _| "
                  "       _| "
                  " _|    _| "
                  "   _|_|   "
                  "          "
-                 "          ")
-           (gethash #\J table))
+                 "          "))
 
     ;; }}}
     ;; K {{{
 
-    (push  (list "          "
+    (setf  (gethash #\K table)
+           (list "          "
                  " _|    _| "
                  " _|  _|   "
                  " _|_|     "
                  " _|  _|   "
                  " _|    _| "
                  "          "
-                 "          ")
-           (gethash #\K table))
+                 "          "))
 
     ;; }}}
     ;; L {{{
 
-    (push  (list "          "
+    (setf  (gethash #\L table)
+           (list "          "
                  " _|       "
                  " _|       "
                  " _|       "
                  " _|       "
                  " _|_|_|_| "
                  "          "
-                 "          ")
-           (gethash #\L table))
+                 "          "))
 
     ;; }}}
     ;; M {{{
 
-    (push  (list "           "
+    (setf  (gethash #\M table)
+           (list "           "
                  "_|      _| "
                  "_|_|  _|_| "
                  "_|  _|  _| "
                  "_|      _| "
                  "_|      _| "
                  "           "
-                 "           ")
-           (gethash #\M table))
+                 "           "))
 
     ;; }}}
     ;; N {{{
 
-    (push  (list "             "
+    (setf  (gethash #\N table)
+           (list "             "
                  "  _|      _| "
                  "  _|_|    _| "
                  "  _|  _|  _| "
                  "  _|    _|_| "
                  "  _|      _| "
                  "             "
-                 "             ")
-           (gethash #\N table))
+                 "             "))
 
     ;; }}}
     ;; O {{{
 
-    (push  (list "          "
+    (setf  (gethash #\O table)
+           (list "          "
                  "   _|_|   "
                  " _|    _| "
                  " _|    _| "
                  " _|    _| "
                  "   _|_|   "
                  "          "
-                 "          ")
-           (gethash #\O table))
+                 "          "))
 
     ;; }}}
     ;; P {{{
 
-    (push  (list "          "
+    (setf  (gethash #\P table)
+           (list "          "
                  " _|_|_|   "
                  " _|    _| "
                  " _|_|_|   "
                  " _|       "
                  " _|       "
                  "          "
-                 "          ")
-           (gethash #\P table))
+                 "          "))
 
     ;; }}}
     ;; Q {{{
 
-    (push  (list "            "
+    (setf  (gethash #\Q table)
+           (list "            "
                  "   _|_|     "
                  " _|    _|   "
                  " _|  _|_|   "
                  " _|    _|   "
                  "   _|_|  _| "
                  "            "
-                 "            ")
-           (gethash #\Q table))
+                 "            "))
 
     ;; }}}
     ;; R {{{
 
-    (push  (list "          "
+    (setf  (gethash #\R table)
+           (list "          "
                  " _|_|_|   "
                  " _|    _| "
                  " _|_|_|   "
                  " _|    _| "
                  " _|    _| "
                  "          "
-                 "          ")
-           (gethash #\R table))
+                 "          "))
 
     ;; }}}
     ;; S {{{
 
-    (push  (list "          "
+    (setf  (gethash #\S table)
+           (list "          "
                  "   _|_|_| "
                  " _|       "
                  "   _|_|   "
                  "       _| "
                  " _|_|_|   "
                  "          "
-                 "          ")
-           (gethash #\S table))
+                 "          "))
 
     ;; }}}
     ;; T {{{
 
-    (push  (list "            "
+    (setf  (gethash #\T table)
+           (list "            "
                  " _|_|_|_|_| "
                  "     _|     "
                  "     _|     "
                  "     _|     "
                  "     _|     "
                  "            "
-                 "            ")
-           (gethash #\T table))
+                 "            "))
 
     ;; }}}
     ;; U {{{
 
-    (push  (list "          "
+    (setf  (gethash #\U table)
+           (list "          "
                  " _|    _| "
                  " _|    _| "
                  " _|    _| "
                  " _|    _| "
                  "   _|_|   "
                  "          "
-                 "          ")
-           (gethash #\U table))
+                 "          "))
 
     ;; }}}
     ;; V {{{
 
-    (push  (list "               "
+    (setf  (gethash #\V table)
+           (list "               "
                  " _|         _| "
                  "  _|       _|  "
                  "   _|     _|   "
                  "     _|  _|    "
                  "       _|      "
                  "               "
-                 "               ")
-           (gethash #\V table))
+                 "               "))
 
     ;; }}}
     ;; W {{{
 
-    (push  (list "                "
+    (setf  (gethash #\W table)
+           (list "                "
                  " _|          _| "
                  " _|          _| "
                  " _|    _|    _| "
                  "   _|  _|  _|   "
                  "     _|  _|     "
                  "                "
-                 "                ")
-           (gethash #\W table))
+                 "                "))
 
     ;; }}}
     ;; X {{{
 
-    (push  (list "            "
+    (setf  (gethash #\X table)
+           (list "            "
                  " _|      _| "
                  "   _|  _|   "
                  "     _|     "
                  "   _|  _|   "
                  " _|      _| "
                  "            "
-                 "            ")
-           (gethash #\X table))
+                 "            "))
 
     ;; }}}
     ;; Y {{{
 
-    (push  (list "            "
+    (setf  (gethash #\Y table)
+           (list "            "
                  " _|      _| "
                  "   _|  _|   "
                  "     _|     "
                  "     _|     "
                  "     _|     "
                  "            "
-                 "            ")
-           (gethash #\Y table))
+                 "            "))
 
     ;; }}}
     ;; Z {{{
 
-    (push  (list "            "
+    (setf  (gethash #\Z table)
+           (list "            "
                  " _|_|_|_|_| "
                  "       _|   "
                  "     _|     "
                  "   _|       "
                  " _|_|_|_|_| "
                  "            "
-                 "            ")
-           (gethash #\Z table))
+                 "            "))
 
     ;; }}}
     ;; }}}
     ;; etc {{{
     ;; . {{{
 
-    (push (list "    "
+    (setf (gethash #\. table)
+          (list "    "
                 "    "
                 "    "
                 "    "
                 "    "
                 " _| "
                 "    "
-                "    ")
-          (gethash #\. table))
+                "    "))
 
     ;; }}}
     ;; ? {{{
 
-    (push (list "        "
+    (setf (gethash #\? table)
+          (list "        "
                 " _|_|   "
                 "     _| "
                 " _|_|   "
                 "        "
                 " _|     "
                 "        "
-                "        ")
-          (gethash #\? table))
+                "        "))
 
     ;; }}}
     ;; ! {{{
 
-    (push (list "    "
+    (setf (gethash #\! table)
+          (list "    "
                 " _| "
                 " _| "
                 " _| "
                 "    "
                 " _| "
                 "    "
-                "    ")
-          (gethash #\! table))
+                "    "))
 
     ;; }}}
     ;; - {{{
 
-    (push (list "            "
+    (setf (gethash #\- table)
+          (list "            "
                 "            "
                 "            "
                 " _|_|_|_|_| "
                 "            "
                 "            "
                 "            "
-                "            ")
-          (gethash #\- table))
+                "            "))
 
     ;; }}}
     ;; #\Space  {{{
 
-    (push (list "    "
+    (setf (gethash #\Space table)
+          (list "    "
                 "    "
                 "    "
                 "    "
                 "    "
                 "    "
                 "    "
-                "    ")
-          (gethash #\Space table))
+                "    "))
 
     ;; }}}
     ;; }}}
@@ -891,32 +889,30 @@
 
 (defparameter *print-table* (make-print-table))
 
-(defun char-list->aa-list (char-list &key (background nil))
+(defun char-list->print-lines (char-list &key (background nil))
   (let ((result nil))
     (dotimes (i 8)
       (push (apply #'mkstr (mapcar (lambda (x)
-                                     (nth i (car (gethash x *print-table*))))
+                                     (aif (nth i (gethash x *print-table*))
+                                       it
+                                       (error "char-list->print-lines: Unknown character `~A' to print" x)))
                                    char-list))
             result)
-      (if background 
+      (when background 
         (push (replstr " " background (pop result)) result)))
     (nreverse result)))
 
-(defexe aprint ((-s --surround-with) (-g --bg-char) --help)
-  "s:surround-with:g:bg-char:help"
-  (let* ((usage (usage :title "aprint"
-                       :desc  "Text to ASCII Art Generator"
-                       :opts '("-s, --surround-with=" "surround with a character."
-                               "-g, --bg-char=" "background character.")))
-         (surround-char (or -s --surround-with))
-         (bg-char (or -g --bg-char))
-         (aa-list (char-list->aa-list (string->char-list (list->string args)) :background bg-char))
-         (surround-str (if surround-char (make-sequence 'string (length (car aa-list)) :initial-element (char surround-char 0)))))
-    (if (or --help
-            errors
-            (> (length surround-char) 1))
-      (funcall usage)
-      (surround (echo surround-str)
-        (dolist (i aa-list)
-          (echo i))))))
+(defun aprint (stream)
+  (with-output-to-string (out)
+    (awhile (read-line stream nil nil)
+      (let* ((print-lines (char-list->print-lines
+                            (coerce it 'list)
+                            :background *bg-character*))
+             (surround-line (if *surround-character*
+                              (make-string (length (first print-lines))
+                                           :initial-element *surround-character*)
+                              +empty-string+)))
+        (surround (princln surround-line out)
+          (dolist (i print-lines)
+            (princln  i out)))))))
 
