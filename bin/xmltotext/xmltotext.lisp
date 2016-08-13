@@ -11,10 +11,10 @@
                        (dolist (i (xml-node-children nodes))
                          (get-text i)))
                       ((eq (xml-node-type nodes) 'text)
-                       (print (xml-node-value nodes)))
+                       (princln (xml-node-value nodes)))
                       (t nil))))
     (rec nodes)))
 
 (defun main (stream)
-  (get-text (parse-xml (stream->string stream))))
+  (get-text (parse-xml stream)))
 
