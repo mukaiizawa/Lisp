@@ -291,8 +291,8 @@
 ;; xml-parser
 ;; parse-xml {{{
 
-(defun parse-xml (str)
-  (with-string-ahead-reader (reader str)
+(defun parse-xml (stream)
+  (with-ahead-reader (reader stream)
     (do ((nodes))
       ((reach-eof? (read-if (lambda (c)
                               (find c '(#\Newline #\Space)))
@@ -490,8 +490,8 @@
 ;; }}}
 ;; xml->DSL {{{
 
-(defun xml->DSL (str)
-  (xml-nodes->DSL (parse-xml str)))
+(defun xml->DSL (stream)
+  (xml-nodes->DSL (parse-xml stream)))
 
 ;; }}}
 
