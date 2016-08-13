@@ -21,13 +21,15 @@
     (while (not (reach-eof? reader))
       (let ((c (get-next reader)))
         (cond ((char= c #\Space)
-               (read-if (lambda (x) (char= x #\Space)) reader :cache nil))
+               (read-space reader :cache nil))
               ((digit-char-p c)
                (push (cons 'number
                            (parse-int (get-buf (read-number reader))))
                      tokens))
+              ((reader-next-in? reader #\+ #\- #\* #\/)
+               (push (list (mksym (get-buf (read-next reader)))) tokens))
               (t
-                (push (list (mksym (get-buf (read-next reader)))) tokens)))))
+                (error "to-token: Unexpected token `~A'" (get-next reader))))))
     (nreverse tokens)))
 
 ;; }}}
@@ -74,23 +76,23 @@
 (defun parse-factor ()
   (let ((curr-token (first *tokens*)))
     (case (token-kind curr-token)
-      (|(|
-          (pop *tokens*)
-          (let ((val (parse-expression)))
-            (if (eq (token-kind (pop *tokens*)) '|)|)
-            val
-            (error "parse-factor: `)' expected"))))
-      (+
-        (pop *tokens*)
-        (parse-factor))
-      (-
-        (pop *tokens*)
-        (- (parse-factor)))
-      (number
-        (pop *tokens*)
-        (token-val curr-token))
+      ((|(|)
+         (pop *tokens*)
+         (let ((val (parse-expression)))
+           (if (eq (token-kind (pop *tokens*)) '|)|)
+           val
+           (error "parse-factor: `)' expected"))))
+      ((+)
+       (pop *tokens*)
+       (parse-factor))
+      ((-)
+       (pop *tokens*)
+       (- (parse-factor)))
+      ((number)
+       (pop *tokens*)
+       (token-val curr-token))
       (t
-        (error "unexpected token `~A'" (token-kind (first *tokens*)))))))
+        (error "parse-factor: Unexpected token `~A'" (token-kind (first *tokens*)))))))
 
 ;; }}}
 
