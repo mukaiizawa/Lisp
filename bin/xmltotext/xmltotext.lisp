@@ -1,7 +1,6 @@
 
-(load "../../lib/stdlib")
-(load "../../lib/ahead-reader")
-(load "../../lib/regex")
+(require "stdlib" *module-stdlib*)
+(require "xml-manager" *module-regex*)
 
 (defmethod read-html-escape-sequance ((reader ahead-reader))
   (let ((esc (get-buf (read-next
