@@ -912,6 +912,14 @@
 ;; => (B O M B)
 
 ;; }}}
+;; stream->string {{{
+
+(defun stream->string (stream)
+  (with-output-to-string (out)
+    (awhile (read-char stream nil nil)
+      (write-char it out))))
+
+;; }}}
 ;; string->list {{{
 
 (defun string->list (char str)
