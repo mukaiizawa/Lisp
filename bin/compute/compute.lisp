@@ -1,6 +1,6 @@
 
-(load "../../lib/stdlib")
-(load "../../lib/ahead-reader")
+(require "stdlib" *module-stdlib*)
+(require "ahead-reader" *module-ahead-reader*)
 
 ;;
 ;; <expr>   ::= <term> | <expr> "+" <term> | <expr> "-" <term>
@@ -94,7 +94,7 @@
 
 ;; }}}
 
-(defun main (stream)
+(defun compute (stream)
   (with-ahead-reader (reader stream)
     (setq *tokens* (to-token reader)))
   (parse-expression))

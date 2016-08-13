@@ -1,14 +1,10 @@
 
 (load "compute")
-(load "../../lib/test-utils")
-
-; (trace parse-expression)
-; (trace parse-factor)
-; (trace parse-term)
+(require "test-utils" *module-test-utils*)
 
 (defmacro test-calc (str)
   `(with-input-from-string (in ,str)
-     (main in)))
+     (compute in)))
 
 (test-all
   ('single-01

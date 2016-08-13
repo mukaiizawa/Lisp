@@ -11,6 +11,6 @@
     (princ
       (if args
         (with-input-from-string (in (list->string args))
-          (main in))
-        (main *standard-input*)))))
+          (compute in))
+        (compute *standard-input*)))))
 
