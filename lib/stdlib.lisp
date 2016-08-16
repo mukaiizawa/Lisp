@@ -1226,7 +1226,7 @@
       (princln i out))))
 
 ;; syntax sugar
-;; (write-to lis pathname :if-exists :supersade)
+;; (write-to lis pathname :if-exists :supersede)
 ;; <=> (write-to! lis  pahtname)
 (defun write-to! (lis pathname)
   (write-to lis pathname :if-exists :supersede))
@@ -1254,7 +1254,7 @@
     (declare (ignore out))))
 
 ;; syntax sugar
-;; (mkfile pathname :if-exists :supersade)
+;; (mkfile pathname :if-exists :supersede)
 ;; <=> (mkfile! pahtname)
 (defun mkfile! (pathname)
   (mkfile pathname :if-exists :supersede))
