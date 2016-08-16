@@ -1,5 +1,5 @@
 
-(load "../lib/stdlib")
+(require "stdlib" *module-stdlib*)
 
 (let ((index 0)
       (key-arr)
