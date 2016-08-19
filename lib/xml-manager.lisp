@@ -497,4 +497,5 @@
 ;; }}}
 
 (defelements nil #.*html-tags* #.(mapcar (compose #'mkkey #'string-upcase) *html-tags*))
+(defelement nil "time" :htime)
 
