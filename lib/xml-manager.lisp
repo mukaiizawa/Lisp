@@ -160,7 +160,7 @@
 ;; indent manager 
 ;; *indent* {{{
 
-(defparameter *indent* t)
+(defparameter *indent* nil)
 
 ;; }}}
 ;; indent-manager {{{
