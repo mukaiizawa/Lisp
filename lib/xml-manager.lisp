@@ -381,7 +381,7 @@
                             :single? single?)))
           ((string= name "!--")
            (make-xml-node :type 'comment
-                          :value (funcall #~s/ *-//g    ; trim right and remove hyphen
+                          :value (funcall #~s/ *--//g    ; trim right and remove hyphen
                                           (get-buf
                                             (read-next    ; skip `>'
                                               (read-if (lambda(c)
@@ -391,14 +391,16 @@
                                                                    (reader-next-in? reader #\>))))
                                                        reader)
                                               :cache nil)))))
+          ((string= name "!DOCTYPE")
+           (make-xml-node :type 'document-type
+                          :value (get-buf
+                                   (read-next    ; skip `>'
+                                     (read-if (lambda (c)
+                                                (char/= c #\>))
+                                              reader)
+                                     :cache nil))))
           (t
-            (make-xml-node :type 'document-type
-                           :value (get-buf
-                                    (read-next    ; skip `>'
-                                      (read-if (lambda (c)
-                                                 (char/= c #\>))
-                                               reader)
-                                      :cache nil)))))))
+            (error "parse-tag: unknown tag `~A' at line: ~A." name (1+ (get-linecount reader)))))))
 
 ;; }}}
 ;; parse-attrs {{{
