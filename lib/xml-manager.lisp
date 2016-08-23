@@ -206,7 +206,7 @@
               :type 'element
               :name ',',(merge-node-name name namespace)
               :attrs (list ,@(mapcar (lambda (x)
-                                       `(list ',x ,x))
+                                       `(remove nil (list ',x ,x)))
                                      (mapcar #'car attr)))
               :children (mapcar (lambda (node)
                                   (if (stringp node)
