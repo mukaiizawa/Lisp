@@ -158,11 +158,6 @@
   (single? nil :type boolean))
 
 ;; indent manager 
-;; *indent* {{{
-
-(defparameter *indent* nil)
-
-;; }}}
 ;; indent-manager {{{
 
 (defstruct indent-manager
@@ -174,7 +169,7 @@
 ;; change-indent-level {{{
 
 (defun change-indent-level (indent direction)
-  (when *indent*
+  (when *print-pretty*
     (if (eq direction 'inc)
       (incf (indent-manager-indent-level indent))
       (decf (indent-manager-indent-level indent)))
@@ -189,7 +184,7 @@
 ;; indent-newline {{{
 
 (defun indent-newline ()
-  (if *indent* #\Newline +empty-string+))
+  (if *print-pretty* #\Newline +empty-string+))
 
 ;; }}}
 
@@ -427,7 +422,7 @@
     (mapcar (lambda (node)
               (case (xml-node-type node)
                 ((element)
-                 (format out "(:~A (~{~{(~A \"~A\")~}~^ ~})~A)"
+                 (format out "(:~A (~{~{(~A~^ \"~A\"~})~^ ~})~A)"
                          (xml-node-name node)
                          (xml-node-attrs node)
                          (if (xml-node-children node)
@@ -492,12 +487,7 @@
 ;; xml->DSL {{{
 
 (defun xml->DSL (stream)
-  (xml-nodes->DSL
-    (mapcar (lambda (node)
-              (if (stringp node)
-                (make-xml-node :type 'text :value node)
-                node))
-            (parse-xml stream))))
+  (xml-nodes->DSL (parse-xml stream)))
 
 ;; }}}
 
