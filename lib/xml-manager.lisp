@@ -295,10 +295,7 @@
 (defun parse-xml (stream)
   (with-ahead-reader (reader stream)
     (do ((nodes))
-      ((reach-eof? (read-if (lambda (c)
-                              (find c '(#\Newline #\Space)))
-                            reader
-                            :cache nil))
+      ((reach-eof? reader)
        (nreverse nodes))
       (push (parse-node reader) nodes))))
 
@@ -306,18 +303,13 @@
 ;; parse-node {{{
 
 (defun parse-node (reader)
-  (if (not (reader-next-in? (read-if (lambda (c)
-                                       (find c '(#\Newline #\Space)))
-                                     reader
-                                     :cache nil)
-                            #\<))
+  (if (not (reader-next-in? reader #\<))
     ;; text-node
     (make-xml-node
       :type 'text
-      :value (funcall #~s/(\n| )*$// (get-buf
-                                       (read-if (lambda (c)
-                                                  (char/= c #\<))
-                                                (read-space reader :cache nil)))))
+      :value (get-buf (read-if (lambda (c)
+                                 (char/= c #\<))
+                               reader)))
     (let ((linecount-at-open-tag (1+ (get-linecount reader)))
           (tag (parse-tag reader)))
       (cond ((find (xml-node-type tag) '(etag document-type comment))
@@ -329,8 +321,7 @@
               (setf (xml-node-type tag)
                     'element
                     (xml-node-children tag)
-                    (do* ((linecount-at-child (get-linecount reader) (get-linecount reader))
-                          (error?)
+                    (do* ((error?)
                           (node (parse-node reader) (parse-node reader))
                           (nodes))
                       ((let ((match-etag? (and (eq (xml-node-type node) 'etag)
@@ -342,10 +333,9 @@
                                (match-etag? t)
                                (t nil)))
                        (nreverse nodes))
-                      (cond ((reach-eof? reader)
-                             (setq error? (list node (1+ linecount-at-child))))
-                            ((eq (xml-node-type node) 'etag)
-                             (setq error? (list node (1+ linecount-at-child))))
+                      (cond ((or (reach-eof? reader)
+                                 (eq (xml-node-type node) 'etag))
+                             (setq error? (list node (1+ (get-linecount reader)))))
                             (t
                               (push node nodes)))))
               tag)))))
@@ -354,8 +344,8 @@
 ;; parse-tag {{{
 
 (defun parse-tag (reader)
-  (read-if (lambda (c)    ; skip `<' or `</'
-             (find c '(#\Newline #\Space #\< #\/)))
+  (read-if (lambda (c)
+             (find c '(#\< #\/)))
            reader
            :cache nil)
   (let* ((tag-type (cond ((reader-curr-in? reader #\/) 'etag)
@@ -373,15 +363,14 @@
                               (single-tag? name))))    ; defined *single-tag*
              (read-if (lambda (c)
                         (find c '(#\Newline #\Space #\/ #\>)))
-                      reader
-                      :cache nil)    ; skip `>' or `/>'
+                      reader :cache nil)    ; skip `>' or `/>'
              (make-xml-node :type tag-type
                             :name name
                             :attrs attrs
                             :single? single?)))
           ((string= name "!--")
            (make-xml-node :type 'comment
-                          :value (funcall #~s/ *--//g    ; trim right and remove hyphen
+                          :value (funcall #~s/-->$//    ; trim right and remove hyphen
                                           (get-buf
                                             (read-next    ; skip `>'
                                               (read-if (lambda(c)
@@ -389,8 +378,7 @@
                                                          (not (and (reader-pre-in? reader #\-)
                                                                    (reader-curr-in? reader #\-)
                                                                    (reader-next-in? reader #\>))))
-                                                       reader)
-                                              :cache nil)))))
+                                                       reader))))))
           ((string= name "!DOCTYPE")
            (make-xml-node :type 'document-type
                           :value (get-buf
@@ -459,7 +447,9 @@
   (labels ((rec (nodes indent-manager)
                 (with-output-to-string (out)
                   (let ((indent (indent-manager-indent indent-manager)))
-                    (cond ((or (null nodes)
+                    (cond ((stringp nodes)
+                           (format out "~A" nodes))
+                          ((or (null nodes)
                                (and (not (listp nodes))
                                     (not (typep nodes 'xml-node))))
                            (error "DSL->xml: `~A' unexpected token." nodes))
