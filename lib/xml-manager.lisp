@@ -362,7 +362,7 @@
                  (single? (or (and (reader-next-in? reader #\/) t)
                               (single-tag? name))))    ; defined *single-tag*
              (read-if (lambda (c)
-                        (find c '(#\Newline #\Space #\/ #\>)))
+                        (find c '(#\/ #\>)))
                       reader :cache nil)    ; skip `>' or `/>'
              (make-xml-node :type tag-type
                             :name name
@@ -459,13 +459,13 @@
                                              (rec node indent-manager))
                                            nodes)))
                           ((eq (xml-node-type nodes) 'text)
-                           (format out "~A~A~%" indent (with-xml-encode (xml-node-value nodes))))
+                           (format out "~A~A" indent (with-xml-encode (xml-node-value nodes))))
                           ((eq (xml-node-type nodes) 'document-type)
-                           (format out "~%<!DOCTYPE ~A>~%" (xml-node-value nodes)))
+                           (format out "<!DOCTYPE ~A>" (xml-node-value nodes)))
                           ((eq (xml-node-type nodes) 'comment)
-                           (format out "~A<!-- ~A -->~%" indent (xml-node-value nodes)))
+                           (format out "~A<!-- ~A -->" indent (xml-node-value nodes)))
                           (t
-                            (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~%"
+                            (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>"
                                     indent
                                     (xml-node-name nodes)
                                     (xml-node-attrs nodes)
@@ -475,7 +475,7 @@
                               (format out "~A" (rec it indent-manager)))
                             (change-indent-level indent-manager 'dec)
                             (unless (xml-node-single? nodes)
-                              (format out "~A</~A>~%"
+                              (format out "~A</~A>"
                                       indent
                                       (xml-node-name nodes)))))))))
     (rec nodes (make-indent-manager))))
@@ -484,7 +484,12 @@
 ;; xml->DSL {{{
 
 (defun xml->DSL (stream)
-  (xml-nodes->DSL (parse-xml stream)))
+  (xml-nodes->DSL
+    (mapcar (lambda (node)
+              (if (stringp node)
+                (make-xml-node :type 'text :value node)
+                node))
+            (parse-xml stream))))
 
 ;; }}}
 
