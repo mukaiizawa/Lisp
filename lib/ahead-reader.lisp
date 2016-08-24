@@ -2,7 +2,12 @@
 (require "stdlib" *module-stdlib*)
 (provide "ahead-reader")
 
-(defconstant +escape-character+ #\\)
+(defparameter *escape-character* #\\)
+(defparameter *escape-mapper* (lambda (c)
+                         (case c
+                           (#\n #\Newline)
+                           (#\t #\Tab)
+                           (t c))))
 
 (defstruct ahead-reader
   (stream nil :type stream)
@@ -82,18 +87,16 @@
 ;; }}}
 ;; read-next {{{
 
-(defmethod read-next ((reader ahead-reader) &key (cache t))
+(defmethod read-next ((reader ahead-reader)
+                      &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
   (if (reach-eof? reader)
     (error "ahead-reader read-next: already reach eof.")
     (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
       (when (char= c #\Newline)
         (incf (ahead-reader-linecount reader)))
-      (when (char= c #\\)
-        (let ((escape-sequence (read-char (ahead-reader-stream reader) nil +null-character+)))
-          (setq c (case escape-sequence
-                    (#\n #\Newline)
-                    (#\t #\Tab)
-                    (t escape-sequence)))))
+      (when (char= c escape)
+        (setq c (funcall escape-mapper
+                         (read-char (ahead-reader-stream reader) nil +null-character+))))
       (setf (ahead-reader-pre reader) (ahead-reader-curr reader)
             (ahead-reader-curr reader) c)
       (when cache (add-char reader c))
