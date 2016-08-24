@@ -186,6 +186,12 @@
   (values))
 
 ;; }}}
+;; indent-newline {{{
+
+(defun indent-newline ()
+  (if *indent* #\Newline +empty-string+))
+
+;; }}}
 
 ;; define element
 ;; *node-name-mapping* {{{
@@ -459,25 +465,27 @@
                                              (rec node indent-manager))
                                            nodes)))
                           ((eq (xml-node-type nodes) 'text)
-                           (format out "~A~A" indent (with-xml-encode (xml-node-value nodes))))
+                           (format out "~A~A~A" indent (with-xml-encode (xml-node-value nodes)) (indent-newline)))
                           ((eq (xml-node-type nodes) 'document-type)
-                           (format out "<!DOCTYPE ~A>" (xml-node-value nodes)))
+                           (format out "<!DOCTYPE ~A>~A" (xml-node-value nodes) (indent-newline)))
                           ((eq (xml-node-type nodes) 'comment)
-                           (format out "~A<!-- ~A -->" indent (xml-node-value nodes)))
+                           (format out "~A<!-- ~A -->~A" indent (xml-node-value nodes) (indent-newline)))
                           (t
-                            (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>"
+                            (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~A"
                                     indent
                                     (xml-node-name nodes)
                                     (xml-node-attrs nodes)
-                                    (if (xml-node-single? nodes) "/" ""))
+                                    (if (xml-node-single? nodes) "/" "")
+                                    (indent-newline))
                             (change-indent-level indent-manager 'inc)
                             (awhen (xml-node-children nodes)
                               (format out "~A" (rec it indent-manager)))
                             (change-indent-level indent-manager 'dec)
                             (unless (xml-node-single? nodes)
-                              (format out "~A</~A>"
+                              (format out "~A</~A>~A"
                                       indent
-                                      (xml-node-name nodes)))))))))
+                                      (xml-node-name nodes)
+                                      (indent-newline)))))))))
     (rec nodes (make-indent-manager))))
 
 ;; }}}
