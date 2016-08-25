@@ -165,6 +165,11 @@
   (single? nil :type boolean))
 
 ;; indent manager 
+;; *with-format* {{{
+
+(defparameter *with-format* nil)
+
+;; }}}
 ;; indent-manager {{{
 
 (defstruct indent-manager
@@ -176,7 +181,7 @@
 ;; change-indent-level {{{
 
 (defun change-indent-level (indent direction)
-  (when *print-pretty*
+  (when *with-format*
     (if (eq direction 'inc)
       (incf (indent-manager-indent-level indent))
       (decf (indent-manager-indent-level indent)))
@@ -191,7 +196,7 @@
 ;; indent-newline {{{
 
 (defun indent-newline ()
-  (if *print-pretty* #\Newline +empty-string+))
+  (if *with-format* #\Newline +empty-string+))
 
 ;; }}}
 
@@ -423,7 +428,6 @@
 
 ;; converter
 ;; xml-nodes->DSL {{{
-
 
 (defun xml-nodes->DSL (nodes)
   (let ((consider-newline? nil))
