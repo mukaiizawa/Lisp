@@ -525,6 +525,23 @@
 
 ;; }}}
 
+;; utility
+;; import-xml {{{
+
+(defmacro import-xml (xml)
+  `(with-input-from-string (in ,xml)
+     (parse-xml in)))
+
+;; }}}
+;; to-pre-code {{{
+
+(defmacro to-pre-code (xml)
+  `(:pre
+     (:code
+       (import-xml ,xml))))
+
+;; }}}
+
 (defelements nil #.*html-tags* #.(mapcar (compose #'mkkey #'string-upcase) *html-tags*))
 (defelement nil "time" :htime)
 
