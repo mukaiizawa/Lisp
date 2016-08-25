@@ -148,6 +148,13 @@
      "source"))
 
 ;; }}}
+;; *consider-newline-tags* {{{
+
+(defparameter *consider-newline-tags*
+  '( "textarea"
+     "pre"))
+
+;; }}}
 
 (defstruct xml-node
   (type 'unspecified :type symbol)
@@ -417,29 +424,37 @@
 ;; converter
 ;; xml-nodes->DSL {{{
 
+
 (defun xml-nodes->DSL (nodes)
-  (with-output-to-string (out)
-    (mapcar (lambda (node)
-              (case (xml-node-type node)
-                ((element)
-                 (format out "(:~A (~{~{(~A~^ \"~A\"~})~^ ~})~A)"
-                         (xml-node-name node)
-                         (xml-node-attrs node)
-                         (if (xml-node-children node)
-                           (format nil "~{~%~A~}"
-                                   (mapcar (lambda (child-node)
-                                             (xml-nodes->DSL child-node))
-                                           (xml-node-children node)))
-                           +empty-string+)))
-                ((text)
-                 (format out "\"~A\"" (xml-node-value node)))
-                ((document-type)
-                 (format out "(:!DOCTYPE \"~A\")~%" (xml-node-value node)))
-                ((comment)
-                 (format out "(:!-- \"~A\")" (xml-node-value node)))
-                (t
-                  (error "xml-nodes->DSL: unknown node type ~A" (xml-node-type node)))))
-            (mklist nodes))))
+  (let ((consider-newline? nil))
+    (labels ((rec (nodes)
+                  (with-output-to-string (out)
+                    (mapcar (lambda (node)
+                              (case (xml-node-type node)
+                                ((element)
+                                 (setq consider-newline? (find (xml-node-name node) *consider-newline-tags* :test 'equal))
+                                 (format out "(:~A (~{~{(~A~^ \"~A\"~})~^ ~})~A)"
+                                         (xml-node-name node)
+                                         (xml-node-attrs node)
+                                         (if (xml-node-children node)
+                                           (format nil "~{~%~A~}"
+                                                   (mapcar (lambda (child-node)
+                                                             (rec child-node))
+                                                           (xml-node-children node)))
+                                           +empty-string+))
+                                 (setq consider-newline? nil))
+                                ((text)
+                                 (let ((text (if consider-newline? (trim (xml-node-value node)) (xml-node-value node))))
+                                   (unless (empty? text)
+                                     (format out "\"~A\"" text))))
+                                ((document-type)
+                                 (format out "(:!DOCTYPE \"~A\")~%" (xml-node-value node)))
+                                ((comment)
+                                 (format out "(:!-- \"~A\")" (xml-node-value node)))
+                                (t
+                                  (error "xml-nodes->DSL: unknown node type ~A" (xml-node-type node)))))
+                            (mklist nodes)))))
+      (rec nodes))))
 
 ;; }}}
 ;; DSL->xml {{{
@@ -488,6 +503,21 @@
 
 (defun xml->DSL (stream)
   (xml-nodes->DSL (parse-xml stream)))
+
+;; }}}
+;; trim {{{
+
+(defun trim (str)
+  (let ((left-trimmer (lambda (str)
+                        (with-string-ahead-reader (reader str)
+                          (get-buf
+                            (read-if (lambda (c)
+                                       (declare (ignore c))
+                                       (not (reach-eof? reader)))
+                                     (read-if (lambda (c)
+                                                (find c '(#\Newline #\Space)))
+                                              reader :cache nil)))))))
+    (reverse (funcall left-trimmer (reverse (funcall left-trimmer str))))))
 
 ;; }}}
 
