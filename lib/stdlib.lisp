@@ -35,8 +35,7 @@
 (set-dispatch-macro-character #\# #\<
   (lambda (stream sub-char numarg)
     (declare (ignore sub-char numarg))
-    (let ((chars)
-          (ignore-space? t))
+    (let (chars)
       (do ((curr (read-char stream)
                  (read-char stream)))
         ((char= curr #\Newline))
@@ -44,46 +43,29 @@
                     (char= curr #\<))
           (push curr chars)))
       (let* ((pattern (nreverse chars))
-             (pointer pattern)
-             (output))
-        (do ((curr (read-char stream)
-                   (read-char stream)))
-          ((null pointer))
-          (if (char= curr #\Newline)
-            (setq ignore-space? t)
-            (if (and ignore-space?
-                     (char/= curr #\Space))
-              (setq ignore-space? nil)))
-          (unless (and ignore-space?
-                       (char= curr #\Space))
-            (push curr output))
-          (setf pointer
-                (if (char= (car pointer) curr)
-                  (cdr pointer)
-                  pattern))
-          (if (null pointer)
-            (return)))
-        (coerce
-          (nreverse
-            (nthcdr (1+ (length pattern)) output))
-          'string)))))
-
-;; Examples: {{{
-
-;; #<<END
-;; var hiddenBox = $( "#banner-message" );
-;; $( "#button-container button" ).on("click", function( event ){
-;;   hiddenBox.show();
-;; });
-;; END
-;; => "var hiddenBox = $( \"#banner-message\" );
-;;    $( \"#button-container button\" ).on(\"click\", function( event ){
-;;    hiddenBox.show();
-;;    });
-;;    "
-
-
-;; }}}
+             (acc))
+        (do* ((curr (read-char stream nil 'EOF)
+                    (read-char stream nil 'EOF))
+              (pointer pattern
+                       (if (char= (first pointer) curr)
+                         (rest pointer)
+                         pattern)))
+          ((null pointer)
+           (coerce
+             (nreverse
+               ;; consider last newline or space.
+               ;; #<< END
+               ;; here END
+               ;; or
+               ;; #<< END
+               ;; here
+               ;; END
+               ;; => "here"
+               (nthcdr (1+ (length pattern)) acc))
+             'string))
+          (if (eq curr 'EOF)
+            (error "Read macro `#<<': reach eof.")
+            (push curr acc)))))))
 
 ;; }}}
 
