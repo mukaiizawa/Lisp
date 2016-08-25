@@ -125,7 +125,7 @@
                    " NOT NULL")
                  #\, #\Newline)
           out))
-      (format out "CONSTRAINT PK_~A (~{~A~^,~})~%"
+      (format out "CONSTRAINT PK_~A PRIMARY KEY (~{~A~^,~})~%"
               (table-phisical-name table)
               (get-primarykeys table))
       (format out ");~%"))))
