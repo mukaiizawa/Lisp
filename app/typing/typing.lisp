@@ -3,7 +3,7 @@
 
 (defvar *default-dic-path* "lisp.word")
 (defvar *default-question-num* 30)
-(defparameter *dic* (mkhash))
+(defparameter *dic* (make-hash-table))
 (defparameter *dic-length* -1)
 (defparameter *total-key-stroke* 0)
 
@@ -11,8 +11,6 @@
   (mapcan (lambda (word)
             (setf (gethash (incf *dic-length*) *dic*) word))
           (read-from dic-path)))
-; (import-dic)
-; (show-hash *dic*)
 
 (defun get-word ()
   (gethash (random *dic-length* (make-random-state t)) *dic*))
