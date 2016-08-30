@@ -539,9 +539,11 @@
 ;; to-pre-code {{{
 
 (defmacro to-pre-code (xml)
-  `(:pre
-     (:code
-       (import-xml ,xml))))
+  `(list
+     (make-xml-node :type 'text :value (mkstr #\Newline))
+     (:pre
+       (:code
+         (import-xml ,xml)))))
 
 ;; }}}
 
