@@ -53,15 +53,7 @@
           ((null pointer)
            (coerce
              (nreverse
-               ;; consider last newline or space.
-               ;; #<< END
-               ;; here END
-               ;; or
-               ;; #<< END
-               ;; here
-               ;; END
-               ;; => "here"
-               (nthcdr (1+ (length pattern)) acc))
+               (nthcdr (length pattern)) acc)
              'string))
           (if (eq curr 'EOF)
             (error "Read macro `#<<': reach eof.")
