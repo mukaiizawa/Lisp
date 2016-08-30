@@ -36,16 +36,16 @@
   (lambda (stream sub-char numarg)
     (declare (ignore sub-char numarg))
     (let (chars)
-      (do ((curr (read-char stream)
-                 (read-char stream)))
+      (do ((curr (read-char stream nil +null-character+)
+                 (read-char stream nil +null-character+)))
         ((char= curr #\Newline))
         (unless (or (char= curr #\Space)
                     (char= curr #\<))
           (push curr chars)))
       (let* ((pattern (nreverse chars))
              (acc))
-        (do* ((curr (read-char stream nil 'EOF)
-                    (read-char stream nil 'EOF))
+        (do* ((curr (read-char stream nil +null-character+)
+                    (read-char stream nil +null-character+))
               (pointer pattern
                        (if (char= (first pointer) curr)
                          (rest pointer)
@@ -53,10 +53,10 @@
           ((null pointer)
            (coerce
              (nreverse
-               (nthcdr (length pattern)) acc)
+               (nthcdr (length pattern) acc))
              'string))
-          (if (eq curr 'EOF)
-            (error "Read macro `#<<': reach eof.")
+          (if (char= curr +null-character+)
+            (error "Read macro `#<<': reached eof.")
             (push curr acc)))))))
 
 ;; }}}
