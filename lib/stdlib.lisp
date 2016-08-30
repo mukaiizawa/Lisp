@@ -19,7 +19,7 @@
 (set-dispatch-macro-character #\# #\n
   (lambda (stream char1 char2)
     (declare (ignore char1 char2))
-    (println (macroexpand-all (read stream t nil t)))))
+    (println (ccl:macroexpand-all (read stream t nil t)))))
 
 ;; }}}
 ;; #o {{{
@@ -1609,7 +1609,7 @@
 
 #+ccl
 (defun exit ()
-  (quit))
+  (ccl:quit))
 
 ;; }}}
 ;; call {{{
