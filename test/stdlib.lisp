@@ -35,7 +35,7 @@ END
   )
 
 ;; }}}
-;; mkstr {{{
+;; mkkey {{{
 
 (test-all
   ('mkkey-01 (mkkey 'a) :a)
@@ -77,6 +77,24 @@ END
                   (self (- n 2)))))
            '(1 2 3 4 5 6 7 8 9 10))
    '(1 1 2 3 5 8 13 21 34 55))
+  )
+
+;; }}}
+;; before {{{
+
+(test-all
+  ('before-01 (before #\b "abc") "a")
+  ('before-02 (before #\b '(#\a #\b #\c)) '(#\a))
+  ('before-03 (before #\b '(#\a #\b #\b #\c) :from-end t) '(#\a #\b))
+  )
+
+;; }}}
+;; after {{{
+
+(test-all
+  ('after-01 (after #\b "abc") "c")
+  ('after-02 (after #\b '(#\a #\b #\c)) '(#\c))
+  ('after-03 (after #\b '(#\a #\b #\b #\c) :from-end t) '(#\b #\c))
   )
 
 ;; }}}

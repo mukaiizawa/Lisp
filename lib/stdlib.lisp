@@ -279,90 +279,12 @@
   (awhen (position elt seq :from-end from-end :test test)
     (subseq seq 0 it)))
 
-#| Function BEFORE
- |
- | Syntax:
- | before item sequence &key from-end test
- | => subsequence
- |
- | Arguments and Values:
- | item---an object.
- | sequence---a proper sequence.
- | from-end---a generalized boolean. The default is false.
- | test---a designator for a function of two arguments
- |        that returns a generalized boolean.
- |
- | Description:
- | The before function create a sequence that is copy of sequence before item.
- |
- | Examples:
- | (before #\s "asdfasdf")
- | => "a"
- | (before #\s "asdfasdf" :from-end t)
- | => "asdfa"
- |
- | Side Effects:
- | None.
- |
- | Affected By:
- | None.
- |
- | Exceptional Situations:
- | Should signal an error of type type-error if sequence is not a proper sequence.
- |
- | See Also:
- | after
- |
- | Notes:
- | None.
- |
- |#
-
 ;; }}}
 ;; after {{{
 
 (defun after (elt seq &key (from-end nil) (test #'eql))
   (awhen (position elt seq :from-end from-end :test test)
     (subseq seq (1+ it))))
-
-#| Function AFTER
- |
- | Syntax:
- | after item sequence &key from-end test
- | => subsequence
- |
- | Arguments and Values:
- | item---an object.
- | sequence---a proper sequence.
- | from-end---a generalized boolean. The default is false.
- | test---a designator for a function of two arguments
- |        that returns a generalized boolean.
- |
- | Description:
- | The function after create a sequence that is copy of sequence after item.
- |
- | Examples:
- | (after #\s "asdf")
- | => "df" 
- | (after 's '(a s d f a s d f))
- | => (D F A S D F) 
- |
- | Side Effects:
- | None.
- |
- | Affected By:
- | None.
- |
- | Exceptional Situations:
- | Should signal an error of type type-error if sequence is not a proper sequence.
- |
- | See Also:
- | before
- |
- | Notes:
- | None.
- |
- |#
 
 ;; }}}
 
