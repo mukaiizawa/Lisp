@@ -177,29 +177,6 @@
          ,@body))))
 
 ;; }}}
-;; dofile {{{
-
-;; anaphora line-num
-(defmacro dofile ((i pathname) &body body)
-  (with-gensyms (fname stream)
-    (let ((fname pathname))
-      `(with-open-file (,stream ,fname :direction :input)
-         (let ((,i)
-               (line-num -1))
-           (declare (ignorable ,i line-num))
-           (while (setq ,i (read-line ,stream nil))
-             (incf line-num)
-             ,@body))))))
-
-;; Examples: {{{
-
-;; (dofile (i "./stdlib.lisp")
-;;   (print line-num))
-
-
-;; }}}
-
-;; }}}
 ;; dorange {{{
 
 (defmacro dorange ((var start stop &key (step nil)) &body body)
