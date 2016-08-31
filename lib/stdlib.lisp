@@ -333,9 +333,7 @@
 (defun mkalist (lis)
   (when lis
     (cons
-      (if (listp (car lis))
-        (car lis)
-        (list (car lis)))
+      (mklist (car lis))
       (mkalist (cdr lis)))))
 
 ;; }}}
