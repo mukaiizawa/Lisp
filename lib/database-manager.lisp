@@ -112,7 +112,7 @@
 (defun tables->create-sql (tables)
   (with-output-to-string (out)
     (dolist (table (mklist tables))
-      (format out "~%DROP TABLE ~A CASCADE CONSTRAINTS;~%" (get-table-name table))
+      (format out "~%DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%" (get-table-name table))
       (format out "CREATE TABLE ~A (~%" (get-table-name table))
       (dolist (column (table-columns table))
         (write-string
