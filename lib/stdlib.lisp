@@ -179,14 +179,14 @@
 ;; }}}
 ;; dorange {{{
 
-(defmacro dorange ((var start stop &key (step nil)) &body body)
-  (with-gensyms (gstop default-step)
-    `(let* ((,default-step (if (<= ,start ,stop) 1 -1)))
-       (do ((,var ,start (+ ,var (aif ,step it ,default-step)))
+(defmacro dorange ((var start stop) &body body)
+  (with-gensyms (gstop step)
+    `(let* ((,step (if (<= ,start ,stop) 1 -1)))
+       (do ((,var ,start (+ ,var ,step))
             (,gstop ,stop))
-         ((or (and (= ,default-step 1)
+         ((or (and (plusp ,step)
                    (> ,var ,gstop))
-              (and (= ,default-step -1)
+              (and (minusp ,step) 
                    (< ,var ,gstop))))
          ,@body))))
 
