@@ -222,15 +222,6 @@
 ;; => 9876543210
 
 ;; }}}
-;; *= {{{
-
-(defmacro *= (var expr)
-  (with-gensyms (val1 val2)
-    `(let* ((,val1 ,expr)
-            (,val2 (* ,var ,val1)))
-       (setq ,var ,val2))))
-
-;; }}}
 ;; s-expr? {{{
 
 (defmacro s-expr? (lis)
