@@ -44,6 +44,21 @@ END
   )
 
 ;; }}}
+;; canonical-letargs {{{
+
+(test-all
+  ('canonical-letargs-01
+   (canonical-letargs '(a b c))
+   '((a) (b) (c)))
+  ('canonical-letargs-02
+   (canonical-letargs '((a a)))
+   '((a a)))
+  ('canonical-letargs-02
+   (canonical-letargs '((a a) b))
+   '((a a) (b)))
+  )
+
+;; }}}
 ;; alambda {{{
 
 (test-all
