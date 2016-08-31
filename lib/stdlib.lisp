@@ -288,62 +288,6 @@
 
 ;; }}}
 
-;; logical function
-;; fn-if {{{
-
-(defun fn-if (if then &optional else)
-  (lambda (x)
-    (if (funcall if x)
-      (funcall then x)
-      (if else (funcall else x)))))
-
-;; Examples: {{{
-;;
-;; (mapcar (lambda (x)
-;;             (if (slave x)
-;;                 (owner x)
-;;                 (employer x)))
-;;         people)
-;;
-;; (mapcar (fn-if #'slave #'owner #'employer)
-;;         people)
-;;
-;;
-;; }}}
-
-;; }}}
-;; fn-and {{{
-
-(defun fn-and (fn &rest fns)
-  (if (null fns)
-    fn
-    (let ((chain (apply #'fn-and fns)))
-      (lambda (x)
-        (and (funcall fn x) (funcall chain x))))))
-
-;; Examples: {{{
-;;
-;; (find-if #'(lambda (x)
-;;              (and (signed x) (sealed x) (delivered x)))
-;;          docs)
-;;
-;; (find-if (fn-and #'signed #'sealed #'delivered) docs)
-;;
-;;
-;; }}}
-
-;; }}}
-;; fn-or {{{
-
-(defun fn-or (fn &rest fns)
-  (if (null fns)
-    fn
-    (let ((chain (apply #'fn-or fns)))
-      (lambda (x)
-        (or (funcall fn x) (funcall chain x))))))
-
-;; }}}
-
 ;; list utils
 (proclaim'(inline last1 single? append1 conc1 mklist))
 ;; last1 {{{
@@ -387,7 +331,7 @@
 ;; mkalist {{{
 
 (defun mkalist (lis)
-  (if lis
+  (when lis
     (cons
       (if (listp (car lis))
         (car lis)
