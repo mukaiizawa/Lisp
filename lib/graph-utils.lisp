@@ -46,7 +46,7 @@
     (mapcar (lambda (node)
               (format out "~A~A;~%"
                       (replace-low-line (first node))
-                      (attrs->dot (rest node) nil)))
+                      (attrs->dot (second node) nil)))
             (mkalist nodes))))
 
 ;; }}}
@@ -60,7 +60,7 @@
                       (replace-low-line (first edge))
                       (if directed? ">" "-")
                       (replace-low-line (second edge))
-                      (attrs->dot (nthcdr 2 edge) nil)))
+                      (attrs->dot (third edge) nil)))
             (mkalist edges))))
 
 ;; }}}
@@ -95,8 +95,8 @@
 
 (defun make-continuous-edges (nodes &optional attr)
   (if (rest nodes)
-    (cons (append (list (first nodes) (second nodes)) attr)
-          (make-continuous-edges (rest nodes)))
+    (cons (list (first nodes) (second nodes) attr)
+          (make-continuous-edges (rest nodes) attr))
     nil))
 
 ;; }}}
