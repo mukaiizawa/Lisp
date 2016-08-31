@@ -35,4 +35,14 @@ END
   )
 
 ;; }}}
+;; mkstr {{{
+
+(test-all
+  ('mkkey-01 (mkkey 'a) :a)
+  ('mkkey-02 (mkkey "1" #\2 3 '4) :1234)
+  ('mkkey-03 (mkkey "a" #\b 'c) :|abC|)
+  )
+
+;; }}}
+
 
