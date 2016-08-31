@@ -222,12 +222,6 @@
 ;; => 9876543210
 
 ;; }}}
-;; s-expr? {{{
-
-(defmacro s-expr? (lis)
-  `(ignore-errors (functionp (symbol-function (car ,lis)))))
-
-;; }}}
 ;; aif {{{
 
 (defmacro aif (test-form then-form &optional else-form)
