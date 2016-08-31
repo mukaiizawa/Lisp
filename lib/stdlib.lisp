@@ -909,6 +909,23 @@
          pathname)))
 
 ;; }}}
+;; pathname-as-file {{{
+
+(defun pathname-as-file (name)
+  (let ((pathname (pathname name)))
+    (when (wild-pathname-p pathname)
+      (error "Can't reliably convert wild pathnames."))
+    (if (dir-pathname? name)
+      (let* ((directory (pathname-directory pathname))
+             (name-and-type (pathname (first (last directory)))))
+        (make-pathname
+          :directory (butlast directory)
+          :name (pathname-name name-and-type)
+          :type (pathname-type name-and-type)
+          :defaults pathname))
+      pathname)))
+
+;;}}}
 ;; pathname-as-directory {{{
 
 (defun pathname-as-directory (name)
@@ -945,7 +962,7 @@
       (probe-file pathname))
   #+clisp
   (or (ignore-errors
-        (probe-file (pathname-as file pathname)))
+        (probe-file (pathname-as-file pathname)))
       (ignore-errors
         (let ((directory-form (pathname-as-directory pathname)))
           (when (ext:probe-directory directory-form)
@@ -954,23 +971,6 @@
   (error "file-exists? not implemented"))
 
 ; }}}
-;; pathname-as-file {{{
-
-(defun pathname-as-file (name)
-  (let ((pathname (pathname name)))
-    (when (wild-pathname-p pathname)
-      (error "Can't reliably convert wild pathnames."))
-    (if (dir-pathname? name)
-      (let* ((directory (pathname-directory pathname))
-             (name-and-type (pathname (first (last directory)))))
-        (make-pathname
-          :directory (butlast directory)
-          :name (pathname-name name-and-type)
-          :type (pathname-type name-and-type)
-          :defaults pathname))
-      pathname)))
-
-;;}}}
 ;; parent-directory {{{
 
 (defun parent-directory (pathname)
