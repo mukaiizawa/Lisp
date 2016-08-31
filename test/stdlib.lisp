@@ -94,7 +94,38 @@ END
 (test-all
   ('after-01 (after #\b "abc") "c")
   ('after-02 (after #\b '(#\a #\b #\c)) '(#\c))
-  ('after-03 (after #\b '(#\a #\b #\b #\c) :from-end t) '(#\b #\c))
+  ('after-03 (after #\b '(#\a #\b #\b #\c) :from-end t) '(#\c))
+  )
+
+;; }}}
+;; last1 {{{
+
+(test-all
+  ('last1-01 (last1 '(a b c)) 'c)
+  )
+
+;; }}}
+;; single? {{{
+
+(test-all
+  ('single?-01 (single? '(a b c)) nil)
+  ('single?-02 (single? '(a)) t)
+  ('single?-03 (single? 'a) nil)
+  ('single?-04 (single? 1) nil)
+  ('single?-05 (single? "a") nil)
+  ('single?-06 (single? #\a) nil)
+  )
+
+;; }}}
+;; alist? {{{
+
+(test-all
+  ('alist?-01 (values (alist? '(a b c))) nil)
+  ('alist?-02 (values (alist? '(a))) nil)
+  ('alist?-03 (values (alist? 'a)) nil)
+  ('alist?-04 (values (alist? 1)) nil)
+  ('alist?-05 (values (alist? "a")) nil)
+  ('alist?-06 (values (alist? #\a)) nil)
   )
 
 ;; }}}
