@@ -131,11 +131,6 @@
   `(labels ((self ,parms ,@body))
      #'self))
 
-;; (funcall (alambda (lis)
-;;            (if lis
-;;              (1+ (self (cdr lis)))
-;;              0)) '(1 2 3))
-
 ;; }}}
 ;; surround {{{
 
@@ -143,14 +138,6 @@
   `(progn ,wrapper
           ,@body
           ,wrapper))
-;; Examples: {{{
-;; (surround (echo "----------")
-;;           (echo "surrounded"))
-;; ----------
-;; surrounded
-;; ----------
-;;
-;; }}}
 
 ;; }}}
 ;; while {{{
@@ -179,10 +166,6 @@
        ((not gstop))
        ,@body)))
 
-;; (for (i 0 (< i 10))
-;;   (princ i))
-;; => 0123456789
-
 ;; }}}
 ;; dostring {{{
 
@@ -192,14 +175,6 @@
        (let ((,i (char ,str ,index)))
          (declare (ignorable ,i))
          ,@body))))
-
-;; Examples: {{{
-
-;; (dostring (i "something string")
-;;   (princ i))
-;; => something string
-
-;; }}}
 
 ;; }}}
 ;; dofile {{{
