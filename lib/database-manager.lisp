@@ -79,7 +79,7 @@
                                              "RED" "BLACK")
                                            (column-phisical-name column)))
                                  (format out "</TABLE>>")))))
-        (push (list table-phisical-name attr-shape attr-label) nodes)))
+        (push (list table-phisical-name (list attr-shape attr-label)) nodes)))
     (nreverse nodes)))
 
 ;; }}}
