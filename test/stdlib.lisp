@@ -129,4 +129,12 @@ END
   )
 
 ;; }}}
+;; append1 {{{
+
+(test-all
+  ('append1-01 (append1 '(a) 'b) '(a b))
+  ('append1-02 (append1 '(a) '(b)) '(a (b)))
+  )
+
+;; }}}
 
