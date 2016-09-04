@@ -15,7 +15,7 @@
           (result (cons 'list (nthcdr 2 expr))))
       `(unless (equal ,fn ,result)
          (echo (make-string 80 :initial-element #\- ))
-         (echo ,title)
+         (echo ',title)
          (echo (rest ',fn))
          (echo " => " (eval ',fn))
          (echo "    " (eval ',result))))))
