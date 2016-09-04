@@ -23,16 +23,14 @@ END
 #<< END
 (funcall #'+ #b01)
 END
-   "(funcall #'+ #b01)")
-  )
+   "(funcall #'+ #b01)"))
 
 ;; }}}
 ;; mkstr {{{
 
 (test-all
   ('mkstr-01 (mkstr "a") "a")
-  ('mkstr-02 (mkstr "1" #\2 3 '4) "1234")
-  )
+  ('mkstr-02 (mkstr "1" #\2 3 '4) "1234"))
 
 ;; }}}
 ;; mkkey {{{
@@ -40,8 +38,7 @@ END
 (test-all
   ('mkkey-01 (mkkey 'a) :a)
   ('mkkey-02 (mkkey "1" #\2 3 '4) :1234)
-  ('mkkey-03 (mkkey "a" #\b 'c) :|abC|)
-  )
+  ('mkkey-03 (mkkey "a" #\b 'c) :|abC|))
 
 ;; }}}
 ;; canonical-letargs {{{
@@ -55,8 +52,7 @@ END
    '((a a)))
   ('canonical-letargs-02
    (canonical-letargs '((a a) b))
-   '((a a) (b)))
-  )
+   '((a a) (b))))
 
 ;; }}}
 ;; alambda {{{
@@ -76,8 +72,7 @@ END
                (+ (self (- n 1))
                   (self (- n 2)))))
            '(1 2 3 4 5 6 7 8 9 10))
-   '(1 1 2 3 5 8 13 21 34 55))
-  )
+   '(1 1 2 3 5 8 13 21 34 55)))
 
 ;; }}}
 ;; before {{{
@@ -85,8 +80,7 @@ END
 (test-all
   ('before-01 (before #\b "abc") "a")
   ('before-02 (before #\b '(#\a #\b #\c)) '(#\a))
-  ('before-03 (before #\b '(#\a #\b #\b #\c) :from-end t) '(#\a #\b))
-  )
+  ('before-03 (before #\b '(#\a #\b #\b #\c) :from-end t) '(#\a #\b)))
 
 ;; }}}
 ;; after {{{
@@ -94,15 +88,13 @@ END
 (test-all
   ('after-01 (after #\b "abc") "c")
   ('after-02 (after #\b '(#\a #\b #\c)) '(#\c))
-  ('after-03 (after #\b '(#\a #\b #\b #\c) :from-end t) '(#\c))
-  )
+  ('after-03 (after #\b '(#\a #\b #\b #\c) :from-end t) '(#\c)))
 
 ;; }}}
 ;; last1 {{{
 
 (test-all
-  ('last1-01 (last1 '(a b c)) 'c)
-  )
+  ('last1-01 (last1 '(a b c)) 'c))
 
 ;; }}}
 ;; single? {{{
@@ -113,8 +105,7 @@ END
   ('single?-03 (single? 'a) nil)
   ('single?-04 (single? 1) nil)
   ('single?-05 (single? "a") nil)
-  ('single?-06 (single? #\a) nil)
-  )
+  ('single?-06 (single? #\a) nil))
 
 ;; }}}
 ;; alist? {{{
@@ -125,16 +116,41 @@ END
   ('alist?-03 (values (alist? 'a)) nil)
   ('alist?-04 (values (alist? 1)) nil)
   ('alist?-05 (values (alist? "a")) nil)
-  ('alist?-06 (values (alist? #\a)) nil)
-  )
+  ('alist?-06 (values (alist? #\a)) nil))
 
 ;; }}}
 ;; append1 {{{
 
 (test-all
   ('append1-01 (append1 '(a) 'b) '(a b))
-  ('append1-02 (append1 '(a) '(b)) '(a (b)))
-  )
+  ('append1-02 (append1 '(a) '(b)) '(a (b))))
+
+;; }}}
+;; conc1 {{{
+
+(test-all
+  ('conc1-01 (conc1 '(a) 'b) '(a b))
+  ('conc1-02 (conc1 '(a) '(b)) '(a (b))))
+
+;; }}}
+;; mklist {{{
+
+(test-all
+  ('mklist-01 (mklist nil) nil)
+  ('mklist-02 (mklist 'a) '(a))
+  ('mklist-03 (mklist '(a)) '(a)))
+
+;; }}}
+;; mklist {{{
+
+(test-all
+  ('mkalist-01 (mkalist nil) nil)
+  ('mkalist-02 (mkalist 'a) '((a)))
+  ('mkalist-03 (mkalist '(a)) '((a)))
+  ('mkalist-04 (mkalist '(a b)) '((a) (b)))
+  ('mkalist-05 (mkalist '((a a) b)) '((a a) (b)))
+  ('mkalist-06 (mkalist '(a (b b))) '((a) (b b)))
+  ('mkalist-07 (mkalist '((a a) (b b))) '((a a) (b b))))
 
 ;; }}}
 
