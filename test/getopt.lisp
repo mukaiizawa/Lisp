@@ -155,6 +155,5 @@
    '("a-z" "A-Z") '(("a" nil) ("z" nil)) nil)
   (47
    (getopt '(#.*arg0* "a-z" "A-Z") "a;z")
-   '("a-z" "A-Z") '(("a" nil) ("z" nil)) nil)
-  )
+   '("a-z" "A-Z") '(("a" nil) ("z" nil)) nil))
 

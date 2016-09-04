@@ -4,16 +4,15 @@
 (require "test-utils" *module-test-utils*)
 
 (test-all 
-  ('make-continuous-edges-01
+  (make-continuous-edges-01
    (make-continuous-edges '("a0" "a1" "a2"))
    '(("a0" "a1" nil) ("a1" "a2" nil)))
-  ('make-continuous-edges-02
+  (make-continuous-edges-02
    (make-continuous-edges '("a0" "a1" "a2") '((color "blue")))
    '(("a0" "a1" ((color "blue"))) ("a1" "a2" ((color "blue")))))
-  ('make-continuous-edges-03
+  (make-continuous-edges-03
    (make-continuous-edges nil)
-   nil)
-  )
+   nil))
 
 (dot
   (make-graph :nodes '(("start" ((shape "Mdiamond") (color "green")))

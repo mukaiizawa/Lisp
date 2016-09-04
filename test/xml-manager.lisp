@@ -13,28 +13,27 @@
 (setq *with-format* nil)
 
 (test-all
-  ('simple-01
+  (simple-01
    (test-xml->DSL"<a></a>")
    "(:a ())")
-  ('simple-02
+  (simple-02
    (test-xml->DSL"<a>a</a>")
    (with-escape "(:a ()\\n\"a\")"))
-  ('simple-02
+  (simple-02
    (test-xml->DSL"<a>a<b>b</b>a</a>")
    (with-escape "(:a ()\\n\"a\"\\n(:b ()\\n\"b\")\\n\"a\")"))
-  ('attribute-01
+  (attribute-01
    (test-xml->DSL"<a a='b'></a>")
    (with-escape "(:a ((a \"b\")))"))
-  ('attribute-02
+  (attribute-02
    (test-xml->DSL"<a a='b'></a>")
    (with-escape "(:a ((a \"b\")))"))
-  ('single-attribute
+  (single-attribute
    (test-xml->DSL"<a a='b' c></a>")
    (with-escape "(:a ((a \"b\") (c)))"))
-  ('single-tag
+  (single-tag
    (test-xml->DSL"<hr><br>")
-   (with-escape "(:hr ())(:br ())"))
-  )
+   (with-escape "(:hr ())(:br ())")))
 
 ;; sample-source {{{
 
