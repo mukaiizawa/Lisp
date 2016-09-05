@@ -377,9 +377,10 @@
 ;; group {{{
 
 (defun group (lis n)
-  (when (zerop n) (error "group: The argument n required non-zero value."))
+  (when (zerop n)
+    (error "group: The argument n required non-zero value."))
   (when lis
-    (funcall (alambda (lis acc)
+    (funcall (alambda (lis &optional acc)
                (let ((rest (nthcdr n lis)))
                  (if (consp rest)
                    (self rest (cons (subseq lis 0 n) acc))
