@@ -154,4 +154,39 @@ END
   (mkalist-07 (mkalist '((a a a) (b b b))) '((a a a) (b b b))))
 
 ;; }}}
+;; iota {{{
+
+(test-all
+  (iota-01 (iota 0 1) '(0 1))
+  (iota-02 (iota 0 1 1) '(0 1))
+  (iota-03 (iota 0 1 2) '(0))
+  (iota-04 (iota 0 1 0.5) '(0 0.5 1.0)))
+
+;; }}}
+;; longer? {{{
+
+(test-all
+  (longer?-01 (longer? '(1) '(1)) nil)
+  (longer?-02 (longer? '(1 2) '(1)) t)
+  (longer?-03 (longer? '(1) '(1 2)) nil))
+
+;; }}}
+;; filter {{{
+
+(test-all
+  (filter-01 (filter (lambda (x)
+                       (if (oddp x)
+                         (+ x 10)))
+                     '(1 2 3 4 5))
+             '(11 13 15)))
+
+;; }}}
+;; group {{{
+
+(test-all
+  (group-01 (group nil 2) nil)
+  (group-01 (group '(1 2 3 4 5) 2) '((1 2) (3 4) (5)))
+  (group-02 (group '(1 2 3 4 5) 1) '((1) (2) (3) (4) (5))))
+
+;; }}}
 
