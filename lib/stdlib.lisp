@@ -351,9 +351,6 @@
                        (push from acc)))))
     (rec from to (or step 1) nil)))
 
-;; (iota 10 15 0.5)
-;; => (10 10.5 11.0 11.5 12.0 12.5 13.0 13.5 14.0 14.5 15.0) 
-
 ;; }}}
 ;; longer? {{{
 
@@ -366,11 +363,6 @@
       (compare x y)
       (> (length x) (length y)))))
 
-;; (longer? '(1 2) '(1))
-;; => t
-;; (longer? '(1) '(1 2))
-;; => nil
-
 ;; }}}
 ;; filter {{{
 
@@ -381,23 +373,18 @@
         (if val (push val acc))))
     (nreverse acc)))
 
-;; (filter (lambda (x)
-;;           (if (oddp x)
-;;             (+ x 10)))
-;;         '(1 2 3 4 5))
-;; => (11 13 15)
-
 ;; }}}
 ;; group {{{
 
-(defun group (lst n)
-  (if (zerop n) (error "function 'group' -> zero length"))
-  (labels ((rec (lst acc)
-                (let ((rest (nthcdr n lst)))
-                  (if (consp rest)
-                    (rec rest (cons (subseq lst 0 n) acc))
-                    (nreverse (cons lst acc))))))
-    (if lst (rec lst nil) nil)))
+(defun group (lis n)
+  (when (zerop n) (error "group: The argument n required non-zero value."))
+  (when lis
+    (funcall (alambda (lis acc)
+               (let ((rest (nthcdr n lis)))
+                 (if (consp rest)
+                   (self rest (cons (subseq lis 0 n) acc))
+                   (nreverse (cons lis acc)))))
+             lis)))
 
 ;; (group '(1 2 3 4 5) 2)
 ;; => ((1 2) (3 4) (5))
@@ -731,7 +718,7 @@
   #+sbcl
   (sb-ext:string-to-octets str :external-format encoding :null-terminate nil)
   #-(or sbcl ccl)
-  (error "string->byte not implemented."))
+  (error "string->byte: not implemented."))
 
 ;; }}}
 ;; byte->string {{{
@@ -742,7 +729,7 @@
   #+sbcl
   (sb-ext:octets-to-string byte :external-format encoding)
   #-(or sbcl ccl)
-  (error "byte-string not implemented."))
+  (error "byte-string: not implemented."))
 
 ;; }}}
 ;; replstr {{{
@@ -916,7 +903,7 @@
 (defun pathname-as-file (name)
   (let ((pathname (pathname name)))
     (when (wild-pathname-p pathname)
-      (error "Can't reliably convert wild pathnames."))
+      (error "pathname-as-file: Can't reliably convert wild pathnames."))
     (if (dir-pathname? name)
       (let* ((directory (pathname-directory pathname))
              (name-and-type (pathname (first (last directory)))))
@@ -933,7 +920,7 @@
 (defun pathname-as-directory (name)
   (let ((pathname (pathname name)))
     (when (wild-pathname-p pathname)
-      (error "Can't reliably convert wild pathnames."))
+      (error "pathname-as-directory: Can't reliably convert wild pathnames."))
     (if (not (dir-pathname? name))
       (make-pathname
         :directory (append (or (pathname-directory pathname) (list :relative))
@@ -1043,7 +1030,7 @@
 (defun ls (dirname &key (file t) (dir t))
   (labels ((ls (dirname)
                (when (wild-pathname-p dirname)
-                 (error "Can only lisp concrete directory names."))
+                 (error "ls: Can only lisp concrete directory names."))
                (let ((wildcard (directory-wildcard dirname)))
                  #+(or sbcl cmu lispworks) (directory wildcard)
                  #+openmcl (directory wildcard :directories t)
@@ -1064,7 +1051,7 @@
                         #'dir-pathname?
                         (compose #'not #'dir-pathname?))
                       (ls (pathname-as-directory dirname))))
-          (t (error "ls: please chose file or dir.")))))
+          (t (error "ls: Please chose file or dir.")))))
 
 ;; }}}
 ;; mapfile {{{
