@@ -193,9 +193,17 @@ END
 
 (test-all
   (flatten-01 (flatten nil) nil)
-  (flatten-01 (flatten '((1 2) (3 4) (5))) '(1 2 3 4 5))
-  (flatten-02 (flatten '((1) (2) (3) (4) (5))) '(1 2 3 4 5))
-  (flatten-03 (flatten '((1) (2) (nil) (4) (5))) '(1 2 nil 4 5)))
+  (flatten-02 (flatten '((1 2) (3 4) (5))) '(1 2 3 4 5))
+  (flatten-03 (flatten '((1) (2) (3) (4) (5))) '(1 2 3 4 5))
+  (flatten-04 (flatten '((1) (2) (nil) (4) (5))) '(1 2 nil 4 5)))
+
+;; }}}
+;; prone {{{
+
+(test-all
+  (prune-01 (prune #'oddp
+                   '(1 ((2 3) 4) 5 (6 7) 8 9))
+            '(((2) 4) (6) 8)))
 
 ;; }}}
 

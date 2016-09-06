@@ -415,26 +415,6 @@
                                 (cons (car lst) acc)))))))
     (rec lst nil)))
 
-;; (prune #'oddp '(1 ((2 3) 4) 5 (6 7) 8 9))
-;; => (((2) 4) (6) 8)
-
-;; }}}
-;; multiple-value-find-if {{{
-
-;; like a find-if.
-;; but multiple-value-find-if returns element and value.
-(defun multiple-value-find-if (fn lst)
-  (if (null lst)
-    nil
-    (let ((val (funcall fn (car lst))))
-      (if val
-        (values (car lst) val)
-        (multiple-value-find-if fn (cdr lst))))))
-
-;; (multiple-value-find-if #'oddp  '(2 2 3 4 5))
-;; => 3;
-;;    T
-
 ;; }}}
 ;; before? {{{
 
