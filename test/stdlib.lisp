@@ -189,4 +189,13 @@ END
   (group-02 (group '(1 2 3 4 5) 1) '((1) (2) (3) (4) (5))))
 
 ;; }}}
+;; flatten {{{
+
+(test-all
+  (flatten-01 (flatten nil) nil)
+  (flatten-01 (flatten '((1 2) (3 4) (5))) '(1 2 3 4 5))
+  (flatten-02 (flatten '((1) (2) (3) (4) (5))) '(1 2 3 4 5))
+  (flatten-03 (flatten '((1) (2) (nil) (4) (5))) '(1 2 nil 4 5)))
+
+;; }}}
 

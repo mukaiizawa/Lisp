@@ -387,24 +387,18 @@
                    (nreverse (cons lis acc)))))
              lis)))
 
-;; (group '(1 2 3 4 5) 2)
-;; => ((1 2) (3 4) (5))
-
 ;; }}}
 ;; flatten {{{
 
-(defun flatten (x)
-  (labels ((rec (x acc)
-                (cond ((null x) acc)
-                      ((atom x) (cons x acc))
-                      (t (rec (car x) (rec (cdr x) acc))))))
-    (rec x nil)))
-
-;; Examples:
-;; (flatten '(a (b c) ((d e) f)))
-;; => (A B C D E F)
-;; (flatten '(nil (b c) ((d e) f)))
-;; => (B C D E F)
+(defun flatten (obj)
+  (when obj
+    (do* ((result (list obj))
+          (node result))
+      ((null node) result)
+      (cond ((consp (car node))
+             (when (cdar node) (push (cdar node) (cdr node)))
+             (setf (car node) (caar node)))
+            (t (setf node (cdr node)))))))
 
 ;; }}}
 ;; prune {{{
