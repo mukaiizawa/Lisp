@@ -2,19 +2,19 @@
 (require "stdlib" *module-stdlib*)
 (provide "ahead-reader")
 
-(defparameter *escape-character* #\\)
-(defparameter *escape-mapper* (lambda (c)
-                         (case c
-                           (#\n #\Newline)
-                           (#\t #\Tab)
-                           (t c))))
-
 (defstruct ahead-reader
   (stream nil :type stream)
   (buf nil :type list)
   (linecount 0 :type number)
-  (pre +null-character+ :type character)
-  (curr +null-character+ :type character))
+  (escape-character #\\ :type character)
+  (escape-mapper (lambda (c)
+                   (case c
+                     (#\n #\Newline)
+                     (#\t #\Tab)
+                     (t c))))
+  (linecount 0 :type number)
+  (curr +null-character+ :type character)
+  (stack nil :type list))
 
 (defmacro with-ahead-reader ((reader &optional (stream *standard-input*)) &body body)
   `(let* ((,reader (make-ahead-reader :stream ,stream)))
@@ -40,13 +40,7 @@
 ;; get-linecount {{{
 
 (defmethod get-linecount ((reader ahead-reader))
-  (ahead-reader-linecount reader))
-
-;; }}}
-;; get-pre {{{
-
-(defmethod get-pre ((reader ahead-reader))
-  (ahead-reader-pre reader))
+  (1+ (ahead-reader-linecount reader)))
 
 ;; }}}
 ;; get-curr {{{
@@ -57,14 +51,25 @@
 ;; }}}
 ;; get-next {{{
 
-(defmethod get-next ((reader ahead-reader))
-  (peek-char nil (ahead-reader-stream reader) nil +null-character+))
-
-;; }}}
-;; reader-pre-in? {{{
-
-(defmethod reader-pre-in? ((reader ahead-reader) &rest args)
-  (find (ahead-reader-pre reader) args))
+(defmethod get-next ((reader ahead-reader) &optional (n 1))
+  (let* ((stack-size (length (ahead-reader-stack reader)))
+         (has-stack? (plusp stack-size)))
+    (cond ((and (not has-stack?)
+                (= n 1))
+           (peek-char nil (ahead-reader-stream reader) nil +null-character+))
+          ((and has-stack?
+                (<= n stack-size))
+           (nth (1- n) (ahead-reader-stack reader)))
+          (t
+            (do* ((acc)
+                  (curr (first acc) (first acc))
+                  (cnt 0 (1+ cnt)))
+              ((>= cnt (- n stack-size))
+               (progn (setf (ahead-reader-stack reader)
+                            (append (ahead-reader-stack reader)
+                                    (nreverse acc)))
+                      curr))
+              (push (read-ahead reader) acc))))))
 
 ;; }}}
 ;; reader-curr-in? {{{
@@ -85,70 +90,71 @@
   (eq (get-next reader) +null-character+))
 
 ;; }}}
-;; read-next {{{
+;; read-ahead {{{
 
-(defmethod read-next ((reader ahead-reader)
-                      &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
+(defmethod read-ahead ((reader ahead-reader))
   (if (reach-eof? reader)
-    (error "ahead-reader read-next: already reach eof.")
+    (error "ahead-reader read-ahead: already reach eof.")
     (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
       (when (char= c #\Newline)
         (incf (ahead-reader-linecount reader)))
-      (when (char= c escape)
-        (setq c (funcall escape-mapper
+      (when (char= c (ahead-reader-escape-character reader))
+        (setq c (funcall (ahead-reader-escape-mapper reader)
                          (read-char (ahead-reader-stream reader) nil +null-character+))))
-      (setf (ahead-reader-pre reader) (ahead-reader-curr reader)
-            (ahead-reader-curr reader) c)
-      (when cache (add-char reader c))
-      reader)))
+      c)))
+
+;; }}}
+;; read-next {{{
+
+(defmethod read-next ((reader ahead-reader) &key (cache t))
+  (let ((c (if (null (ahead-reader-stack reader))
+             (read-ahead reader)
+             (pop (ahead-reader-stack reader)))))
+    (when cache
+      (add-char reader c))
+    (setf (ahead-reader-curr reader) c))
+  reader)
 
 ;; }}}
 ;; read-n-times {{{
 
-(defmethod read-n-times
-  ((reader ahead-reader) (n number)
-                         &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
+(defmethod read-n-times ((reader ahead-reader) (n number) &key (cache t))
   (dotimes (i n)
-    (read-next reader :cache cache :escape escape :escape-mapper escape-mapper))
+    (read-next reader :cache cache))
   reader)
 
 ;; }}}
 ;; read-if {{{
 
-(defmethod read-if
-  ((fn function) (reader ahead-reader)
-                 &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
+(defmethod read-if ((fn function) (reader ahead-reader) &key (cache t))
   (while (and (not (reach-eof? reader))
               (funcall fn (get-next reader)))
-    (read-next reader :cache cache :escape escape :escape-mapper escape-mapper))
+    (read-next reader :cache cache))
   reader)
 
 ;; }}}
 ;; read-space {{{
 
-(defmethod read-space ((reader ahead-reader)
-                       &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
+(defmethod read-space ((reader ahead-reader) &key (cache t))
   (read-if (lambda (c)
              (char= c #\Space))
-           reader :cache cache :escape escape :escape-mapper escape-mapper)
+           reader :cache cache)
   reader)
 
 ;; }}}
 ;; read-number {{{
 
-(defmethod read-number ((reader ahead-reader)
-                        &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
-  (read-if #'digit-char-p reader :cache cache :escape escape :escape-mapper escape-mapper)
+(defmethod read-number ((reader ahead-reader) &key (cache t))
+  (read-if #'digit-char-p reader :cache cache)
   (when (char= (get-next reader) #\.)
     (read-if #'digit-char-p
-             (read-next reader :cache cache :escape escape :escape-mapper escape-mapper)))
+             (read-next reader :cache cache)))
   reader)
 
 ;; }}}
 ;; read-paren {{{
 
-(defmethod read-paren ((reader ahead-reader)
-                       &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
+(defmethod read-paren ((reader ahead-reader) &key (cache t))
   (let* ((left-paren (get-curr (read-next reader :cache nil)))
          (right-paren (case left-paren
                         (#\( #\))
@@ -159,18 +165,17 @@
                                   left-paren)))))
     (read-if (lambda (c)
                (char/= c right-paren))
-             reader :cache cache :escape escape :escape-mapper escape-mapper))
+             reader :cache cache))
   (read-next reader :cache nil))
 
 ;; }}}
 ;; read-segment {{{
 
-(defmethod read-segment ((reader ahead-reader)
-                         &key (cache t) (escape *escape-character*) (escape-mapper *escape-mapper*))
+(defmethod read-segment ((reader ahead-reader) &key (cache t))
   (let ((segment (get-curr (read-next reader :cache nil))))
     (read-next (read-if (lambda (c)
                           (char/= c segment))
-                        reader :cache cache :escape escape :escape-mapper escape-mapper)
+                        reader :cache cache)
                :cache nil)))
 
 ;; }}}
