@@ -208,4 +208,18 @@
   (coerce (reverse (ahead-reader-buf reader)) 'string))
 
 ;; }}}
+;; set-escape-character {{{
+
+(defmethod set-escape-character ((reader ahead-reader) (c character))
+  (setf (ahead-reader-escape-character reader) c)
+  reader)
+
+;; }}}
+;; set-escape-mapper {{{
+
+(defmethod set-escape-mapper ((reader ahead-reader) (fn function))
+  (setf (ahead-reader-escape-mapper reader) fn)
+  reader)
+
+;; }}}
 
