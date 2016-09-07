@@ -125,6 +125,16 @@
       (canonical-letargs (cdr lis)))))
 
 ;; }}}
+;; ilambda {{{
+
+(defmacro ilambda (params &body body)
+  `(lambda ,params
+     ,@(mapcar (lambda (x)
+                 `(declare (ignorable ,x)))
+               params)
+     ,@body))
+
+;; }}}
 ;; alambda {{{
 
 (defmacro alambda (parms &body body)
