@@ -126,8 +126,7 @@ toplevel             x
 (defpackage :ltk
   (:use :common-lisp
         #+(or :cmu :scl) :ext
-        #+:sbcl :sb-ext
-        )
+        #+:sbcl :sb-ext)
   (:shadow #+:sbcl #:exit)
   (:export #:*ltk-version*
            #:*cursors*

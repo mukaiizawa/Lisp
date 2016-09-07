@@ -1311,7 +1311,7 @@
                (format *error-output* "Try `~A --help' for more information.~%" ,(mkstr fn)))
              ,@body))
          (let ((*print-case* :downcase))
-           (executable (function ,gfn)
+           (to-executable (function ,gfn)
                        (mkstr ',fn (if (run-on? :windows) ".exe"))))))))
 
 ;; Examples: {{{
@@ -1338,14 +1338,14 @@
 ;; }}}
 
 ;; }}}
-;; executable {{{
+;; to-executable {{{
 
-(defun executable (fn fname)
+(defun to-executable (fn fname)
   #+ccl (ccl:save-application fname :toplevel-function fn :prepend-kernel t)
   #+sbcl (sb-ext:save-lisp-and-die fname :toplevel fn :executable t))
 
 ;; Examples:
-;; (executable #'hello "hello.exe")
+;; (to-executable #'hello "hello.exe")
 
 ;; }}}
 ;; exit {{{
