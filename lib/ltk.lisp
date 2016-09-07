@@ -310,78 +310,30 @@ toplevel             x
 ;;; put any tcl function definitions needed for running ltk here
 (defun init-wish ()
   (send-lazy
-  (send-wish "package require Tk")
-  (flush-wish)
-  #+:tk84
-  (send-wish "catch {package require Ttk}")
-  #-:tk84
-  (send-wish "if {[catch {package require Ttk} err]} {tk_messageBox -icon error -type ok -message \"$err\"}")
-  (send-wish "proc debug { msg } {
-             global server
-             puts $server \"(:debug \\\"[escape $msg]\\\")\"
-             flush $server } ")
-  (send-wish "proc escape {s} {regsub -all {\\\\} $s {\\\\\\\\} s1;regsub -all {\"} $s1 {\\\"} s2;return $s2}")
-  (send-wish "proc senddata {s} {global server; puts $server \"(:data [escape $s])\";flush $server}")
-  (send-wish "proc senddatastring {s} {
-             global server
-             puts $server \"(:data \\\"[escape $s]\\\")\"
-             flush $server } ")
-  (send-wish "proc senddatastrings {strings} {
-             global server 
-             puts $server \"(:data (\"
-                                     foreach s $strings {
-                                     puts $server \"\\\"[escape $s]\\\"\"
-                                     }
-                                     puts $server \"))\";flush $server} ")
-  (send-wish "proc to_keyword  {s} {
-                if {[string index $s 0] == \"-\"} {
-                   return \":[string range $s 1 [string length $s]]\" } {return \":$s\"}}")
-  (send-wish "proc sendpropertylist {l} {
-               global server; 
-               set pos 0
-               set ll [llength $l]
-               puts $server \"(:data (\"
-               while {$pos < $ll} {
-                 puts $server \" [to_keyword [lindex $l $pos]] \"
-                 set pos [expr $pos + 1]
-                 puts $server \" [lindex $l $pos] \"
-                 set pos [expr $pos + 1]
-                }
-               puts $server \"))\" }")
-  (send-wish "proc searchall {widget pattern} {
-                  set l [string length $pattern]
-                 set result [$widget search $pattern 1.0]
-                 set previous 0
-                 while {$result > $previous} {
-                     $widget tag add sel $result $result+${l}chars
-                     set previous $result
-                     set result [$widget search $pattern $result+${l}chars]
-                 }
-             }")
-  (send-wish "proc searchnext {widget pattern} {
-                 set l [string length $pattern]
-                 set result [$widget search $pattern insert]
-                 if {$result > 0} {
-                     $widget tag remove sel 1.0 end
-                     $widget tag add sel $result $result+${l}chars
-                     $widget mark set insert $result+${l}chars
-                     $widget see insert
-                 }
-             }")
-  (send-wish "proc resetScroll {c} {
-             $c configure -scrollregion [$c bbox all]
-             }
-             proc moveToStart {sb} {
-             set range [$sb get]
-             $sb set 0 [expr [lindex $range 1] - [lindex $range 0]]
-             } ")
-  (send-wish "proc sendevent {s x y keycode char width height root_x root_y mouse_button} {global server; puts $server \"(:event \\\"$s\\\" $x $y $keycode $char $width $height $root_x $root_y $mouse_button)\"; flush $server} ")
-  (send-wish "proc callback {s} {global server; puts $server \"(:callback \\\"$s\\\")\";flush $server} ")
-  (send-wish "proc callbackval {s val} {global server; puts $server \"(:callback \\\"$s\\\" $val)\"} ")
-  (send-wish "proc callbackstring {s val} {global server; puts $server \"(:callback \\\"$s\\\" \\\"[escape $val]\\\")\"} ")
-  (send-wish "proc keepalive {} {global server; puts $server \"(:keepalive  \\\"[clock format [clock seconds] -format \"%d/%m/%y %T\"]\\\")\"; flush $server}")
-  (dolist (fun *init-wish-hook*)	; run init hook funktions 
-    (funcall fun))))
+    (send-wish "package require Tk")
+    (flush-wish)
+    #+:tk84
+    (send-wish "catch {package require Ttk}")
+    #-:tk84
+    (send-wish "if {[catch {package require Ttk} err]} {tk_messageBox -icon error -type ok -message \"$err\"}
+               proc debug { msg } { global server puts $server \"(:debug \\\"[escape $msg]\\\")\" flush $server }
+               proc escape {s} {regsub -all {\\\\} $s {\\\\\\\\} s1;regsub -all {\"} $s1 {\\\"} s2;return $s2}
+               proc senddata {s} {global server; puts $server \"(:data [escape $s])\";flush $server}
+               proc senddatastring {s} { global server puts $server \"(:data \\\"[escape $s]\\\")\" flush $server }
+               proc senddatastrings {strings} { global server puts $server \"(:data (\" foreach s $strings { puts $server \"\\\"[escape $s]\\\"\" } puts $server \"))\";flush $server}
+               proc to_keyword  {s} { if {[string index $s 0] == \"-\"} { return \":[string range $s 1 [string length $s]]\" } {return \":$s\"}}
+               proc sendpropertylist {l} { global server; set pos 0 set ll [llength $l] puts $server \"(:data (\" while {$pos < $ll} { puts $server \" [to_keyword [lindex $l $pos]] \" set pos [expr $pos + 1] puts $server \" [lindex $l $pos] \" set pos [expr $pos + 1] } puts $server \"))\" }
+               proc searchall {widget pattern} { set l [string length $pattern] set result [$widget search $pattern 1.0] set previous 0 while {$result > $previous} { $widget tag add sel $result $result+${l}chars set previous $result set result [$widget search $pattern $result+${l}chars] } }
+               proc searchnext {widget pattern} { set l [string length $pattern] set result [$widget search $pattern insert] if {$result > 0} { $widget tag remove sel 1.0 end $widget tag add sel $result $result+${l}chars $widget mark set insert $result+${l}chars $widget see insert } }
+               proc resetScroll {c} { $c configure -scrollregion [$c bbox all] }
+               proc moveToStart {sb} { set range [$sb get] $sb set 0 [expr [lindex $range 1] - [lindex $range 0]] }
+               proc sendevent {s x y keycode char width height root_x root_y mouse_button} {global server; puts $server \"(:event \\\"$s\\\" $x $y $keycode $char $width $height $root_x $root_y $mouse_button)\"; flush $server}
+               proc callback {s} {global server; puts $server \"(:callback \\\"$s\\\")\";flush $server}
+               proc callbackval {s val} {global server; puts $server \"(:callback \\\"$s\\\" $val)\"}
+               proc callbackstring {s val} {global server; puts $server \"(:callback \\\"$s\\\" \\\"[escape $val]\\\")\"}
+               proc keepalive {} {global server; puts $server \"(:keepalive  \\\"[clock format [clock seconds] -format \"%d/%m/%y %T\"]\\\")\"; flush $server}")
+               (dolist (fun *init-wish-hook*)	; run init hook funktions 
+                 (funcall fun))))
 
 ;; }}}
 ;; init-tcl {{{
@@ -395,6 +347,7 @@ set server stdout
 set tclside_ltkdebug ~:[0~;1~]
 package require Tk
 wm protocol . WM_DELETE_WINDOW exit
+wm attribute . -topmost 1
 if {$tclside_ltkdebug} {
    toplevel .ltk
    wm title .ltk \"Debug output\"
@@ -1451,7 +1404,8 @@ can be passed to AFTER-CANCEL"
 
 (defmethod create ((widget widget))
   (when (init-command widget)
-    ;;(format t "creating: ~a~%" (init-command widget)) (finish-output)
+    (format t "creating: ~a~%" (init-command widget))
+    (finish-output)
     (format-wish (init-command widget) (widget-path widget))))
 
 (defgeneric (setf command) (value widget))
