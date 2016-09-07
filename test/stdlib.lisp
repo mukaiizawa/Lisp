@@ -226,4 +226,19 @@ END
   (after?-05 (after? "c" "a" '("a" "b" "c") :test #'equal) '("c")))
 
 ;; }}}
+;; last-member {{{
+
+(test-all
+  (last-member-01 (last-member 'a  nil) nil)
+  (last-member-02 (last-member 'a  '(a 1)) '(a 1))
+  (last-member-03 (last-member 'a  '(a 1 a 2 a 3)) '(a 3)))
+
+;; }}}
+;; most {{{
+
+(test-all
+  (most-01 (most #'length '((1) (1 2) (1 2 3) (1 2 3 4))) '(1 2 3 4) 4)
+  (most-02 (most #'values '(1 2 3 4 5)) 5 5))
+
+;; }}}
 
