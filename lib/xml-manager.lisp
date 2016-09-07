@@ -249,7 +249,7 @@
 ;; :!-- {{{
 
 (defmacro :!-- (str)
-  `(make-xml-node :node-type 'comment :value ,str))
+  `(make-xml-node :type 'comment :value ,str))
 
 ;; }}}
 ;; with-xml-encode {{{
@@ -388,9 +388,9 @@
                                             (read-next    ; skip `>'
                                               (read-if (lambda(c)
                                                          (declare (ignore c))
-                                                         (not (and (reader-pre-in? reader #\-)
-                                                                   (reader-curr-in? reader #\-)
-                                                                   (reader-next-in? reader #\>))))
+                                                         (not (and (char= (get-next reader) #\-)
+                                                                   (char= (get-next reader 2) #\-)
+                                                                   (char= (get-next reader 3) #\>))))
                                                        reader))))))
           ((string= name "!DOCTYPE")
            (make-xml-node :type 'document-type
