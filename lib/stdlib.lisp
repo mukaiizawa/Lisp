@@ -443,9 +443,6 @@
                     last-match))))
     (rec lst nil)))
 
-;; (last-member 'a '(a 1 a 2 a 3))
-;; => (A 3) 
-
 ;; }}}
 ;; most {{{
 
@@ -461,25 +458,20 @@
                   max score))))
       (values wins max))))
 
-;; (most #'length '((1) (1 2) (1 2 3) (1 2 3 4)))
-;; => (1 2 3 4) 
-;; (most #'values '(1 2 3 4 5))
-;; => 5 
-
 ;; }}}
 
 ;; functional utils
-;; maprec {{{
+;; maptree {{{
 
-(defun maprec (fn &rest args)
+(defun maptree (fn &rest args)
   (if (some #'atom args)
     (apply fn args)
     (apply #'mapcar
            (lambda (&rest args)
-             (apply #'maprec fn args))
+             (apply #'maptree fn args))
            args)))
 
-;; (maprec (lambda (x) (* x x)) '(1 2 (3 4) (5 6 (7 8)) 9))
+;; (maptree (lambda (x) (* x x)) '(1 2 (3 4) (5 6 (7 8)) 9))
 ;; => (1 4 (9 16) (25 36 (49 64)) 81) 
 ;;
 ;; Notes: see@ mapfile
