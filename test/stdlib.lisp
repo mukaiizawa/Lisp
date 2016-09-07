@@ -198,12 +198,21 @@ END
   (flatten-04 (flatten '((1) (2) (nil) (4) (5))) '(1 2 nil 4 5)))
 
 ;; }}}
-;; prone {{{
+;; prune {{{
 
 (test-all
   (prune-01 (prune #'oddp
                    '(1 ((2 3) 4) 5 (6 7) 8 9))
             '(((2) 4) (6) 8)))
+
+;; }}}
+;; before? {{{
+
+(test-all
+  (before?-01 (before? 'a 'b nil) nil)
+  (before?-02 (before? 'a 'b '(a)) '(a))
+  (before?-03 (before? 'a 'b '(a b)) '(a b))
+  (before?-04 (before? 'a 'b '(b a)) nil))
 
 ;; }}}
 
