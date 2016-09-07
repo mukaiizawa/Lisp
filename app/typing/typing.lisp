@@ -44,4 +44,3 @@
         (while (not (string= word (read-line))))))
     (summary start-time)))
 
-
