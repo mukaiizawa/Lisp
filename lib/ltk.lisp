@@ -120,323 +120,6 @@ toplevel             x
 }}} |#
 
 (provide "ltk")
-
-;; package :ltk {{{
-
-(defpackage :ltk
-  (:use :common-lisp
-        #+(or :cmu :scl) :ext
-        #+:sbcl :sb-ext)
-  (:shadow #+:sbcl #:exit)
-  (:export #:*ltk-version*
-           #:*cursors*
-           #:*debug-tk*
-           #:*debug-buffers*
-           #:*break-mainloop*
-           #:*exit-mainloop*
-           #:*init-wish-hook*
-           #:*mb-icons*
-           #:*ltk-debug*
-           #:*tk*
-           #:*wish*
-           #:wish-stream
-           #:wish-variable
-           #:wish-variables
-           #:*wish-args*
-           #:*wish-pathname*
-           #:*default-ltk-debugger*
-           #:add-pane
-           #:add-separator
-           #:after
-           #:after-cancel
-           #:after-idle
-           #:append-text
-           #:append-newline
-           #:ask-okcancel
-           #:ask-yesno
-           #:background
-           #:bbox
-           #:bell
-           #:bind
-           #:button
-           #:calc-scroll-region
-           #:canvas
-           #:canvas-line
-           #:canvas-oval
-           #:canvas-polygon
-           #:canvas-rectangle
-           #:canvas-text
-           #:canvas-image
-           #:canvas-item
-           #:canvas-arc
-           #:canvas-bbox
-           #:canvas-window
-           #:canvasx
-           #:canvasy
-           #:cget
-           #:check-button
-           #:choose-color
-           #:choose-directory
-           #:clear-text
-           #:clear
-           #:clipboard-append
-           #:clipboard-clear
-           #:clipboard-get
-           #-:tk84
-           #:combobox
-           #:command
-           #:coords
-           #:configure
-           #:create-arc
-           #:create-bitmap
-           #:create-image
-           #:create-line
-           #:create-line*
-           #:create-menu2
-           #:create-oval
-           #:create-polygon
-           #:create-rectangle
-           #:create-text
-           #:create-window
-           #:*debug-settings-table*
-           #:defargs
-           #:deiconify
-           #:destroy
-           #:do-execute
-           #:do-msg
-           #:entry
-           #:entry-select
-           #:exit-wish
-           #:event
-           #:event-x
-           #:event-y
-           #:event-keycode
-           #:event-char
-           #:event-mouse-button
-           #:event-root-x
-           #:event-root-y
-           #:event-width
-           #:event-height
-           #:focus
-           #:font-configure
-           #:font-create
-           #:font-delete
-           #:font-metrics
-           #:force-focus
-           #:forget-pane
-           #:format-wish
-           #:frame
-           #:geometry
-           #:get-open-file
-           #:get-save-file
-           #:grab
-           #:grab-release
-           #:grid
-           #:grid-columnconfigure
-           #:grid-configure
-           #:grid-forget
-           #:grid-rowconfigure
-           #:hscroll
-           #:iconify
-           #:iconwindow
-           #:image-load
-           #:image-setpixel
-           #:cursor-index
-           #:input-box
-           #:insert-object
-           #:interior
-           #:itembind
-           #:itemconfigure
-           #:itemdelete
-           #:itemmove
-           #:itemlower
-           #:itemraise
-           #:label
-           #:labelframe
-           #:listbox
-           #:listbox-append
-           #:listbox-clear
-           #:listbox-delete
-           #:listbox-configure
-           #:listbox-get-selection
-           #:listbox-nearest
-           #:listbox-select
-           #:load-text
-           #:lower
-           #:mainloop
-           #:make-items
-           #:create-items
-           #:make-canvas
-           #:make-frame
-           #:make-image
-           #:make-label
-           #:make-menu
-           #:make-menubar
-           #:make-menubutton
-           #:make-scrollbar
-           #:make-scrolled-canvas
-           #:make-text
-           #:make-toplevel
-           #:make-line
-           #:make-oval
-           #:make-polygon
-           #:make-rectangle
-           #:master
-           #:maxsize
-           #:menu
-           #:menubar
-           #:menubutton
-           #:menucheckbutton
-           #:menu-delete
-           #:menuradiobutton
-           #:message
-           #:message-box
-           #:minsize
-           #:move
-           #:move-all
-           #:normalize
-           #-:tk84
-           #:notebook
-           #:on-close
-           #:on-focus
-           #:pack
-           #:pack-forget
-           #:pack-forget-all
-           #:pack-propagate
-           #:paned-window
-           #:photo-image
-           #:*ping-interval-seconds*
-           #:place
-           #:place-forget
-           #:popup
-           #:postscript
-           #:process-events
-           #:radio-button
-           #:raise
-           #:read-event
-           #:resizable
-           #:sash-coord
-           #:sash-place
-           #:save-text
-           #:scale
-           #:screen-height
-           #:screen-height-mm
-           #:screen-mouse
-           #:screen-mouse-x
-           #:screen-mouse-y
-           #:screen-width
-           #:screen-width-mm
-           #:scrollbar
-           #:scrolled-canvas
-           #:scrolled-frame
-           #:scrolled-listbox
-           #:scrolled-text
-           #:scrollregion
-           #:search-all-text
-           #:search-next-text
-           #:see
-           #:send-lazy
-           #:send-wish
-           #:set-coords
-           #:set-coords*
-           #:set-focus-next
-           #:set-geometry
-           #:set-geometry-wh
-           #:set-geometry-xy
-           #:set-wm-overrideredirect
-           #:spinbox
-           #:start-wish
-           #:tag-bind
-           #:tag-configure
-           #:text
-           #:textbox
-           #:tkobject
-           #:title
-           #:toplevel
-           #:value
-           #:options
-           #:vscroll
-           #:widget
-           #:widget-path
-           #:window-height
-           #:window-id
-           #:window-width
-           #:window-x
-           #:window-y
-           #:window-transient
-           #:make-ltk-connection
-           #:widget-class-name
-           #:with-atomic
-           #:with-ltk
-           #:call-with-ltk
-           #:exit-with-remote-ltk
-           #:with-modal-toplevel
-           #:with-remote-ltk
-           #:with-widgets
-           #:withdraw
-           #-:tk84
-           #:wm-forget
-           #-:tk84
-           #:wm-manage
-           #:wm-title
-           #:wm-state
-           #:with-hourglass
-           #:notebook-index
-           #:notebook-add
-           #:notebook-tab
-           #:notebook-forget
-           #:notebook-hide
-           #:notebook-identify
-           #:notebook-select
-           #:notebook-events
-           #:notebook-enable-traversal
-           #:defwidget
-           #:progressbar
-           #:length
-           #:mode
-           #:maximum
-           #:phase
-           #:separator
-           #:sizegrip
-           #:treeview
-           #:treeview-delete
-           #:column-configure
-           #:children
-           #:treeview-focus
-           #:treeview-exists
-           #:dictionary-plist
-           #:treeview-insert
-           #:treeview-item
-           #:treeview-column
-           #:treeview-heading
-           #:treeview-move
-           #:treeitem
-           #:self
-           #:reset-scroll
-           #:scroll-to-top
-           #:tagbind
-           #:pane-configure
-           #:handle
-           #:column-values
-           #:listbox-insert
-           #:font-families
-           #:scrolled-treeview
-           #:treeview-get-selection
-           #:treeview-identify
-           #:treeview-identify-item
-           #:treeview-set-selection
-           #:items
-           #:image))
-
-;; }}}
-;; :ltk-user {{{
-
-(defpackage :ltk-user
-  (:use :common-lisp :ltk))
-
-;; }}}
-
-(in-package :ltk)
 (defvar *ltk-version* "0.98")
 
 ;; do-execute {{{
@@ -970,7 +653,6 @@ fconfigure stdout -encoding utf-8
   ;; an error message.
   (flush-wish)
   (let ((*read-eval* nil)
-        (*package* (find-package :ltk))
         (stream (wish-stream *wish*)))
     (if (eql #\( (peek-char t stream nil))
       (read stream nil)
@@ -1371,7 +1053,7 @@ can be passed to AFTER-CANCEL"
       (highlightbackground highlightbackground "~@[ -highlightbackground ~(~a~)~]" highlightbackground "")
       (highlightcolor highlightcolor "~@[ -highlightcolor ~(~a~)~]" highlightcolor "")
       (highlightthickness highlightthickness "~@[ -highlightthickness ~(~a~)~]" highlightthickness "")
-      (image image "~@[ -image {~/ltk::down/}~]" (and image (name image))
+      (image image "~@[ -image {~/down/}~]" (and image (name image))
              "the image to display on the widget, the display is affected by the options 'anchor' and 'justify'")
       (increment increment "~@[ -increment ~(~a~)~]" increment "size of the increment of the widget")
       (indicatorOn indicatorOn "~@[ -indicatorOn ~(~a~)~]" indicatorOn "")
@@ -2164,7 +1846,7 @@ can be passed to AFTER-CANCEL"
 
 (defgeneric add-pane (window widget &rest options))
 (defmethod add-pane ((pw paned-window) (w widget) &rest options)
-  (format-wish "~a add ~a ~{ -~(~a~) {~/ltk::down/}~}" (widget-path pw) (widget-path w) options)
+  (format-wish "~a add ~a ~{ -~(~a~) {~/down/}~}" (widget-path pw) (widget-path w) options)
   pw)
 
 (defgeneric forget-pane (window widget))
@@ -2174,7 +1856,7 @@ can be passed to AFTER-CANCEL"
 
 (defgeneric pane-configure (l i &rest options))
 (defmethod pane-configure ((p paned-window) (w widget)  &rest options)
-  (format-wish "~a paneconfigure ~a ~{ -~(~a~) {~/ltk::down/}~}" (widget-path p) (widget-path w)  options)
+  (format-wish "~a paneconfigure ~a ~{ -~(~a~) {~/down/}~}" (widget-path p) (widget-path w)  options)
   p)
 
 (defgeneric sash-coord (window index))
@@ -2259,7 +1941,7 @@ can be passed to AFTER-CANCEL"
 
 (defgeneric listbox-configure (l i &rest options))
 (defmethod listbox-configure ((l listbox) index &rest options)
-  (format-wish "~a itemconfigure ~a ~{ -~(~a~) {~/ltk::down/}~}" (widget-path l) index options)
+  (format-wish "~a itemconfigure ~a ~{ -~(~a~) {~/down/}~}" (widget-path l) index options)
   l)
 
 (defgeneric listbox-nearest (listbox y))
@@ -2660,7 +2342,7 @@ can be passed to AFTER-CANCEL"
                   (string= arg "")))
          (format stream "{}"))
         ((listp arg)
-         (format stream "{~{~/ltk::tk-princ/~^ ~}}" (mapcar #'tkescape arg)))
+         (format stream "{~{~/tk-princ/~^ ~}}" (mapcar #'tkescape arg)))
         (t
          (format stream "~a" (tkescape arg)))))
 
@@ -2670,7 +2352,7 @@ can be passed to AFTER-CANCEL"
   ;; Remove the keys that aren't optional in Tcl.
   (remf options :parent)
   (remf options :index)
-  (format-wish "~a insert ~a ~a~{ -~(~a~) ~/ltk::tk-princ/~}"
+  (format-wish "~a insert ~a ~a~{ -~(~a~) ~/tk-princ/~}"
                (widget-path tree)
                parent
                index
@@ -2685,7 +2367,7 @@ can be passed to AFTER-CANCEL"
   "Query or modify the options for the specified item."
   (cond
     ((second options) ;; modify
-     (format-wish "~a item ~a~{ -~(~a~) ~/ltk::tk-princ/~}"
+     (format-wish "~a item ~a~{ -~(~a~) ~/tk-princ/~}"
                   (widget-path tree) item options))
     (t ;; query
      (format-wish "senddatastring [~a item ~a ~@[ -~(~a~)~]]"
@@ -2696,7 +2378,7 @@ can be passed to AFTER-CANCEL"
   "Query or modify the options for the specified column."
   (cond
     ((second options) ;; modify
-     (format-wish "~a column ~a~{ -~(~a~) ~/ltk::tk-princ/~}"
+     (format-wish "~a column ~a~{ -~(~a~) ~/tk-princ/~}"
                   (widget-path tree) column options))
     (t ;; query
      (format-wish "senddatastring [~a column ~a ~@[ -~(~a~)~]]"
@@ -2715,7 +2397,7 @@ can be passed to AFTER-CANCEL"
          (add-callback cbname command)
          (setf (getf options :command)
                (concatenate 'string "{callback " cbname "}"))))
-     (format-wish "~a heading ~a~{ -~(~a~) ~/ltk::tk-princ/~}"
+     (format-wish "~a heading ~a~{ -~(~a~) ~/tk-princ/~}"
                   path column options))
     (t ;; query
      (format-wish "senddatastring [~a heading ~a ~@[ -~(~a~)~]]"
@@ -2923,7 +2605,7 @@ can be passed to AFTER-CANCEL"
   (itemmove (canvas item) (handle item) (tk-number dx) (tk-number dy)))
 
 (defmethod itemmove ((canvas canvas) item dx dy)
-  (format-wish "~a move {~/ltk::down/} ~a ~a" (widget-path canvas) item (tk-number dx) (tk-number dy)))
+  (format-wish "~a move {~/down/} ~a ~a" (widget-path canvas) item (tk-number dx) (tk-number dy)))
 
 (defgeneric itemdelete (canvas item))
 (defmethod itemdelete ((canvas canvas) (item integer))
@@ -3023,7 +2705,7 @@ can be passed to AFTER-CANCEL"
                  (loop
                    while item
                    do
-                   (format stream " -~(~a~) {~/ltk::down/}"
+                   (format stream " -~(~a~) {~/down/}"
                            (pop item) (pop item)))))
     (let ((itemtype (pop item))
           (cpath (widget-path canvas)))
@@ -3207,7 +2889,7 @@ can be passed to AFTER-CANCEL"
 
 (defgeneric tag-configure (txt tag option value &rest others))
 (defmethod tag-configure ((txt text) tag option value &rest others)
-  (format-wish "~a tag configure ~a~{ -~(~a~) {~/ltk::down/}~}" (widget-path txt)
+  (format-wish "~a tag configure ~a~{ -~(~a~) {~/down/}~}" (widget-path txt)
                (if (stringp tag)
                  tag
                  (format nil "~(~a~)" tag))
@@ -3378,14 +3060,14 @@ can be passed to AFTER-CANCEL"
 
 (defgeneric configure (widget option value &rest others))
 (defmethod configure (widget option value &rest others)
-  (format-wish "~A configure~{ -~(~a~) {~/ltk::down/}~}"
+  (format-wish "~A configure~{ -~(~a~) {~/down/}~}"
                (widget-path widget)
                (list* option value others))
   widget)
 
 (defmethod configure ((item menuentry) option value &rest others)
   (let ((path (widget-path (master item))))
-    (format-wish "~A entryconfigure [~A index {~A}]~{ -~(~a~) {~/ltk::down/}~}"
+    (format-wish "~A entryconfigure [~A index {~A}]~{ -~(~a~) {~/down/}~}"
                  path
                  path
                  (text item)
@@ -3393,13 +3075,13 @@ can be passed to AFTER-CANCEL"
   item)
 
 (defmethod configure ((item canvas-item) option value &rest others)
-  (format-wish "~A itemconfigure ~A~{ -~(~a~) {~/ltk::down/}~}"
+  (format-wish "~A itemconfigure ~A~{ -~(~a~) {~/down/}~}"
                (widget-path (canvas item)) (handle item)
                (list* option value others))
   item)
 
 (defmethod tag-configure ((c canvas) tag option value &rest others)
-  (format-wish "~a itemconfigure ~a~{ -~(~a~) {~/ltk::down/}~}" (widget-path c)
+  (format-wish "~a itemconfigure ~a~{ -~(~a~) {~/down/}~}" (widget-path c)
                (if (stringp tag)
                  tag
                  (format nil "~(~a~)" tag))
@@ -3469,22 +3151,22 @@ can be passed to AFTER-CANCEL"
 ;; }}}
 
 ;; font functions
-;; use {~/ltk::down/} on the font name to match itemconfigure {{{
+;; use {~/down/} on the font name to match itemconfigure {{{
 
 (defun font-configure (name &key family size weight slant underline overstrike)
-  (format-wish "font configure {~/ltk::down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]"
+  (format-wish "font configure {~/down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]"
                name family size weight slant underline overstrike))
 
 (defun font-create (name &key family size weight slant underline overstrike)
-  (format-wish "senddatastring [font create {~/ltk::down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]]"
+  (format-wish "senddatastring [font create {~/down/}~@[ -family ~a~]~@[ -size ~a~]~@[ -weight ~(~a~)~]~@[ -slant ~(~a~)~]~@[ -underline ~a~]~@[ -overstrike ~a~]]"
                name family size weight slant underline overstrike)
    (read-data))
  
 (defun font-delete (&rest names)
-  (format-wish "font delete~{ {~/ltk::down/}~}" names))
+  (format-wish "font delete~{ {~/down/}~}" names))
 
  (defun font-metrics (font)
-   (format-wish "sendpropertylist [font metrics {~/ltk::down/}]" font)
+   (format-wish "sendpropertylist [font metrics {~/down/}]" font)
    (read-data))
  
 (defun font-families ()
@@ -3717,7 +3399,7 @@ can be passed to AFTER-CANCEL"
 #-:tk84
 (defun theme-names ()
   (send-wish "senddatastrings [ttk::style theme names]")
-  (ltk::read-data))
+  (read-data))
 
 (defun focus (widget)
   (format-wish "focus ~a" (widget-path widget))
@@ -4322,83 +4004,6 @@ can be passed to AFTER-CANCEL"
 (defmethod entry-typed ((self test-widget2) keycode)
   (format t "typed:~a~%text:~a~%" keycode (text (e self))) (finish-output))
 
-(defun defwidget-test ()
-  (declare (optimize (debug 3)))
-  (with-ltk ()
-    (let ((mw (make-instance 'tw)))
-      (format t "mw is: ~a~%" mw) (finish-output)
-      (pack mw :side :top :fill :both :expand t)
-      (pack (make-instance 'button :text "get first"
-                           :command (lambda ()
-                                      (format t "the first is: ~a~%" (firstline mw))
-                                      (finish-output))) :side :top :fill :both :expand t))))
-
-;;;
-
-(defun with-widgets-test ()
-  (with-ltk ()
-    (with-widgets
-      (toplevel top-frame :title "with-widgets-test"
-                (label lb1 :text "Test, Test!" :pack '(:side :top))
-                (entry en1 :pack '(:side :top) :text "")
-                (frame fr1 :pack '(:side :bottom)
-                       (button bt1 :text "OK" :pack '(:side :right)
-                               :command (lambda () (format t "Pressed OK~%")))
-                       (button bt2 :text "CANCEL" :pack '(:side :left)
-                               :command (lambda () (withdraw top-frame)))))
-      (setf (text lb1) "Test, Test, Test!")
-      )))
-
-;; testing functions
-
-;; notebook
-(defun nbtest ()
-  (with-ltk ()
-    (let* ((nb (make-instance 'notebook))
-           (f1 (make-instance 'frame :master nb))
-           (f2 (make-instance 'frame :master nb))
-           (t1 (make-instance 'text :master f1 :width 40 :height 10))
-           (b1 (make-instance 'button :master f1 :text "Press me"
-                              :command (lambda ()
-                                         (format t "the index is:~a~%" (notebook-index nb f1))
-                                         (finish-output))))
-           (b2 (make-instance 'button :master f2 :text "A button"
-                              :command (lambda ()
-                                         (format t "the index is:~a~%" (notebook-index nb f2))
-                                         (finish-output)))))
-      (pack nb :fill :both :expand t)  
-      (pack t1 :fill :both :expand t)
-      (pack b1 :side :top)
-      (pack b2 :side :top)
-      (notebook-add nb f1 :text "Frame 1")
-      (notebook-add nb f2 :text "Frame 2")
-      (append-text t1 "Foo Bar Baz")
-      )))
-
-(defwidget nbw (frame)
-           ()
-           ((nb notebook :pack (:fill :both :expand t)
-                (f1 frame
-                    (t1 text :width 60 :height 20 :pack (:side :top))
-                    (b1 button :text "Press Me" :pack (:side :top)
-                        :command (lambda ()
-                                   (format t "the index is:~a~%" (notebook-index nb f1))
-                                   (finish-output))))
-                (f2 frame
-                    (b2 button :text "A button" :pack (:side :top)
-                        :command (lambda ()
-                                   (format t "the index is:~a~%" (notebook-index nb f2))
-                                   (finish-output))))))
-           (notebook-add nb f1 :text "Frame 1")
-           (notebook-add nb f2 :text "Frame 2")
-           (append-text t1 "Foo Bar Baz"))
-
-(defun nbt2 ()
-  (with-ltk ()
-    (let ((w (make-instance 'nbw)))
-      (pack w :side :top :fill :both :expand t))))
-
-
 ;;; Basic graphical error/warning/etc handling
 
 (defun make-condition-handler-function (&key (class 'graphical-condition-handler)
@@ -4452,7 +4057,7 @@ can be passed to AFTER-CANCEL"
 
     - Call cl:abort, which will abort the Ltk event that raised this condition.
 
-    - Throw to ltk:modal-toplevel, which will leave the condition unhandled."))
+    - Throw to modal-toplevel, which will leave the condition unhandled."))
 
 (defclass ltk-condition-handler (frame)
   ((prototypep :initform nil :initarg :prototype
@@ -4632,36 +4237,6 @@ can be passed to AFTER-CANCEL"
     #+sbcl (quit)
     #+(or cmu scl) (ext:quit)))
 
-;; debugger-test {{{
-
-(defun debugger-test (debugger-class)
-  (with-ltk (:debugger-class debugger-class :debug-tcl t)
-    (pack
-      (list
-        (make-instance 'label :text (format nil "Debugger class ~S" debugger-class))
-        (make-instance 'button
-                       :text "Error"
-                       :command (lambda () (error "This is an error.")))
-        (make-instance 'button
-                       :text "Continuable Error"
-                       :command (lambda ()
-                                  (cerror "Keep going with this computation"
-                                          "This is an error.")
-                                  (do-msg "You chose to continue!" :title "Congratulations")))
-        (make-instance 'button
-                       :text "Warning"
-                       :command (lambda ()
-                                  (warn "This is a warning.")
-                                  (do-msg "After a warning was raised, computation continued."
-                                          :title "And then...")))
-        (make-instance 'button
-                       :text "Signal"
-                       :command (lambda ()
-                                  (signal 'condition)
-                                  (do-msg "After a condition was signalled, computation continued."
-                                          :title "And then...")))))))
-
-;; }}}
 ;; input-box {{{
 
 (defun input-box (prompt &key (title "Input") default)
@@ -4698,111 +4273,4 @@ can be passed to AFTER-CANCEL"
          (text e))))
 
 ;; }}}
-;; modal-test {{{
-
-(defun modal-test ()
-  (with-ltk ()
-    (let* ((b (make-instance 'button
-                             :text "Input" 
-                             :command
-                             (lambda ()
-                               (let ((erg (input-box "Enter a string:" :title "String input")))
-                                 (if erg 
-                                   (format t "input was: ~a~%" erg)
-                                   (format t "input was cancelled~%"))
-                                 (finish-output))))))
-      (pack b))))
-
-;; }}}
-
-#-:tk84
- (defun combotest ()
-  (with-ltk ()
-    (let* ((c (make-instance 'combobox :text "foo" :values '("bar" "baz" "foo bar")))
-           (add (make-instance 'button :text "Add values"
-                               :command (lambda ()
-                                          (setf (options c) (list 1 2 "asdf xx" "bb" "cc")))))
-           (ok (make-instance 'button :text "Ok" :command
-                             (lambda ()
-                               (format t "text: ~a~%" (text c))
-                               (exit-wish)))))
-      (bind c "<KeyRelease>" (lambda (event)
-                               (declare (ignore event))
-                               (format t "newsel:~a~%" (text c))
-                               (finish-output)))
-      (bind c "<<ComboboxSelected>>" (lambda (event)
-                                       (declare (ignore event))
-                                       (format t "newsel:~a~%" (text c))
-                                       (finish-output)))
-      (pack add :side :right)
-      (pack ok :side :right)
-      (pack c :side :left))))
-
-(defun packtest1 ()
-  (with-ltk ()
-    (dotimes (i 10)
-      (let ((s ""))
-        (dotimes (j i)
-          (setf s (format nil "~a " s))) 
-      (pack (make-instance 'button :text (format nil "Button~a Nr. ~a" s i)))
-      (sleep 0.1)))))
-
-(defun packtest2 ()
-  (with-ltk (:debug-tcl t)
-    (with-atomic
-        (dotimes (i 10)
-          (pack (make-instance 'button :text (format nil "Button Nr. ~a" i))))))) 
-
-(defun sctest()
-  (with-ltk (:debug-tcl t)
-    (let* ((sf (make-instance 'scrolled-frame))
-           (f (interior sf))
-           (n 1)
-           (b1 (make-instance 'button :master f :text "Button 1"
-                              :command (lambda ()
-                                         (incf n)
-                                         (pack (make-instance 'button :master f
-                                                              :text (format nil "Button ~a" n))
-                                               :side :left))))
-           )
-      (pack sf :side :top :fill :both :expand t)
-      (pack b1 :side :left))))
-
-
-(defun etest ()
-  (with-ltk ()
-    (let ((b (make-instance 'button :text " a button :)")))
-      (pack b)
-      ;;(send-wish (format nil "~a configure -text \" a } button\"" (widget-path b)))
-      (setf (text b) " )} xasdf ")
-      ;(send-wish "button }\"")
-      (flush-wish))))
-
-;;; treview tests
-
-(defwidget treeviewtest (frame)
-  ()
-  ((tree treeview :pack (:side :top :expand t :fill :both)))
-  (let* ((first (make-instance 'treeitem :tree tree :text "Hallo"))
-	 (second (make-instance 'treeitem :tree tree :master first :text "Welt")))
-    (declare (ignorable second))))
-
-(defun treeview-test ()
-  (with-ltk ()
-    (pack (make-instance 'treeviewtest) :fill :both :expand t)))
-
-(defmacro with-hourglass (widgets &rest body)
-  `(unwind-protect
-     (progn
-       ,@(mapcar (lambda (w)
-                   `(configure ,w :cursor :watch))
-                 widgets)
-       (flush-wish)
-       ,@body)
-     ,@(mapcar (lambda (w)
-                 `(configure ,w :cursor ""))
-               widgets)))
-
-(in-package :common-lisp-user)
-(shadowing-import :ltk) 
 
