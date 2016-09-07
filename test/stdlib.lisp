@@ -209,10 +209,21 @@ END
 ;; before? {{{
 
 (test-all
-  (before?-01 (before? 'a 'b nil) nil)
-  (before?-02 (before? 'a 'b '(a)) '(a))
-  (before?-03 (before? 'a 'b '(a b)) '(a b))
-  (before?-04 (before? 'a 'b '(b a)) nil))
+  (before?-01 (before? 'a 'c nil) nil)
+  (before?-02 (before? 'a 'c '(a b c)) '(a b c))
+  (before?-03 (before? 'b 'c '(a b c)) '(b c))
+  (before?-04 (before? 'c 'a '(a b c)) nil)
+  (before?-05 (before? "a" "c" '("a" "b" "c") :test #'equal) '("a" "b" "c")))
+
+;; }}}
+;; after? {{{
+
+(test-all
+  (after?-01 (after? 'a 'c nil) nil)
+  (after?-02 (after? 'c 'a '(a b c)) '(c))
+  (after?-03 (after? 'b 'a '(a b c)) '(b c))
+  (after?-04 (after? 'a 'c '(a b c)) nil)
+  (after?-05 (after? "c" "a" '("a" "b" "c") :test #'equal) '("c")))
 
 ;; }}}
 

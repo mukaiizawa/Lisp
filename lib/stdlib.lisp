@@ -425,18 +425,12 @@
                ((funcall test x first) lst)
                (t (before? x y (cdr lst) :test test))))))
 
-;; (before? 'a 'b '(a b c d))
-;; => (A B C D) 
-
 ;; }}}
 ;; after? {{{
 
 (defun after? (x y lst &key (test #'eql))
   (let ((rest (before? y x lst :test test)))
     (and rest (member x rest :test test))))
-
-;; (after? "d" 'a '(a b c "d") :test #'equal)
-;; => ("d") 
 
 ;; }}}
 ;; last-member {{{
