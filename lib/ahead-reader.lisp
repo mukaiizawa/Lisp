@@ -52,24 +52,27 @@
 ;; get-next {{{
 
 (defmethod get-next ((reader ahead-reader) &optional (n 1))
-  (let* ((stack-size (length (ahead-reader-stack reader)))
-         (has-stack? (plusp stack-size)))
-    (cond ((and (not has-stack?)
-                (= n 1))
-           (peek-char nil (ahead-reader-stream reader) nil +null-character+))
-          ((and has-stack?
-                (<= n stack-size))
-           (nth (1- n) (ahead-reader-stack reader)))
-          (t
-            (do* ((acc)
-                  (curr (first acc) (first acc))
-                  (cnt 0 (1+ cnt)))
-              ((>= cnt (- n stack-size))
-               (progn (setf (ahead-reader-stack reader)
-                            (append (ahead-reader-stack reader)
-                                    (nreverse acc)))
-                      curr))
-              (push (read-ahead reader) acc))))))
+  (if (not (plusp n))
+    (error "get-next: Illegal value `~A'. Optional parameter must be positive integer." n)
+    (let* ((stack-size (length (ahead-reader-stack reader)))
+           (has-stack? (plusp stack-size)))
+      (cond ((and (not has-stack?)
+                  (= n 1))
+             (peek-char nil (ahead-reader-stream reader) nil +null-character+))
+            ((and has-stack?
+                  (<= n stack-size))
+             (nth (1- n) (ahead-reader-stack reader)))
+            (t
+              (do* ((acc (reverse (ahead-reader-stack reader)))
+                    (cnt 0 (1+ cnt)))
+                ((or (>= cnt (- n stack-size))
+                     (char= (peek-char nil (ahead-reader-stream reader) nil +null-character+)
+                            +null-character+))
+                 (progn (setf (ahead-reader-stack reader) (nreverse acc))
+                        (if (>= cnt (- n stack-size))
+                          (first acc)
+                          +null-character+)))
+                (push (read-ahead reader) acc)))))))
 
 ;; }}}
 ;; reader-curr-in? {{{
@@ -94,7 +97,7 @@
 
 (defmethod read-ahead ((reader ahead-reader))
   (if (reach-eof? reader)
-    (error "ahead-reader read-ahead: already reach eof.")
+    (error "read-ahead: already reach eof.")
     (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
       (when (char= c #\Newline)
         (incf (ahead-reader-linecount reader)))
