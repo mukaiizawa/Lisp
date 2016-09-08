@@ -97,6 +97,8 @@ END)
 
 ;; }}}
 
+(setq *with-format* t)
+
 (write-to!
   (DSL->xml
     (:!DOCTYPE "html")
