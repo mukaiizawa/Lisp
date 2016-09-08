@@ -108,6 +108,7 @@ END)
         (:style (import-xml (sample-css)))
         (:title "xml-manager"))
       (:body
+        (:!-- "comment node")
         (:hr)
         (:table ((border 0) (cellpadding 10))
           (loop for i from 0 to 3 collect
