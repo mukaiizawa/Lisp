@@ -507,20 +507,6 @@
     #'identity))
 
 ;; }}}
-;; repeat {{{
-
-(defun repeat (fn n)
-  (apply #'compose (mapcar (lambda (x)
-                             (declare (ignore x))
-                             fn)
-                           (iota 1 n))))
-
-;; (funcall (repeat #'print 3) "three times.")
-;; => "three times."
-;;    "three times."
-;;    "three times."
-
-;; }}}
 
 ;; string utils
 (proclaim'(inline empty? blank?))
