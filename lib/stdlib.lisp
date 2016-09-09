@@ -481,11 +481,6 @@
              (apply #'maptree fn args))
            args)))
 
-;; (maptree (lambda (x) (* x x)) '(1 2 (3 4) (5 6 (7 8)) 9))
-;; => (1 4 (9 16) (25 36 (49 64)) 81) 
-;;
-;; Notes: see@ mapfile
-
 ;; }}}
 ;; memoize {{{
 
@@ -497,23 +492,6 @@
           val
           (setf (gethash args cache)
                 (apply fn args)))))))
-
-;; Examples: {{{
-;;
-;; (defun fib (x)
-;;   (case x
-;;     (1 1)
-;;     (2 1)
-;;     (t (+ (fib (1- x)) (fib (- x 2))))))
-;; (print (time (fib 30)))
-;; (print (time (fib 30)))
-;; (defparameter *fib* nil)
-;; (setq *fib* (memoize (function fib)))
-;; (print (time (funcall *fib* 30)))
-;; (print (time (funcall *fib* 30)))
-;;
-;;
-;; }}}
 
 ;; }}}
 ;; compose {{{

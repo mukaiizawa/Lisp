@@ -241,4 +241,13 @@ END
   (most-02 (most #'values '(1 2 3 4 5)) 5 5))
 
 ;; }}}
+;; maptree {{{
+
+(test-all
+  (maptree-01 (maptree (lambda (x)
+                         (* x x))
+                       '(1 2 (3 4) (5 6 (7 8)) 9))
+              '(1 4 (9 16) (25 36 (49 64)) 81)))
+
+;; }}}
 
