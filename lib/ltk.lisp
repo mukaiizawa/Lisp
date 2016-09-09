@@ -1645,7 +1645,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper button (tktextvariable widget) () "button")
 
 #-:tk84
-(defwrapper button (tktextvariable widget) () "ttk::button")
+(defwrapper button (tktextvariable widget) () "button")
 
 (defmethod (setf command) (val (button button))
   (add-callback (name button) val)
@@ -1659,7 +1659,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper check-button (tktextvariable widget tkvariable) () "checkbutton")
 
 #-:tk84
-(defwrapper check-button (tktextvariable widget tkvariable) () "ttk::checkbutton")
+(defwrapper check-button (tktextvariable widget tkvariable) () "checkbutton")
 
 (defmethod (setf command) (val (check-button check-button))
   (add-callback (name check-button) val)
@@ -1694,7 +1694,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper radio-button (tktextvariable widget) 
   ((val :accessor radio-button-value :initarg :value :initform nil)
    (var :accessor radio-button-variable :initarg :variable :initform nil)) 
-  "ttk::radiobutton")
+  "radiobutton")
 
 (defmethod value ((rb radio-button))
   "reads the content of the shared variable of the radio button set"
@@ -1719,7 +1719,7 @@ can be passed to AFTER-CANCEL"
 ;; ttk combo box {{{
 
 #-:tk84
-(defwrapper combobox (tktextvariable widget) () "ttk::combobox")
+(defwrapper combobox (tktextvariable widget) () "combobox")
 
 #-:tk84
 (defgeneric (setf options) (value widget))
@@ -1735,7 +1735,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper entry (tktextvariable widget) () "entry")
 
 #-:tk84
-(defwrapper entry (tktextvariable widget) () "ttk::entry")
+(defwrapper entry (tktextvariable widget) () "entry")
 
 (defun entry-select (e from to)
   (format-wish "~a selection range ~a ~a" (widget-path e) from to)
@@ -1771,7 +1771,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper classic-frame (widget) () "frame")
 
 #-:tk84
-(defwrapper frame (widget) () "ttk::frame")
+(defwrapper frame (widget) () "frame")
 
 ;; }}}
 ;; labelframe widget {{{
@@ -1780,7 +1780,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper labelframe (widget) () "labelframe")
 
 #-:tk84
-(defwrapper labelframe (widget) () "ttk::labelframe")
+(defwrapper labelframe (widget) () "labelframe")
 
 (defmethod (setf text) :after (val (l labelframe))
   (format-wish "~a configure -text {~a}" (widget-path l) val)
@@ -1793,10 +1793,10 @@ can be passed to AFTER-CANCEL"
 (defwrapper paned-window (widget) () "panedwindow")
 
 #-:tk84
-(defwrapper paned-window (widget) () "ttk::panedwindow")
+(defwrapper paned-window (widget) () "panedwindow")
 
 #-:tk84
-(defwrapper progressbar (widget tkvariable) () "ttk::progressbar")
+(defwrapper progressbar (widget tkvariable) () "progressbar")
 
 (defgeneric add-pane (window widget &rest options))
 (defmethod add-pane ((pw paned-window) (w widget) &rest options)
@@ -1938,7 +1938,7 @@ can be passed to AFTER-CANCEL"
 ;; }}}
 ;; notebook {{{
 
-(defwrapper notebook (widget) () "ttk::notebook")
+(defwrapper notebook (widget) () "notebook")
 
 (defgeneric notebook-add (nb widget &rest options))
 (defmethod notebook-add ((nb notebook) (w widget) &rest options)
@@ -1977,7 +1977,7 @@ can be passed to AFTER-CANCEL"
 
 (defgeneric notebook-enable-traversal (nb))
 (defmethod notebook-enable-traversal ((nb notebook))
-  (format-wish "ttk::notebook::enableTraversal ~a" nb))
+  (format-wish "notebook::enableTraversal ~a" nb))
 
 ;; }}}
 ;; scrolled-text {{{
@@ -2035,7 +2035,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper scale (tkvariable widget) () "scale")
 
 #-:tk84
-(defwrapper scale (tkvariable widget) () "ttk::scale")
+(defwrapper scale (tkvariable widget) () "scale")
 
 (defmethod (setf command) (val (scale scale))
   (add-callback (name scale) val)					
@@ -2076,7 +2076,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper label (tktextvariable widget) () "label")
 
 #-:tk84
-(defwrapper label (tktextvariable widget) () "ttk::label")
+(defwrapper label (tktextvariable widget) () "label")
 
 ;; }}}
 ;; message widget {{{
@@ -2090,7 +2090,7 @@ can be passed to AFTER-CANCEL"
 (defwrapper scrollbar (widget) () "scrollbar")
 
 #-:tk84
-(defwrapper scrollbar (widget) () "ttk::scrollbar")
+(defwrapper scrollbar (widget) () "scrollbar")
 
 (defun make-scrollbar(master &key (orientation "vertical"))
   (make-instance 'scrollbar :master master :orientation orientation))
@@ -2168,13 +2168,13 @@ can be passed to AFTER-CANCEL"
 ;; separator widget {{{
 
 #-:tk84
-(defwrapper separator (widget) () "ttk::separator")
+(defwrapper separator (widget) () "separator")
 
 ;; }}}
 ;; sizegrip widget {{{
 
 #-:tk84
-(defwrapper sizegrip (widget) () "ttk::sizegrip")
+(defwrapper sizegrip (widget) () "sizegrip")
 
 ;; }}}
 ;; treeview widget {{{
@@ -2184,7 +2184,7 @@ can be passed to AFTER-CANCEL"
   ((xscroll :accessor xscroll :initarg :xscroll :initform nil)
    (yscroll :accessor yscroll :initarg :yscroll :initform nil)
    (items   :accessor items   :initform nil :initarg :items))
-  "ttk::treeview")
+  "treeview")
 
 (defclass treeitem (tkobject)
   ((tree :accessor tree :initform nil :initarg :tree)
@@ -3348,11 +3348,11 @@ can be passed to AFTER-CANCEL"
 
 #-:tk84
 (defun use-theme(name)
-  (format-wish "ttk::style theme use ~a" name))
+  (format-wish "style theme use ~a" name))
 
 #-:tk84
 (defun theme-names ()
-  (send-wish "senddatastrings [ttk::style theme names]")
+  (send-wish "senddatastrings [style theme names]")
   (read-data))
 
 (defun focus (widget)
