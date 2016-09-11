@@ -250,4 +250,20 @@ END
               '(1 4 (9 16) (25 36 (49 64)) 81)))
 
 ;; }}}
+;; compose {{{
+
+(test-all
+  (compose-01 (apply (compose #'- #'+) '(1 1)) -2)
+  (compose-02 (apply (compose #'+ #'-) '(1 1)) 0))
+
+;; }}}
+;; empty? {{{
+
+(test-all
+  (empty?-01 (empty? "str") nil)
+  (empty?-02 (empty? " ") nil)
+  (empty?-03 (empty? nil) t)
+  (empty?-04 (empty? "") t))
+
+;; }}}
 
