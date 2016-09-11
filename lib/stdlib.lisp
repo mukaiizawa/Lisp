@@ -516,87 +516,11 @@
   (or (null str)
       (string= "" str)))
 
-#| Function EMPTY?
- |
- | Syntax:
- | empty? string
- | => generalized-boolean
- |
- | Arguments and Values:
- | string--a string.
- | generalized-boolean---a generalized boolean.
- |
- | Description:
- | The empty? function return true if string is empty.
- | otherwise, returns false.
- |
- | Examples:
- | (empty? "something-string")
- | => t
- | (empty? " ")
- | => nil
- | (empty? nil)
- | => t
- |
- | Side Effects:
- | None.
- |
- | Affected By:
- | None.
- |
- | Exceptional Situations:
- | Should signal an error of type type-error if string is not a string.
- |
- | See Also:
- | blank?
- |
- | Notes:
- | None.
- |
- |#
-
 ;; }}}
 ;; blank? {{{
 
 (defun blank? (str)
   (empty? (replstr " " "" str)))
-
-#| Function BLANK?
- |
- | Syntax:
- | blank? string
- | => generalized-boolean
- |
- | Arguments and Values:
- | string--a string.
- | generalized-boolean---a generalized boolean.
- |
- | Description:
- | The blank? function returns true if string is empty.
- | otherwise, returns false.
- |
- | Examples:
- | (blank? "something-string")
- | => t
- | (blank? " ")
- | => t
- |
- | Side Effects:
- | None.
- |
- | Affected By:
- | None.
- |
- | Exceptional Situations:
- | Should signal an error of type type-error if string is not a string.
- |
- | See Also:
- | empty?
- |
- | Notes:
- | None.
- |
- |#
 
 ;; }}}
 ;; explode {{{
