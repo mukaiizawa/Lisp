@@ -519,6 +519,7 @@
 ;; }}}
 ;; blank? {{{
 
+; todo replace replstr 
 (defun blank? (str)
   (empty? (replstr " " "" str)))
 
@@ -589,22 +590,6 @@
   (sb-ext:octets-to-string byte :external-format encoding)
   #-(or sbcl ccl)
   (error "byte-string: not implemented."))
-
-;; }}}
-;; replstr {{{
-
-(defun replstr (from to tar-str)
-  (labels ((rec (str acc)
-                (let ((from-len (length from))
-                      (str-len  (length str)))
-                  (if (< str-len from-len)
-                    (mkstr acc str)
-                    (if (string= from (subseq str 0 from-len))
-                      (rec (subseq str from-len)
-                           (mkstr acc to))
-                      (rec (subseq str 1)
-                           (mkstr acc (subseq str 0 1))))))))
-    (rec tar-str "")))
 
 ;; }}}
 ;; format-string {{{
