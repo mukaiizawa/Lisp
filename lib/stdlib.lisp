@@ -607,12 +607,6 @@
     (rec tar-str "")))
 
 ;; }}}
-;; trimstr {{{
-
-(defun trimstr (str matcher)
-  (replstr matcher "" str))
-
-;; }}}
 ;; format-string {{{
 
 (defun format-string (str size &key (float :right) (padding 0))
