@@ -4,7 +4,7 @@
   `(destructuring-bind
      (schema pass sid)
      (mapcar (lambda (str)
-               (trimstr str " "))
+               (string-trim " " str))
              (list (string-upcase (before #\/ ,args)) (after #\/ (before #\@ ,args)) (after #\@ ,args)))
      (cond ((or --help
                 errors
