@@ -890,16 +890,19 @@
 (defparameter *print-table* (make-print-table))
 
 (defun char-list->print-lines (char-list &key (background nil))
-  (let ((result nil))
+  (let ((result)
+        (line))
     (dotimes (i 8)
-      (push (apply #'mkstr (mapcar (lambda (x)
-                                     (aif (nth i (gethash x *print-table*))
-                                       it
-                                       (error "char-list->print-lines: Unknown character `~A' to print" x)))
-                                   char-list))
-            result)
-      (when background 
-        (push (replstr " " background (pop result)) result)))
+      (setq line (apply #'mkstr
+                        (mapcar (lambda (x)
+                                  (aif (nth i (gethash x *print-table*))
+                                    it
+                                    (error "char-list->print-lines: Unknown character `~A' to print" x)))
+                                char-list)))
+      (push (if background
+              (replstr " " background line)    ; todo
+              line)
+            result))
     (nreverse result)))
 
 (defun aprint (stream)
