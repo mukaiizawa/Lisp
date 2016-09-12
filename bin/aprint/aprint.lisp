@@ -1,5 +1,6 @@
 
 (require "stdlib" *module-stdlib*)
+(require "regex" *module-regex*)
 
 (defparameter *surround-character* nil)
 (defparameter *bg-character* #\Space)
@@ -900,7 +901,7 @@
                                     (error "char-list->print-lines: Unknown character `~A' to print" x)))
                                 char-list)))
       (push (if background
-              (replstr " " background line)    ; todo
+              (funcall #~s/ /${background}/g line)
               line)
             result))
     (nreverse result)))
