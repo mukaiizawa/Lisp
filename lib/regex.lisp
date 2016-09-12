@@ -13,24 +13,35 @@
       (let* ((match-mode (get-curr (read-next reader :cache nil)))
              (segment (get-curr (read-next reader :cache nil)))
              (segment-reader (lambda ()
-                               (get-buf
-                                 (read-next    ; read segment.
-                                   (read-if (lambda (c)
-                                              (char/= c segment))
-                                            reader)
-                                   :cache nil)))))
+                               (do ((result))
+                                 ((and (reader-next-in? reader segment)
+                                       (read-next reader :cache nil))    ; skip segment
+                                  (nreverse result))
+                                 (cond ((reach-eof? reader)
+                                        (error "read-macro #~~: reach eof."))
+                                       ((and (reader-next-in? reader #\$)
+                                             (char= (get-next reader 2) #\{))
+                                        (push
+                                          (intern
+                                            (string-upcase
+                                              (get-buf
+                                                (read-paren (read-next reader :cache nil)))))    ; skip `$'
+                                          result))
+                                       (t
+                                         (push (get-buf (read-next reader))
+                                               result)))))))
         (with-gensyms (text)
           (cond
             ((char= match-mode #\m)
              `(lambda (,text)
                 (match?->string
-                  ,(funcall segment-reader)    ; pat
+                  (apply #'mkstr (list ,@(funcall segment-reader)))    ; pat
                   ,text)))
             ((char= match-mode #\s)
              `(lambda (,text)
                 (match?->replace
-                  ,(funcall segment-reader)    ; from
-                  ,(funcall segment-reader)    ; to
+                  (apply #'mkstr (list ,@(funcall segment-reader)))    ; replace from
+                  (apply #'mkstr (list ,@(funcall segment-reader)))    ; replace to
                   ,text
                   ,(and (reader-next-in? reader #\g)
                         (read-next reader)))))
