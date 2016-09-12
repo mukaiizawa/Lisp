@@ -314,6 +314,9 @@
                         (nreverse inner-regex))
                        (push (parse-regex (read-next reader :cache nil))
                              inner-regex))))
+          ((char= c #\\)
+           (setq key 'character
+                 pat (coerce (get-buf (read-next reader)) 'character)))
           (t
             (let ((c (coerce (get-buf (read-next reader)) 'character)))
               (setq key (char->key c) pat (char->pat c)))))

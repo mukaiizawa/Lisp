@@ -152,8 +152,10 @@
 
 (defparameter a "a")
 (defparameter a.* "a.*")
+(defparameter $a "\\$a")
 
 (test-all
   (read-macro-#~m-01 (funcall #~m/${a}/ "abc") "a")
-  (read-macro-#~m-02 (funcall #~m/${a.*}b/ "xaaab") "aaab"))
+  (read-macro-#~m-02 (funcall #~m/${a.*}b/ "xaaab") "aaab")
+  (read-macro-#~m-03 (funcall #~m/${a.*}${$a}a/ "aaa$aa") "aaa$aa"))
 
