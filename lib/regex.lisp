@@ -232,6 +232,7 @@
           ;; ending position `$'
           ((and (regex-eq? first-regex 'end)
                 (= i line-length)
+                (null rest-regex)
                 (anchored-match? nil line i)))
           ;; wild card `.' case
           ((and (regex-eq? first-regex 'dot)
