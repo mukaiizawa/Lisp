@@ -24,7 +24,7 @@
 ;; replace-low-line {{{
 
 (defun replace-low-line (str)
-  (replstr "-" "_" (mkstr str)))
+  (funcall #~s/-/_/g (mkstr str)))
 
 ;; }}}
 ;; attrs->dot {{{
