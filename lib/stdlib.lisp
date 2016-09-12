@@ -519,9 +519,9 @@
 ;; }}}
 ;; blank? {{{
 
-; todo replace replstr 
 (defun blank? (str)
-  (empty? (replstr " " "" str)))
+  (or (empty? str)
+      (empty? (string-trim " " str))))
 
 ;; }}}
 ;; explode {{{
