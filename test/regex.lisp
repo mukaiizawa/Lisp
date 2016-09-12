@@ -150,3 +150,10 @@
   ;; }}}
   )
 
+(defparameter a "a")
+(defparameter a.* "a.*")
+
+(test-all
+  (read-macro-#~m-01 (funcall #~m/${a}/ "abc") "a")
+  (read-macro-#~m-02 (funcall #~m/${a.*}b/ "xaaab") "aaab"))
+
