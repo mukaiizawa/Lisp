@@ -266,4 +266,19 @@ END
   (empty?-04 (empty? "") t))
 
 ;; }}}
+;; blank? {{{
+
+(test-all
+  (blank?-01 (blank? "str") nil)
+  (blank?-02 (blank? " ") t)
+  (blank?-03 (blank? nil) t)
+  (blank?-04 (blank? "") t))
+
+;; }}}
+;; explode {{{
+
+(test-all
+  (explode-01 (explode 'sym) '(S Y M)))
+
+;; }}}
 
