@@ -531,10 +531,6 @@
                (intern (make-string 1 :initial-element x)))
        (symbol-name sym)))
 
-;; @see On Lisp
-;; (explode 'bomb)
-;; => (B O M B)
-
 ;; }}}
 ;; string->list {{{
 
