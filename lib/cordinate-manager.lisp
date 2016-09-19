@@ -19,8 +19,32 @@
                   (push `(,(mksym 'z counter) (cordinate-z ,cordinate)) acc)))
          ,@body))))
 
+;; shift {{{
+
 (defmethod shift ((cordinate cordinate) &key (x 0) (y 0) (z 0))
   (make-cordinate :x (+ (cordinate-x cordinate) x)
                   :y (+ (cordinate-y cordinate) y)
                   :z (+ (cordinate-z cordinate) z)))
+
+;; }}}
+;; shift! {{{
+
+(defmethod shift! ((cordinate cordinate) (x number) (y number) &optional (z 0))
+  (setf (cordinate-x cordinate) x
+        (cordinate-y cordinate) y
+        (cordinate-z cordinate) z)
+  cordinate)
+
+;; }}}
+;; norm {{{
+
+(defmethod norm ((cordinate cordinate))
+  (sqrt
+    (apply #'+ (mapcar (lambda (x)
+                         (expt x 2))
+                       (list (cordinate-x cordinate)
+                             (cordinate-y cordinate)
+                             (cordinate-z cordinate))))))
+
+;; }}}
 
