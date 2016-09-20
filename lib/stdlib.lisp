@@ -82,16 +82,33 @@
   (values (intern (apply #'mkstr args) :keyword)))
 
 ;; }}}
+;; ilet {{{
+
+(defmacro ilet ((&rest args) &body body)
+  `(let (,@args)
+     ,@(mapcar (lambda (x)
+                 `(declare (ignorable ,(first x))))
+               args)
+     ,@body))
+
+;; }}}
+;; ilet* {{{
+
+(defmacro ilet* ((&rest args) &body body)
+  `(let* (,@args)
+     ,@(mapcar (lambda (x)
+                 `(declare (ignorable ,(first x))))
+               args)
+     ,@body))
+
+;; }}}
 ;; with-gensyms {{{
 
 #-clisp
 (defmacro with-gensyms (syms &body body)
-  `(let ,(mapcar (lambda (x)
-                   `(,x (gensym)))
-                 syms)
-     ,@(mapcar (lambda (x)
-                 `(declare (ignorable ,x)))
-               syms)
+  `(ilet ,(mapcar (lambda (x)
+                    `(,x (gensym)))
+                  syms)
      ,@body))
 
 ;; }}}
@@ -182,8 +199,7 @@
 (defmacro dostring ((i str) &body body)
   (with-gensyms (index)
     `(dotimes (,index (length ,str))
-       (let ((,i (char ,str ,index)))
-         (declare (ignorable ,i))
+       (ilet ((,i (char ,str ,index)))
          ,@body))))
 
 ;; }}}
@@ -274,8 +290,7 @@
           (sym (gensym)))
       `(let ((,sym ,(car cl1)))
          (if ,sym
-           (let ((it ,sym))
-             (declare (ignorable it))
+           (ilet ((it ,sym))
              (echo "CASE:" ',(car cl1))
              ,@(cdr cl1))
            (dcond ,@(cdr clauses)))))))
