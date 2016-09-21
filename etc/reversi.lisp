@@ -1,9 +1,12 @@
 
 (require "ltk" *module-ltk*)
+(require "cordinate-manager" *module-cordinate-manager*)
 (require "stdlib" *module-stdlib*)
 
 (defparameter *width* 40)
 (defparameter *board* (make-array '(8 8) :initial-element 'green))
+
+;; draw-board {{{
 
 (defmacro draw-board ()
   `(progn
@@ -17,51 +20,72 @@
                              (+ (* *width* x) *width*)
                              (+ (* *width* y) *width*))
            "fill" "green")))
-     (put-disc 'black 3 3)
-     (put-disc 'black 4 4)
-     (put-disc 'white 4 3)
-     (put-disc 'white 3 4)))
+     (draw-disc 'black (make-cordinate :x 3 :y 3))
+     (draw-disc 'black (make-cordinate :x 4 :y 4))
+     (draw-disc 'white (make-cordinate :x 4 :y 3))
+     (draw-disc 'white (make-cordinate :x 3 :y 4))))
 
-(defmacro draw-disc (turn &rest cordinates)
+;; }}}
+;; draw-disc {{{
+
+(defmacro draw-disc (turn cordinate)
+  `(with-cordinates (,cordinate)
+     (itemconfigure canvas 
+                    (create-oval canvas
+                                 (* x1 *width*)
+                                 (* y1 *width*)
+                                 (+ (* x1 *width*) *width*)
+                                 (+ (* y1 *width*) *width*))
+                    "fill" (mkstr ,turn))
+     (setf (aref *board* x1 y1) ,turn)
+     (echo #\( x1 #\, y1 #\))
+     (echo *board*)
+     (values)))
+
+;; }}}
+;; can-put-disk? {{{
+
+(defmacro can-put-disk? (turn cordinate)
   `(progn
-     ,@(mapcar (lambda (cordinate)
-                 (let ((x (first cordinate))
-                       (y (second cordinate)))
-                   `(itemconfigure canvas 
-                                   (create-oval canvas
-                                                (* ,x *width*)
-                                                (* ,y *width*)
-                                                (+ (* ,x *width*) *width*)
-                                                (+ (* ,y *width*) *width*))
-                                   "fill" (mkstr ,turn))))
-               (group cordinates 2))))
+     "return list of direction"
+     ; 'top
+     ; 'top-right
+     ; 'right
+     ; 'bottom-right
+     ; 'bottom
+     ; 'bottom-left
+     ; 'left
+     ; 'top-left
+     '(top bottom)))
 
-(defmacro put-disc (turn x y)
-  `(progn
-     (draw-disc ,turn ,x ,y)
-     (reverse-disc ,turn ,x ,y)
-     (setf (aref *board* ,x ,y) ,turn)))
+;; }}}
+;; reverse-disc {{{
 
-(defmacro reverse-disc (turn x y)
-  `(progn
-     ;; top
-     (when (eq (safety-aref *board* ,x (1- ,y)) 
-               (toggle ,turn))
-       (do ((next (safety-aref *board* ,x (1- ,y)))
-            (y ,y (1- ,y)))
-         ((or (eq next ,turn)
-              (eq (aref *board* ,x ,y) ,turn)))
-         (setf (aref *board* ,x (1- ,y)) ,turn)
-         (draw-disc ,turn ,x (1- ,y))))))
+(defmacro reverse-disc (turn cordinate directions)
+  `(with-cordinates (,cordinate)
+     (when (find 'top ,directions)
+       (do* ((counter 0 (1+ counter))
+             (next-cordinate (shift!  r1 :y (- y1 counter)) (shift! r1 :y (- y1 counter))))
+         ((eq (safety-aref *board* next-cordinate) ,turn))
+         (draw-disc ,turn next-cordinate)))))
 
-(defun safety-aref (board x y)
-  (if (and (<= 0 x) (< x 8)
-           (<= 0 y) (< y 8))
-    (aref board x y)
-    'wall))
+;; }}}
+;; safety-aref {{{
+
+(defun safety-aref (board cordinate)
+  (with-cordinates (cordinate)
+    (if (and (<= 0 x1) (< x1 8)
+             (<= 0 y1) (< y1 8))
+      (aref board x1 y1)
+      'wall)))
+
+;; }}}
+;; toggle {{{
 
 (defun toggle (turn)
   (if (eq turn 'black) 'white 'black))
+
+;; }}}
 
 (with-ltk ()
   (bind *tk* "<Alt-q>" (ilambda (event) (setf *exit-mainloop* t)))
@@ -70,10 +94,10 @@
     (draw-board)
     (bind canvas "<ButtonPress-1>"
           (lambda (event)
-            (let ((x (truncate (event-x event) *width*))
-                  (y (truncate (event-y event) *width*)))
-              (print (mkstr x #\, y)) 
-              (put-disc turn x y)
-              (setq turn (toggle turn))
-              )))))
+            (with-cordinates ((make-cordinate :x (truncate (event-x event) *width*)
+                                              :y (truncate (event-y event) *width*)))
+              (awhen (can-put-disk? turn r1)
+                (draw-disc turn r1)
+                (reverse-disc turn r1 it))
+              (setq turn (toggle turn)))))))
 
