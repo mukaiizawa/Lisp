@@ -65,7 +65,7 @@
   `(with-cordinates (,cordinate)
      (when (find 'top ,directions)
        (do* ((counter 0 (1+ counter))
-             (next-cordinate (shift!  r1 :y (- y1 counter)) (shift! r1 :y (- y1 counter))))
+             (next-cordinate (shift  r1 :y (- y1 counter)) (shift next-cordinate :y (- y1 counter))))
          ((eq (safety-aref *board* next-cordinate) ,turn))
          (draw-disc ,turn next-cordinate)))))
 
