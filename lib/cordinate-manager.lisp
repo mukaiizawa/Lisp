@@ -28,10 +28,10 @@
 ;; }}}
 ;; shift! {{{
 
-(defmethod shift! ((cordinate cordinate) (x number) (y number) &optional (z 0))
-  (setf (cordinate-x cordinate) x
-        (cordinate-y cordinate) y
-        (cordinate-z cordinate) z)
+(defmethod shift! ((cordinate cordinate) &key x y z)
+  (awhen x (setf (cordinate-x cordinate) x))
+  (awhen y (setf (cordinate-y cordinate) y))
+  (awhen z (setf (cordinate-z cordinate) z))
   cordinate)
 
 ;; }}}
