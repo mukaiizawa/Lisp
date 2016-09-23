@@ -39,7 +39,8 @@
                     "fill" (mkstr ,turn))
      (setf (aref *board* x1 y1) ,turn)
      (echo #\( x1 #\, y1 #\))
-     (echo *board*)
+     ; (echo *board*)
+     (print-board *board*)
      (values)))
 
 ;; }}}
@@ -87,11 +88,18 @@
 
 ;; }}}
 
+(defun print-board (board)
+  (fresh-line)
+  (dorange (x 0 7)
+    (dorange (y 0 7)
+      (princ (mkstr (aref board y x) #\Space)))
+    (princ #\Newline)))
+
 (with-ltk ()
   (bind *tk* "<Alt-q>" (ilambda (event) (setf *exit-mainloop* t)))
   (let ((canvas (pack (make-instance 'canvas  :width (* *width* 8) :height (* *width* 8))))
         (turn 'black))
-    (draw-board)
+    ; (draw-board)
     (bind canvas "<ButtonPress-1>"
           (lambda (event)
             (with-cordinates ((make-cordinate :x (truncate (event-x event) *width*)
