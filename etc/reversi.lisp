@@ -10,16 +10,16 @@
 
 (defmacro draw-board ()
   `(progn
-     (dorange (x 0 7)
-       (dorange (y 0 7)
-         (itemconfigure
-           canvas
-           (create-rectangle canvas
-                             (* x *width*)
-                             (* y *width*)
-                             (+ (* *width* x) *width*)
-                             (+ (* *width* y) *width*))
-           "fill" "green")))
+     ; (dorange (x 0 7)
+     ;   (dorange (y 0 7)
+     ;     (itemconfigure
+     ;       canvas
+     ;       (create-rectangle canvas
+     ;                         (* x *width*)
+     ;                         (* y *width*)
+     ;                         (+ (* *width* x) *width*)
+     ;                         (+ (* *width* y) *width*))
+     ;       "fill" "green")))
      (draw-disc 'black (make-cordinate :x 3 :y 3))
      (draw-disc 'black (make-cordinate :x 4 :y 4))
      (draw-disc 'white (make-cordinate :x 4 :y 3))
@@ -57,18 +57,38 @@
      ; 'bottom-left
      ; 'left
      ; 'top-left
-     '(top bottom)))
+     '(bottom top)))
+
+;; }}}
+;; do-reverse {{{
+
+(defmacro do-reverse (turn directions direction &key (x 0) (y 0))
+  `(when (find ,direction ,directions)
+     (do* ((counter 1 (1+ counter))
+           (next-cordinate (shift r1
+                                  :x (cond ((zerop ,x) 0)
+                                           ((plusp ,x) counter)
+                                           (t (- counter)))
+                                  :y (cond ((zerop ,y) 0)
+                                           ((plusp ,y) counter)
+                                           (t (- counter)))))
+           (next-cordinate (shift r1
+                                  :x (cond ((zerop ,x) 0)
+                                           ((plusp ,x) counter)
+                                           (t (- counter)))
+                                  :y (cond ((zerop ,y) 0)
+                                           ((plusp ,y) counter)
+                                           (t (- counter))))))
+       ((eq (safety-aref *board* next-cordinate) ,turn))
+       (draw-disc ,turn next-cordinate))))
 
 ;; }}}
 ;; reverse-disc {{{
 
 (defmacro reverse-disc (turn cordinate directions)
   `(with-cordinates (,cordinate)
-     (when (find 'top ,directions)
-       (do* ((counter 0 (1+ counter))
-             (next-cordinate (shift  r1 :y (- y1 counter)) (shift next-cordinate :y (- y1 counter))))
-         ((eq (safety-aref *board* next-cordinate) ,turn))
-         (draw-disc ,turn next-cordinate)))))
+     (do-reverse ,turn 'top ,directions :y -1)
+     ))
 
 ;; }}}
 ;; safety-aref {{{
@@ -99,7 +119,7 @@
   (bind *tk* "<Alt-q>" (ilambda (event) (setf *exit-mainloop* t)))
   (let ((canvas (pack (make-instance 'canvas  :width (* *width* 8) :height (* *width* 8))))
         (turn 'black))
-    ; (draw-board)
+    (draw-board)
     (bind canvas "<ButtonPress-1>"
           (lambda (event)
             (with-cordinates ((make-cordinate :x (truncate (event-x event) *width*)
