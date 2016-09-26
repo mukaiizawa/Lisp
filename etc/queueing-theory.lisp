@@ -20,13 +20,13 @@
 
 (defun p0 (c rho)
   (/ 1
-     (sigma 0 (1- c)
-            (lambda (k)
-              (+
+     (+
+       (sigma 0 (1- c)
+              (lambda (k)
                 (/ (* (expt c k) (expt rho k))
-                   (fact k))
-                (/ (* (expt c c) (expt rho c))
-                   (* (fact c) (- 1 rho))))))))
+                   (fact k))))
+       (/ (* (expt c c) (expt rho c))
+          (* (fact c) (- 1 rho))))))
 
 (defun p (c rho)
   (/ (* (expt c c) (expt rho c) (p0 c rho))
@@ -36,6 +36,29 @@
   (/ (p c rho)
      (* c (- 1 rho))))
 
-(for (i 0 (< i 0.95) :step 0.01)
-  (echo i #\tab (a 2 i)))
+(defmacro rho (c)
+  `(/ (* lambda wt)
+      ,c))
+
+;; c = 2
+; (defmacro wt ()
+;   `(+ wt
+;       (*
+;         (/ (* 2 (expt (rho 2) 2))
+;            (- 1 (expt (rho 2) 2)))
+;         wt)))
+
+; c = 1
+(defmacro wt ()
+  `(+ wt
+      (*
+        (/ (rho 1)
+           (- 1 (rho 1)))
+        wt)))
+
+(for (i 0.0 (< i 0.8) :step 0.01)
+  (let ((lambda 7.77)
+        (wt i))
+    (echo i #\tab (ignore-errors (wt)))))
+
 
