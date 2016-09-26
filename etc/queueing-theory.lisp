@@ -50,16 +50,14 @@
 
 ; c = 1
 (defmacro wt ()
-  `(-
-     (+ wt
-        (*
-          (/ (rho 1)
-             (- 1 (rho 1)))
-          wt))
-     1))
+  `(+ wt
+      (*
+        (/ (rho 1)
+           (- 1 (rho 1)))
+        wt)))
 
-(for (i 0.1 (< i 0.2) :step 0.0001)
+(for (i 0.1 (< i 0.14) :step 0.0001)
   (let ((lambda 7)
         (wt i))
-    (echo i #\tab (ignore-errors (wt)))))
+    (echo i #\tab (ignore-errors (log (wt) 10)))))
 
