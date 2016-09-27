@@ -82,6 +82,13 @@
   (values (intern (apply #'mkstr args) :keyword)))
 
 ;; }}}
+;; let1 {{{
+
+(defmacro let1 ((var val) &body body)
+  `(let ((,var ,val))
+     ,@body))
+
+;; }}}
 ;; ilet {{{
 
 (defmacro ilet ((&rest args) &body body)
