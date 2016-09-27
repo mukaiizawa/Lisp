@@ -44,50 +44,58 @@
      (values)))
 
 ;; }}}
+;; check-enemy-desk {{{
+
+(defun check-enemy-desk (turn cordinate &key (x 0) (y 0))
+  (labels ((rec (cordinate)
+                (or (eq turn (safety-aref *board* (shift cordinate :x x :y y) turn))
+                    (and (eq (toggle turn) (safety-aref *board* (shift cordinate :x x :y y) turn))
+                         (rec (shift cordinate :x x :y y))))))
+    (rec cordinate)))
+
+;; }}}
 ;; can-put-disk? {{{
 
 (defmacro can-put-disk? (turn cordinate)
-  `(progn
-     "return list of direction"
-     ; 'top
-     ; 'top-right
-     ; 'right
-     ; 'bottom-right
-     ; 'bottom
-     ; 'bottom-left
-     ; 'left
-     ; 'top-left
-     '(bottom top)))
+  `(with-cordinates (,cordinate)
+     (let (direction)
+       (when (check-enemy-desk ,turn r1 :y -1) (push 'top direction))
+       (when (check-enemy-desk ,turn r1 :y 1) (push 'bottom direction))
+       (when (check-enemy-desk ,turn r1 :x -1) (push 'left direction))
+       (when (check-enemy-desk ,turn r1 :x 1) (push 'right direction))
+       direction)))
 
 ;; }}}
 ;; do-reverse {{{
 
-(defmacro do-reverse (turn directions direction &key (x 0) (y 0))
-  `(when (find ,direction ,directions)
-     (do* ((counter 1 (1+ counter))
-           (next-cordinate (shift r1
-                                  :x (cond ((zerop ,x) 0)
-                                           ((plusp ,x) counter)
-                                           (t (- counter)))
-                                  :y (cond ((zerop ,y) 0)
-                                           ((plusp ,y) counter)
-                                           (t (- counter)))))
-           (next-cordinate (shift r1
-                                  :x (cond ((zerop ,x) 0)
-                                           ((plusp ,x) counter)
-                                           (t (- counter)))
-                                  :y (cond ((zerop ,y) 0)
-                                           ((plusp ,y) counter)
-                                           (t (- counter))))))
-       ((eq (safety-aref *board* next-cordinate) ,turn))
-       (draw-disc ,turn next-cordinate))))
+(defmacro do-reverse (turn &key (x 0) (y 0))
+  `(do* ((counter 1 (1+ counter))
+         (next-cordinate (shift r1
+                                :x (cond ((zerop ,x) 0)
+                                         ((plusp ,x) counter)
+                                         (t (- counter)))
+                                :y (cond ((zerop ,y) 0)
+                                         ((plusp ,y) counter)
+                                         (t (- counter))))
+                         (shift r1
+                                :x (cond ((zerop ,x) 0)
+                                         ((plusp ,x) counter)
+                                         (t (- counter)))
+                                :y (cond ((zerop ,y) 0)
+                                         ((plusp ,y) counter)
+                                         (t (- counter))))))
+     ((eq (safety-aref *board* next-cordinate) ,turn))
+     (draw-disc ,turn next-cordinate)))
 
 ;; }}}
 ;; reverse-disc {{{
 
 (defmacro reverse-disc (turn cordinate directions)
   `(with-cordinates (,cordinate)
-     (do-reverse ,turn 'top ,directions :y -1)
+     (when (find 'top ,directions) (do-reverse ,turn :y -1))
+     (when (find 'right ,directions) (do-reverse ,turn :x 1))
+     (when (find 'left ,directions) (do-reverse ,turn :x -1))
+     (when (find 'bottom ,directions) (do-reverse ,turn :y 1))
      ))
 
 ;; }}}
