@@ -8,56 +8,48 @@
 ;; B := distribution of service time
 ;; C := the number of parallel servers
 
+;; Wr := response time
 ;; Wq := mean waiting time
+;; Wt (<=>1/mu)  := the average service time of a single task
 ;; c := number of server
 ;; mu  := the average service rate of a single service
-;; Wt (<=>1/mu)  := the average service time of a single task
 ;; rho := traffic intensity
 
-;; Wq := p / c*mu(1 - rho) = c*(1-rho)*Wt
-;; p := (c^c)*(rho^c)p0/c!(1-rho)
-;; p0 := [Sum_c-1_k=0{ (c^k)(rho^k)/k! + (c^c)(rho^c)/c!(1 - rho) }]^-1
+;; Wr := Wt + Wq
+;; Wq := (p/c*(1-rho))Wt
+;; p := ((c*rho)^c * p0) / c!(1 - rho)
+;; p0 := [Sigma_c-1_n=0{ (c*rho)^n / n! } + (c*rho)^c / c!(1 - rho) ]^-1
 
-(defun p0 (c rho)
-  (/ 1
-     (+
-       (sigma 0 (1- c)
-              (lambda (k)
-                (/ (* (expt c k) (expt rho k))
-                   (fact k))))
-       (/ (* (expt c c) (expt rho c))
-          (* (fact c) (- 1 rho))))))
+(defparameter c 2)
+(defparameter lambda 7.778)
 
-(defun p (c rho)
-  (/ (* (expt c c) (expt rho c) (p0 c rho))
-     (* (fact c) (- 1 rho))))
-
-(defun a (c rho)
-  (/ (p c rho)
-     (* c (- 1 rho))))
-
-(defmacro rho (c)
+(defmacro rho ()
   `(/ (* lambda wt)
-      ,c))
+      c))
 
-;; c = 2
-; (defmacro wt ()
-;   `(+ wt
-;       (*
-;         (/ (* 2 (expt (rho 2) 2))
-;            (- 1 (expt (rho 2) 2)))
-;         wt)))
+(defmacro p0 ()
+  `(/ 1
+      (+
+        (sigma 0 (1- c)
+               (lambda (n)
+                 (/ (expt (* c (rho)) n)
+                    (fact n))))
+        (/ (expt (* c (rho)) c)
+           (* (fact c) (- 1 (rho)))))))
 
-; c = 1
-(defmacro wt ()
-  `(+ wt
-      (*
-        (/ (rho 1)
-           (- 1 (rho 1)))
-        wt)))
+(defmacro p ()
+  `(/ (* (expt (* c (rho)) c) (p0))
+      (* (fact c) (- 1 (rho)))))
 
-(for (i 0.1 (< i 0.14) :step 0.0001)
-  (let ((lambda 7)
-        (wt i))
-    (echo i #\tab (ignore-errors (log (wt) 10)))))
+(defmacro Wq ()
+  `(* (/ (p)
+         (* c (- 1 (rho))))
+      Wt))
+
+(defmacro Wr ()
+  `(+ Wt (Wq)))
+
+;; estimate Wt
+(for (Wt 0.2 (< Wt 0.25) :step 0.001)
+  (echo Wt #\tab (ignore-errors (Wr))))
 
