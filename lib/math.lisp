@@ -10,3 +10,7 @@
 (defun sigma (from to fn)
   (apply #'+ (mapcar fn (iota from to))))
 
+(defun pi (from to fn)
+  (apply #'* (mapcar fn (iota from to))))
+
+
