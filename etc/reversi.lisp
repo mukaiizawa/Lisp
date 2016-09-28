@@ -6,6 +6,22 @@
 (defparameter *width* 40)
 (defparameter *board* (make-array '(8 8) :initial-element 'green))
 
+;; direction {{{
+
+(defmacro defdirection (direction x y)
+  `(defmacro ,direction ()
+     (make-cordinate :x ,x :y ,y)))
+
+(defdirection top 0 -1)
+(defdirection bottom 0 1)
+(defdirection left -1 0)
+(defdirection right 1 0)
+(defdirection top-left -1 -1)
+(defdirection top-right 1 -1)
+(defdirection bottom-left -1 1)
+(defdirection bottom-right 1 1)
+
+;; }}}
 ;; draw-board {{{
 
 (defmacro draw-board ()
@@ -44,14 +60,18 @@
      (values)))
 
 ;; }}}
-;; check-enemy-desk {{{
+;; find-puttable-direction {{{
 
-(defun check-enemy-desk (turn cordinate &key (x 0) (y 0))
+(defun find-puttable-direction (turn cordinate search-direction)
   (labels ((rec (cordinate)
-                (or (eq turn (safety-aref *board* (shift cordinate :x x :y y) turn))
-                    (and (eq (toggle turn) (safety-aref *board* (shift cordinate :x x :y y) turn))
-                         (rec (shift cordinate :x x :y y))))))
-    (rec cordinate)))
+                (let1 (this-turn (safety-aref *board* cordinate))
+                  (unless (eq this-turn 'wall)
+                    (or (eq turn this-turn)
+                        (rec (vector+ cordinate search-direction)))))))
+    (let1 (next-cordinate (vector+ cordinate search-direction))
+      (when (eq (toggle turn)
+                (safety-aref *board* next-cordinate))
+        (rec (vector+ next-cordinate search-direction))))))
 
 ;; }}}
 ;; can-put-disk? {{{
@@ -59,31 +79,23 @@
 (defmacro can-put-disk? (turn cordinate)
   `(with-cordinates (,cordinate)
      (let (direction)
-       (when (check-enemy-desk ,turn r1 :y -1) (push 'top direction))
-       (when (check-enemy-desk ,turn r1 :y 1) (push 'bottom direction))
-       (when (check-enemy-desk ,turn r1 :x -1) (push 'left direction))
-       (when (check-enemy-desk ,turn r1 :x 1) (push 'right direction))
+       (when (find-puttable-direction ,turn r1 (top)) (push 'top direction))
+       (when (find-puttable-direction ,turn r1 (bottom)) (push 'bottom direction))
+       (when (find-puttable-direction ,turn r1 (left)) (push 'left direction))
+       (when (find-puttable-direction ,turn r1 (right)) (push 'right direction))
+       (when (find-puttable-direction ,turn r1 (top-left)) (push 'top-left direction))
+       (when (find-puttable-direction ,turn r1 (top-right)) (push 'top-right direction))
+       (when (find-puttable-direction ,turn r1 (bottom-left)) (push 'bottom-left direction))
+       (when (find-puttable-direction ,turn r1 (bottom-right)) (push 'bottom-right direction))
        direction)))
 
 ;; }}}
 ;; do-reverse {{{
 
-(defmacro do-reverse (turn &key (x 0) (y 0))
+(defmacro do-reverse (turn direction)
   `(do* ((counter 1 (1+ counter))
-         (next-cordinate (shift r1
-                                :x (cond ((zerop ,x) 0)
-                                         ((plusp ,x) counter)
-                                         (t (- counter)))
-                                :y (cond ((zerop ,y) 0)
-                                         ((plusp ,y) counter)
-                                         (t (- counter))))
-                         (shift r1
-                                :x (cond ((zerop ,x) 0)
-                                         ((plusp ,x) counter)
-                                         (t (- counter)))
-                                :y (cond ((zerop ,y) 0)
-                                         ((plusp ,y) counter)
-                                         (t (- counter))))))
+         (next-cordinate (vector+ r1 ,direction)
+                         (vector+ r1 ,direction)))
      ((eq (safety-aref *board* next-cordinate) ,turn))
      (draw-disc ,turn next-cordinate)))
 
@@ -92,11 +104,14 @@
 
 (defmacro reverse-disc (turn cordinate directions)
   `(with-cordinates (,cordinate)
-     (when (find 'top ,directions) (do-reverse ,turn :y -1))
-     (when (find 'right ,directions) (do-reverse ,turn :x 1))
-     (when (find 'left ,directions) (do-reverse ,turn :x -1))
-     (when (find 'bottom ,directions) (do-reverse ,turn :y 1))
-     ))
+     (when (find 'top ,directions) (do-reverse ,turn (top)))
+     (when (find 'right ,directions) (do-reverse ,turn (right)))
+     (when (find 'left ,directions) (do-reverse ,turn (left)))
+     (when (find 'bottom ,directions) (do-reverse ,turn (bottom)))
+     (when (find 'top-left ,directions) (do-reverse ,turn (top-left)))
+     (when (find 'top-right ,directions) (do-reverse ,turn (top-right)))
+     (when (find 'bottom-left ,directions) (do-reverse ,turn (bottom-left)))
+     (when (find 'bottom-right ,directions) (do-reverse ,turn (bottom-right)))))
 
 ;; }}}
 ;; safety-aref {{{
