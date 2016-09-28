@@ -35,6 +35,15 @@
   cordinate)
 
 ;; }}}
+;; vector+ {{{
+
+(defmethod vector+ ((r1 cordinate) (r2 cordinate))
+  (with-cordinates (r1 r2)
+    (make-cordinate :x (+ x1 x2)
+                    :y (+ y1 y2)
+                    :z (+ z1 z2))))
+
+;; }}}
 ;; norm {{{
 
 (defmethod norm ((cordinate cordinate))
