@@ -26,16 +26,16 @@
 
 (defmacro draw-board ()
   `(progn
-     ; (dorange (x 0 7)
-     ;   (dorange (y 0 7)
-     ;     (itemconfigure
-     ;       canvas
-     ;       (create-rectangle canvas
-     ;                         (* x *width*)
-     ;                         (* y *width*)
-     ;                         (+ (* *width* x) *width*)
-     ;                         (+ (* *width* y) *width*))
-     ;       "fill" "green")))
+     (dorange (x 0 7)
+       (dorange (y 0 7)
+         (itemconfigure
+           canvas
+           (create-rectangle canvas
+                             (* x *width*)
+                             (* y *width*)
+                             (+ (* *width* x) *width*)
+                             (+ (* *width* y) *width*))
+           "fill" "green")))
      (draw-disc 'black (make-cordinate :x 3 :y 3))
      (draw-disc 'black (make-cordinate :x 4 :y 4))
      (draw-disc 'white (make-cordinate :x 4 :y 3))
@@ -92,10 +92,9 @@
 ;; }}}
 ;; do-reverse {{{
 
-(defmacro do-reverse (turn direction)
-  `(do* ((counter 1 (1+ counter))
-         (next-cordinate (vector+ r1 ,direction)
-                         (vector+ r1 ,direction)))
+(defmacro do-reverse (turn cordinate direction)
+  `(do* ((next-cordinate (vector+ ,cordinate ,direction)
+                         (vector+ next-cordinate ,direction)))
      ((eq (safety-aref *board* next-cordinate) ,turn))
      (draw-disc ,turn next-cordinate)))
 
@@ -103,15 +102,15 @@
 ;; reverse-disc {{{
 
 (defmacro reverse-disc (turn cordinate directions)
-  `(with-cordinates (,cordinate)
-     (when (find 'top ,directions) (do-reverse ,turn (top)))
-     (when (find 'right ,directions) (do-reverse ,turn (right)))
-     (when (find 'left ,directions) (do-reverse ,turn (left)))
-     (when (find 'bottom ,directions) (do-reverse ,turn (bottom)))
-     (when (find 'top-left ,directions) (do-reverse ,turn (top-left)))
-     (when (find 'top-right ,directions) (do-reverse ,turn (top-right)))
-     (when (find 'bottom-left ,directions) (do-reverse ,turn (bottom-left)))
-     (when (find 'bottom-right ,directions) (do-reverse ,turn (bottom-right)))))
+  `(progn
+     (when (find 'top ,directions) (do-reverse ,turn ,cordinate (top)))
+     (when (find 'right ,directions) (do-reverse ,turn ,cordinate (right)))
+     (when (find 'left ,directions) (do-reverse ,turn ,cordinate (left)))
+     (when (find 'bottom ,directions) (do-reverse ,turn ,cordinate (bottom)))
+     (when (find 'top-left ,directions) (do-reverse ,turn ,cordinate (top-left)))
+     (when (find 'top-right ,directions) (do-reverse ,turn ,cordinate (top-right)))
+     (when (find 'bottom-left ,directions) (do-reverse ,turn ,cordinate (bottom-left)))
+     (when (find 'bottom-right ,directions) (do-reverse ,turn ,cordinate (bottom-right)))))
 
 ;; }}}
 ;; safety-aref {{{
