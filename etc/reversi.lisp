@@ -55,7 +55,6 @@
                     "fill" (mkstr ,turn))
      (setf (aref *board* x1 y1) ,turn)
      (echo #\( x1 #\, y1 #\))
-     ; (echo *board*)
      (print-board *board*)
      (values)))
 
@@ -129,6 +128,7 @@
   (if (eq turn 'black) 'white 'black))
 
 ;; }}}
+;; print-board {{{
 
 (defun print-board (board)
   (fresh-line)
@@ -136,6 +136,8 @@
     (dorange (y 0 7)
       (princ (mkstr (aref board y x) #\Space)))
     (princ #\Newline)))
+
+;; }}}
 
 (with-ltk ()
   (bind *tk* "<Alt-q>" (ilambda (event) (setf *exit-mainloop* t)))
