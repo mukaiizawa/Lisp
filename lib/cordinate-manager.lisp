@@ -18,6 +18,17 @@
                (push `(,(mksym 'z counter) (cordinate-z ,cordinate)) acc)))
           ,@body))
 
+;; make-cordinate-list {{{
+
+(defmacro make-cordinate-list (&rest cordinates)
+  `(mapcar (lambda (cordinate)
+             (let1 (dimension (length cordinate))
+               (make-cordinate :x (first cordinate)
+                               :y (second cordinate)
+                               :z (if (= dimension 3) (third cordinate) 0))))
+           ',cordinates))
+
+;; }}}
 ;; shift {{{
 
 (defmethod shift ((cordinate cordinate) &key (x 0) (y 0) (z 0))
