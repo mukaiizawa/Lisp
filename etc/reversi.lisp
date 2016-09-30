@@ -13,9 +13,9 @@
      (make-cordinate :x ,x :y ,y)))
 
 (defmacro defdirections (&rest directions)
-  `(progn ,@(mapcar (lambda (direction x y)
-                      `(defdirection ,direction ,x ,y))
-                    ,directions)))
+  `(progn ,@(mapcar (lambda (direction)
+                      `(defdirection ,@direction))
+                    directions)))
 
 (defdirections
   (top 0 -1)
