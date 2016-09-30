@@ -12,14 +12,20 @@
   `(defmacro ,direction ()
      (make-cordinate :x ,x :y ,y)))
 
-(defdirection top 0 -1)
-(defdirection bottom 0 1)
-(defdirection left -1 0)
-(defdirection right 1 0)
-(defdirection top-left -1 -1)
-(defdirection top-right 1 -1)
-(defdirection bottom-left -1 1)
-(defdirection bottom-right 1 1)
+(defmacro defdirections (&rest directions)
+  `(progn ,@(mapcar (lambda (direction x y)
+                      `(defdirection ,direction ,x ,y))
+                    ,directions)))
+
+(defdirections
+  (top 0 -1)
+  (bottom 0 1)
+  (left -1 0)
+  (right 1 0)
+  (top-left -1 -1)
+  (top-right 1 -1)
+  (bottom-left -1 1)
+  (bottom-right 1 1))
 
 ;; }}}
 ;; draw-board {{{
