@@ -18,32 +18,33 @@
                (push `(,(mksym 'z counter) (cordinate-z ,cordinate)) acc)))
           ,@body))
 
-;; make-cordinate-list {{{
+;; make-vector {{{
 
-(defmacro make-cordinate-list (&rest cordinates)
+(defun make-vector (x y &optional (z 0))
+  (make-cordinate :x x
+                  :y y
+                  :z z))
+
+;; }}}
+;; make-vector-list {{{
+
+(defmacro make-vector-list (&rest cordinates)
   `(mapcar (lambda (cordinate)
-             (let1 (dimension (length cordinate))
-               (make-cordinate :x (first cordinate)
-                               :y (second cordinate)
-                               :z (if (= dimension 3) (third cordinate) 0))))
+             `(make-vector ,@cordinate))
            ',cordinates))
 
 ;; }}}
-;; shift {{{
+;; vector->list {{{
 
-(defmethod shift ((cordinate cordinate) &key (x 0) (y 0) (z 0))
-  (make-cordinate :x (+ (cordinate-x cordinate) x)
-                  :y (+ (cordinate-y cordinate) y)
-                  :z (+ (cordinate-z cordinate) z)))
+(defmethod vector->list ((r1 cordinate))
+  (with-cordinates (r1)
+    (list x1 y1 z1)))
 
 ;; }}}
-;; shift! {{{
+;; list->vector {{{
 
-(defmethod shift! ((cordinate cordinate) &key x y z)
-  (awhen x (setf (cordinate-x cordinate) x))
-  (awhen y (setf (cordinate-y cordinate) y))
-  (awhen z (setf (cordinate-z cordinate) z))
-  cordinate)
+(defmacro list->vector (lis)
+  `(make-vector ,@lis))
 
 ;; }}}
 ;; vector+ {{{
@@ -55,15 +56,31 @@
                     :z (+ z1 z2))))
 
 ;; }}}
-;; norm {{{
+;; vector-rotate {{{
 
-(defmethod norm ((cordinate cordinate))
-  (sqrt
-    (apply #'+ (mapcar (lambda (x)
+(defmethod vector-rotate ((r1 cordinate) (radian number))
+  (with-cordinates (r1)
+    (make-vector (- (* (cos radian) x1)
+                    (* (sin radian) y1))
+                 (+ (* (sin radian) x1)
+                    (* (cos radian) y1)))))
+
+;; }}}
+;; vector-norm {{{
+
+(defmethod vector-norm ((r1 cordinate))
+  (sqrt (apply #'+
+               (mapcar (lambda (x)
                          (expt x 2))
-                       (list (cordinate-x cordinate)
-                             (cordinate-y cordinate)
-                             (cordinate-z cordinate))))))
+                       (vector->list r1)))))
+
+;; }}}
+;; vector-normalize {{{
+
+(defmethod vector-normalize ((r1 cordinate))
+  (with-cordinates (r1)
+    (let1 (norm (vector-norm r1))
+      (make-vector (/ x1 norm) (/ y1 norm) (/ z1 norm)))))
 
 ;; }}}
 
