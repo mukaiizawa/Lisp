@@ -20,7 +20,7 @@
 
 ;; make-vector {{{
 
-(defun make-vector (x y &optional (z 0))
+(defun make-vector (&optional (x 0) (y 0) (z 0))
   (make-cordinate :x x
                   :y y
                   :z z))
@@ -28,10 +28,10 @@
 ;; }}}
 ;; make-vector-list {{{
 
-(defmacro make-vector-list (&rest cordinates)
+(defmacro make-vector-list (cordinates)
   `(mapcar (lambda (cordinate)
              `(make-vector ,@cordinate))
-           ',cordinates))
+           ,cordinates))
 
 ;; }}}
 ;; vector->list {{{
