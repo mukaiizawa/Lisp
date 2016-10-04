@@ -3,7 +3,7 @@
 (require "coordinate-manager" *module-coordinate-manager*)
 (require "stdlib" *module-stdlib*)
 
-(defvar *drawing-interval* 1)
+(defvar *drawing-interval* 1.0)
 (defvar *cell-width* 30)
 ; (defparameter *board-width* 10)
 ; (defparameter *board-height* 20)
@@ -94,19 +94,6 @@
 
 ;; }}}
 
-;; draw-board {{{
-
-(defmacro draw-board ()
-  `(progn
-     (dorange (x 0 *board-width*)
-       (dorange (y 0 *board-height*)
-         (create-rectangle canvas
-                           (* x *cell-width*)
-                           (* y *cell-width*)
-                           (+ (* *cell-width* x) *cell-width*)
-                           (+ (* *cell-width* y) *cell-width*))))))
-
-;; }}}
 ;; draw-rectangle {{{
 
 (defmacro draw-rectangle (coordinate)
@@ -132,6 +119,14 @@
                (draw-rectangle r1))))))
 
 ;; }}}
+;; draw-board {{{
+
+(defmacro draw-board ()
+  `(dorange (x 0 *board-width*)
+     (dorange (y 0 *board-height*)
+       (draw-rectangle (make-vector x y)))))
+
+;; }}}
 ;; safety-aref {{{
 
 (defun safety-aref (board coordinate)
@@ -155,12 +150,34 @@
   (vector+ (tetrimino-coordinate-origin *falling-tetrimino*) coordinate))
 
 ;; }}}
+;; remove-rectangle {{{
+
+(defmacro remove-rectangle ()
+  `(dolist (coordinate (tetrimino-vectors *falling-tetrimino*))
+     (with-coordinates (coordinate)
+       (when (safety-aref safety-aref *board* r1)
+         (itemdelete canvas (aref *board* x1 y1))))))
+
+;; }}}
 ;; try-move-tetrimino {{{
 
 (defmacro try-move-tetrimino (direction)
   `(progn
+     (remove-rectangle)
      (setf (tetrimino-coordinate-origin *falling-tetrimino*) 
            (vector+ (tetrimino-coordinate-origin *falling-tetrimino*) ,direction))
+     (draw-tetrimino)))
+
+;; }}}
+;; try-rotate-tetrimino {{{
+
+(defmacro try-rotate-tetrimino ()
+  `(progn
+     (remove-rectangle)
+     (setf (tetrimino-vectors *falling-tetrimino*)
+           (mapcar (lambda (coordinate)
+                     (vector-rorate cordinate (/ pi 2)))
+                   (tetrimino-vectors *falling-tetrimino*)))
      (draw-tetrimino)))
 
 ;; }}}
