@@ -199,6 +199,7 @@
                                      :height (* *cell-width* *board-height*))))
     (draw-board)
     (bind-keypress (#\h) (try-move-tetrimino (make-vector -1 0)))
+    (bind-keypress (#\k) (try-rotate-tetrimino))
     (bind-keypress (#\l) (try-move-tetrimino (make-vector 1 0)))
     (while t
       (try-move-tetrimino (make-vector 0 1))
