@@ -30,11 +30,10 @@
 
 (defmacro make-vector-list (cordinates)
   `(mapcar (lambda (cordinate)
-             `(make-vector ,@cordinate))
+             (list->vector cordinate))
            ,cordinates))
 
-;; }}}
-;; vector->list {{{
+;; }}} ;; vector->list {{{
 
 (defmethod vector->list ((r1 cordinate))
   (with-cordinates (r1)
@@ -43,8 +42,10 @@
 ;; }}}
 ;; list->vector {{{
 
-(defmacro list->vector (lis)
-  `(make-vector ,@lis))
+(defun list->vector (lis)
+  (destructuring-bind (&optional (x 0) (y 0) (z 0)) 
+    lis
+    (make-vector x y z)))
 
 ;; }}}
 ;; vector+ {{{
