@@ -1,6 +1,6 @@
 
 (require "ltk" *module-ltk*)
-(require "cordinate-manager" *module-cordinate-manager*)
+(require "coordinate-manager" *module-coordinate-manager*)
 (require "stdlib" *module-stdlib*)
 
 (defparameter *width* 40)
@@ -10,7 +10,7 @@
 
 (defmacro defdirection (direction x y)
   `(defmacro ,direction ()
-     (make-cordinate :x ,x :y ,y)))
+     (make-coordinate :x ,x :y ,y)))
 
 (defmacro defdirections (&rest directions)
   `(progn ,@(mapcar (lambda (direction)
@@ -42,16 +42,16 @@
                              (+ (* *width* x) *width*)
                              (+ (* *width* y) *width*))
            "fill" "green")))
-     (draw-disc 'black (make-cordinate :x 3 :y 3))
-     (draw-disc 'black (make-cordinate :x 4 :y 4))
-     (draw-disc 'white (make-cordinate :x 4 :y 3))
-     (draw-disc 'white (make-cordinate :x 3 :y 4))))
+     (draw-disc 'black (make-coordinate :x 3 :y 3))
+     (draw-disc 'black (make-coordinate :x 4 :y 4))
+     (draw-disc 'white (make-coordinate :x 4 :y 3))
+     (draw-disc 'white (make-coordinate :x 3 :y 4))))
 
 ;; }}}
 ;; draw-disc {{{
 
-(defmacro draw-disc (turn cordinate)
-  `(with-cordinates (,cordinate)
+(defmacro draw-disc (turn coordinate)
+  `(with-coordinates (,coordinate)
      (itemconfigure canvas 
                     (create-oval canvas
                                  (* x1 *width*)
@@ -67,22 +67,22 @@
 ;; }}}
 ;; find-puttable-direction {{{
 
-(defun find-puttable-direction (turn cordinate search-direction)
-  (labels ((rec (cordinate)
-                (let1 (this-turn (safety-aref *board* cordinate))
+(defun find-puttable-direction (turn coordinate search-direction)
+  (labels ((rec (coordinate)
+                (let1 (this-turn (safety-aref *board* coordinate))
                   (unless (eq this-turn 'wall)
                     (or (eq turn this-turn)
-                        (rec (vector+ cordinate search-direction)))))))
-    (let1 (next-cordinate (vector+ cordinate search-direction))
+                        (rec (vector+ coordinate search-direction)))))))
+    (let1 (next-coordinate (vector+ coordinate search-direction))
       (when (eq (toggle turn)
-                (safety-aref *board* next-cordinate))
-        (rec (vector+ next-cordinate search-direction))))))
+                (safety-aref *board* next-coordinate))
+        (rec (vector+ next-coordinate search-direction))))))
 
 ;; }}}
 ;; can-put-disk? {{{
 
-(defmacro can-put-disk? (turn cordinate)
-  `(with-cordinates (,cordinate)
+(defmacro can-put-disk? (turn coordinate)
+  `(with-coordinates (,coordinate)
      (let (direction)
        (when (find-puttable-direction ,turn r1 (top)) (push 'top direction))
        (when (find-puttable-direction ,turn r1 (bottom)) (push 'bottom direction))
@@ -97,31 +97,31 @@
 ;; }}}
 ;; do-reverse {{{
 
-(defmacro do-reverse (turn cordinate direction)
-  `(do* ((next-cordinate (vector+ ,cordinate ,direction)
-                         (vector+ next-cordinate ,direction)))
-     ((eq (safety-aref *board* next-cordinate) ,turn))
-     (draw-disc ,turn next-cordinate)))
+(defmacro do-reverse (turn coordinate direction)
+  `(do* ((next-coordinate (vector+ ,coordinate ,direction)
+                         (vector+ next-coordinate ,direction)))
+     ((eq (safety-aref *board* next-coordinate) ,turn))
+     (draw-disc ,turn next-coordinate)))
 
 ;; }}}
 ;; reverse-disc {{{
 
-(defmacro reverse-disc (turn cordinate directions)
+(defmacro reverse-disc (turn coordinate directions)
   `(progn
-     (when (find 'top ,directions) (do-reverse ,turn ,cordinate (top)))
-     (when (find 'right ,directions) (do-reverse ,turn ,cordinate (right)))
-     (when (find 'left ,directions) (do-reverse ,turn ,cordinate (left)))
-     (when (find 'bottom ,directions) (do-reverse ,turn ,cordinate (bottom)))
-     (when (find 'top-left ,directions) (do-reverse ,turn ,cordinate (top-left)))
-     (when (find 'top-right ,directions) (do-reverse ,turn ,cordinate (top-right)))
-     (when (find 'bottom-left ,directions) (do-reverse ,turn ,cordinate (bottom-left)))
-     (when (find 'bottom-right ,directions) (do-reverse ,turn ,cordinate (bottom-right)))))
+     (when (find 'top ,directions) (do-reverse ,turn ,coordinate (top)))
+     (when (find 'right ,directions) (do-reverse ,turn ,coordinate (right)))
+     (when (find 'left ,directions) (do-reverse ,turn ,coordinate (left)))
+     (when (find 'bottom ,directions) (do-reverse ,turn ,coordinate (bottom)))
+     (when (find 'top-left ,directions) (do-reverse ,turn ,coordinate (top-left)))
+     (when (find 'top-right ,directions) (do-reverse ,turn ,coordinate (top-right)))
+     (when (find 'bottom-left ,directions) (do-reverse ,turn ,coordinate (bottom-left)))
+     (when (find 'bottom-right ,directions) (do-reverse ,turn ,coordinate (bottom-right)))))
 
 ;; }}}
 ;; safety-aref {{{
 
-(defun safety-aref (board cordinate)
-  (with-cordinates (cordinate)
+(defun safety-aref (board coordinate)
+  (with-coordinates (coordinate)
     (if (and (<= 0 x1) (< x1 8)
              (<= 0 y1) (< y1 8))
       (aref board x1 y1)
@@ -152,7 +152,7 @@
     (draw-board)
     (bind canvas "<ButtonPress-1>"
           (lambda (event)
-            (with-cordinates ((make-cordinate :x (truncate (event-x event) *width*)
+            (with-coordinates ((make-coordinate :x (truncate (event-x event) *width*)
                                               :y (truncate (event-y event) *width*)))
               (awhen (can-put-disk? turn r1)
                 (draw-disc turn r1)
