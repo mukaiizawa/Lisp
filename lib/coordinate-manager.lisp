@@ -1,5 +1,6 @@
 
 (require "stdlib" *module-stdlib*)
+(require "math" *module-math*)
 
 (defstruct coordinate
   (x 0 :type number)
@@ -61,10 +62,12 @@
 
 (defmethod vector-rotate ((r1 coordinate) (radian number))
   (with-coordinates (r1)
-    (make-vector (- (* (cos radian) x1)
-                    (* (sin radian) y1))
-                 (+ (* (sin radian) x1)
-                    (* (cos radian) y1)))))
+    (make-vector (round-to (- (* (cos radian) x1)
+                              (* (sin radian) y1))
+                           2)
+                 (round-to (+ (* (sin radian) x1)
+                              (* (cos radian) y1))
+                           2))))
 
 ;; }}}
 ;; vector-norm {{{
