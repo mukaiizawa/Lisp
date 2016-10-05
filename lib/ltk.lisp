@@ -834,7 +834,7 @@ event to read and blocking is set to nil"
     (apply 'format-wish fmt args)))
 
 
-(defun after (time fun)
+(defun after-time (time fun)
  "after <time> msec call function <fun>, returns the after event id,
 which can be passed to AFTER-CANCEL"
  (let ((name (format nil "after~a" (incf (wish-after-counter *wish*)))))
