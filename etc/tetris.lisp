@@ -155,7 +155,7 @@
 (defmacro remove-rectangle ()
   `(dolist (coordinate (tetrimino-vectors *falling-tetrimino*))
      (with-coordinates (coordinate)
-       (when (safety-aref safety-aref *board* r1)
+       (when (safety-aref *board* r1)
          (itemdelete canvas (aref *board* x1 y1))))))
 
 ;; }}}
@@ -176,7 +176,7 @@
      (remove-rectangle)
      (setf (tetrimino-vectors *falling-tetrimino*)
            (mapcar (lambda (coordinate)
-                     (vector-rorate cordinate (/ pi 2)))
+                     (vector-rotate coordinate (/ pi 2)))
                    (tetrimino-vectors *falling-tetrimino*)))
      (draw-tetrimino)))
 
