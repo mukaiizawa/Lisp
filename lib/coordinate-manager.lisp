@@ -58,6 +58,15 @@
                     :z (+ z1 z2))))
 
 ;; }}}
+;; vector= {{{
+
+(defmethod vector= ((r1 coordinate) (r2 coordinate))
+  (with-coordinates (r1 r2)
+    (and (= x1 x2)
+         (= y1 y2)
+         (= z1 z2))))
+
+;; }}}
 ;; vector-rotate {{{
 
 (defmethod vector-rotate ((r1 coordinate) (radian number) &optional (digits 0))
