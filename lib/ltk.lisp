@@ -347,7 +347,7 @@ set server stdout
 set tclside_ltkdebug ~:[0~;1~]
 package require Tk
 wm protocol . WM_DELETE_WINDOW exit
-wm attribute . -topmost 1
+wm attribute . -topmost 0
 if {$tclside_ltkdebug} {
    toplevel .ltk
    wm title .ltk \"Debug output\"
