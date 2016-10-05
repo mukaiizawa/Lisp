@@ -15,5 +15,6 @@
 
 (defun round-to (number precision &optional (fn #'round))
   (let1 (div (expt 10 precision))
-    (float (/ (funcall fn (* number div)) div))))
+    (funcall (if (zerop precision) #'parse-int #'float)
+             (/ (funcall fn (* number div)) div))))
 
