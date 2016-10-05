@@ -1,5 +1,6 @@
 
 (require "stdlib" *module-stdlib*)
+(require "graph-utils" *module-graph-utils*)
 (provide "database-manager")
 
 (defstruct table
