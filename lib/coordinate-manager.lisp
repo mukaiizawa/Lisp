@@ -60,14 +60,14 @@
 ;; }}}
 ;; vector-rotate {{{
 
-(defmethod vector-rotate ((r1 coordinate) (radian number))
+(defmethod vector-rotate ((r1 coordinate) (radian number) &optional (digits 0))
   (with-coordinates (r1)
     (make-vector (round-to (- (* (cos radian) x1)
                               (* (sin radian) y1))
-                           2)
+                           digits)
                  (round-to (+ (* (sin radian) x1)
                               (* (cos radian) y1))
-                           2))))
+                           digits))))
 
 ;; }}}
 ;; vector-norm {{{
