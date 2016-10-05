@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defvar *box-size* 3)
 (defparameter *board-size* nil)

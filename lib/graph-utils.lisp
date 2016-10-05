@@ -1,7 +1,7 @@
 
-(require "stdlib" *module-stdlib*)
-(require "regex" *module-regex*)
-(provide "graph-utils")
+(require :stdlib *module-stdlib*)
+(require :regex *module-regex*)
+(provide :graph-utils)
 
 (defparameter *global-graph-conf* '((layout "dot") (charset "UTF8") (rankdir "TB")))
 (defparameter *global-node-conf* '((shape "record") (fontname "meiryo")))

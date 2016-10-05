@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defun fizz? (n)
   (zerop (mod n 3)))

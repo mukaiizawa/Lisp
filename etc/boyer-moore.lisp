@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 ;; Boyer-Moore String Search Algorithm
 (defun boyer-moore (pat str &key (ignore-case nil))

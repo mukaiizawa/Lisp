@@ -1,6 +1,6 @@
 
-(require "ahead-reader" *module-ahead-reader*)
-(provide "csv-reader")
+(require :ahead-reader *module-ahead-reader*)
+(provide :csv-reader)
 
 (defstruct (csv-reader (:include ahead-reader))
   (lines nil :type list)

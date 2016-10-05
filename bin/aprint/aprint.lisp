@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(require "regex" *module-regex*)
+(require :stdlib *module-stdlib*)
+(require :regex *module-regex*)
 
 (defparameter *surround-character* nil)
 (defparameter *bg-character* #\Space)

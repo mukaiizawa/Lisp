@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defun merge-sort (lis)
   (funcall (alambda (lis)

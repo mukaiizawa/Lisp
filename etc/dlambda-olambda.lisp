@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defmacro dlambda (&rest body)
   (with-gensyms (args)

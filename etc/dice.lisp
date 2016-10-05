@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defparameter *time-limit* 6)
 (defparameter *dice-num* 2)

@@ -1,5 +1,5 @@
 
-(provide "stdlib")
+(provide :stdlib)
 
 (defconstant +null-character+ (code-char 0))
 (defconstant +empty-string+ "")

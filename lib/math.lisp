@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(provide "math")
+(require :stdlib *module-stdlib*)
+(provide :math)
 
 (defun fact (n)
   (if (or (= n 0) (= n 1))

@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(provide "test-utils")
+(require :stdlib *module-stdlib*)
+(provide :test-utils)
 
 (defmacro test-all (&body tests)
   `(progn ,@(mapcar (lambda (test)

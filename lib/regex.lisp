@@ -1,8 +1,8 @@
 
-(require "stdlib" *module-stdlib*)
-(require "ahead-reader" *module-ahead-reader*)
-(require "test-utils" *module-test-utils*)
-(provide "regex")
+(require :stdlib *module-stdlib*)
+(require :ahead-reader *module-ahead-reader*)
+(require :test-utils *module-test-utils*)
+(provide :regex)
 
 ;; read-macro #~ {{{
 

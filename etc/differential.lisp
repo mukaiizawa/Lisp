@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defun sum (arg1 &rest args)
   (labels ((sum (arg1 arg2)

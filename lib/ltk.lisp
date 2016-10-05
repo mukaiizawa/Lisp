@@ -119,7 +119,7 @@ toplevel             x
 
 }}} |#
 
-(provide "ltk")
+(provide :ltk)
 (defvar *ltk-version* "0.98")
 
 ;; do-execute {{{

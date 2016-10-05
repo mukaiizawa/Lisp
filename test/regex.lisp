@@ -1,8 +1,8 @@
 
-(require "stdlib" *module-stdlib*)
-(require "ahead-reader" *module-ahead-reader*)
-(require "regex" *module-regex*)
-(require "test-utils" *module-test-utils*)
+(require :stdlib *module-stdlib*)
+(require :ahead-reader *module-ahead-reader*)
+(require :regex *module-regex*)
+(require :test-utils *module-test-utils*)
 
 (test-all
   ;; no metacharacter {{{

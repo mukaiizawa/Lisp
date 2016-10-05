@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(require "test-utils" *module-test-utils*)
+(require :stdlib *module-stdlib*)
+(require :test-utils *module-test-utils*)
 
 ;; Attention: ccl bug -b option can't use.
 

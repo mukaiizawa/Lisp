@@ -1,7 +1,7 @@
 
-(require "ltk" *module-ltk*)
-(require "coordinate-manager" *module-coordinate-manager*)
-(require "stdlib" *module-stdlib*)
+(require :ltk *module-ltk*)
+(require :coordinate-manager *module-coordinate-manager*)
+(require :stdlib *module-stdlib*)
 
 (defvar *drawing-interval* 1.0)
 (defvar *cell-width* 30)
@@ -13,16 +13,16 @@
 (defparameter *tetriminos* nil)
 (defparameter *falling-tetrimino* nil) 
 
-(defstruct tetrimino shape color coordinate-origin vectors)
+(defstruct tetrimino shape color coordinate-origin coordinates)
 
 ;; deftetrimino {{{
 
-(defmacro deftetrimino (shape color &rest vectors)
+(defmacro deftetrimino (shape color &rest coordinates)
   `(push ,(make-tetrimino 
             :shape shape
             :color color 
             :coordinate-origin (make-vector (/ *board-width* 2) 0)
-            :vectors (make-vector-list vectors))
+            :coordinates (make-vector-list coordinates))
          *tetriminos*))
 
 ;; }}}
@@ -107,11 +107,11 @@
        (values item))))
 
 ;; }}}
-;; draw-tetrimino {{{
+;; draw-falling-tetrimino {{{
 
-(defmacro draw-tetrimino ()
-  `(dolist (coordinate (tetrimino-vectors *falling-tetrimino*))
-     (with-coordinates ((to-absolute-coordinate coordinate))
+(defmacro draw-falling-tetrimino ()
+  `(dolist (coordinate (absolute-coordinates *falling-tetrimino*))
+     (with-coordinates (coordinate)
        (when (safety-aref *board* r1)
          (setf (aref *board* x1 y1)
                (draw-rectangle r1 (tetrimino-color *falling-tetrimino*)))))))
@@ -134,6 +134,14 @@
       (aref board x1 y1))))
 
 ;; }}}
+;; absolute-coordinates {{{
+
+(defmethod absolute-coordinates ((tetrimino tetrimino))
+  (mapcar (lambda (coordinate)
+            (vector+ (tetrimino-coordinate-origin tetrimino) coordinate))
+          (tetrimino-coordinates tetrimino)))
+
+;; }}}
 ;; set-new-falling-tetrimino {{{
 
 (defmacro set-new-falling-tetrimino ()
@@ -142,47 +150,71 @@
            (copy-structure
              (nth (random (length *tetriminos*))
                   *tetriminos*)))
-     (draw-tetrimino)))
+     (draw-falling-tetrimino)))
 
 ;; }}}
-;; to-absolute-coordinate {{{
+;; remove-tetrimino {{{
 
-(defun to-absolute-coordinate (coordinate)
-  (vector+ (tetrimino-coordinate-origin *falling-tetrimino*) coordinate))
-
-;; }}}
-;; remove-rectangle {{{
-
-(defmacro remove-rectangle ()
-  `(dolist (coordinate (tetrimino-vectors *falling-tetrimino*))
-     (with-coordinates ((to-absolute-coordinate coordinate))
+(defmacro remove-tetrimino ()
+  `(dolist (coordinate (absolute-coordinates *falling-tetrimino*))
+     (with-coordinates (coordinate)
        (when (safety-aref *board* r1)
-         (itemdelete canvas (aref *board* x1 y1))))))
+         (itemdelete canvas (aref *board* x1 y1))
+         (setf (aref *board* x1 y1) 0)))))
+
+;; }}}
+;; movable? {{{
+
+(defmacro movable? (direction)
+  `(let1 (current-coordinates (absolute-coordinates *falling-tetrimino*))
+     (mapcar (lambda (coordinate)
+               (or (= 0 (safety-aref *board* coordinate))
+                 (vector= (vector+ coordinate ,direction)
+                            current-coordinates)
+               )
+           current-coordinates)
 
 ;; }}}
 ;; try-move-tetrimino {{{
 
 (defmacro try-move-tetrimino (direction)
-  `(unless (find nil (mapcar (lambda (coordinate)
-                               (safety-aref *board* (vector+ (to-absolute-coordinate coordinate)
-                                                             ,direction)))
-                             (tetrimino-vectors *falling-tetrimino*)))
-     (remove-rectangle)
-     (setf (tetrimino-coordinate-origin *falling-tetrimino*) 
+  `(awhen (movable? ,direction)
+     (remove-tetrimino)
+     (setf (tetrimino-coordinates *falling-tetrimino*)
+           it
+           (tetrimino-coordinate-origin *falling-tetrimino*) 
            (vector+ (tetrimino-coordinate-origin *falling-tetrimino*) ,direction))
-     (draw-tetrimino)))
+     (draw-falling-tetrimino)))
+
+;; }}}
+;; rotatable? {{{
+; todo
+(defmacro rotatable? ()
+  `(labels ((rec (coordinates acc)
+                 (with-coordinates ((first coordinates))
+                   (cond ((null coordinates)
+                          (nreverse acc))
+                         ((or (= (aref *board* x1 y1) 0)
+                              (find-if (lambda (coordinate)
+                                         (vector= r1 x))
+                                       (tetrimino-coordinates *falling-tetrimino*)))
+                          (push (vector+ r1) acc)
+                          (rec (rest coordinates)))
+                         (t
+                           nil)))))
+     (rec (tetrimino-coordinates *falling-tetrimino*) nil)))
 
 ;; }}}
 ;; try-rotate-tetrimino {{{
 
 (defmacro try-rotate-tetrimino ()
   `(progn
-     (remove-rectangle)
-     (setf (tetrimino-vectors *falling-tetrimino*)
+     (remove-tetrimino)
+     (setf (tetrimino-coordinates *falling-tetrimino*)
            (mapcar (lambda (coordinate)
                      (vector-rotate coordinate (/ pi 2)))
-                   (tetrimino-vectors *falling-tetrimino*)))
-     (draw-tetrimino)))
+                   (tetrimino-coordinates *falling-tetrimino*)))
+     (draw-falling-tetrimino)))
 
 ;; }}}
 
@@ -192,11 +224,6 @@
            (print *board*)
            ,@body)))
 
-
-(setq *falling-tetrimino* (make-tetrimino :coordinate-origin (make-vector (/ *board-width* 2) 0)
-                                          :vectors (list (make-vector 0 0))
-                                          :color "#000000"))
-
 (with-ltk ()
   (bind *tk* "<KeyPress-q>" (ilambda (event) (setf *exit-mainloop* t)))
   (let1 (canvas (pack (make-instance 'canvas
@@ -204,7 +231,6 @@
                                      :height (* *cell-width* *board-height*))))
     (draw-board)
     (set-new-falling-tetrimino)
-    (bind-keypress #\s (try-rotate-tetrimino))
     (bind-keypress #\o (try-rotate-tetrimino))
     (bind-keypress #\h (try-move-tetrimino (make-vector -1 0)))
     (bind-keypress #\k (try-move-tetrimino (make-vector 0 -1)))

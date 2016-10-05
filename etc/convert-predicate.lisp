@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defmacro abbrev (short long)
   `(defmacro ,short (&rest args)

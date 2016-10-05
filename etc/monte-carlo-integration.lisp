@@ -1,5 +1,5 @@
 
-(require "stdlib" *module-stdlib*)
+(require :stdlib *module-stdlib*)
 
 (defmacro bind-cordinate (area &body body)
   `(destructuring-bind

@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(require "test-utils" *module-test-utils*)
+(require :stdlib *module-stdlib*)
+(require :test-utils *module-test-utils*)
 
 (defun match? (pat line &key (start 0))
   (when (<= start (length line))

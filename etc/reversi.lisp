@@ -1,7 +1,7 @@
 
-(require "ltk" *module-ltk*)
-(require "coordinate-manager" *module-coordinate-manager*)
-(require "stdlib" *module-stdlib*)
+(require :ltk *module-ltk*)
+(require :coordinate-manager *module-coordinate-manager*)
+(require :stdlib *module-stdlib*)
 
 (defparameter *width* 40)
 (defparameter *board* (make-array '(8 8) :initial-element 'green))

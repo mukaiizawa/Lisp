@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(require "xml-manager" *module-xml-manager*)
+(require :stdlib *module-stdlib*)
+(require :xml-manager *module-xml-manager*)
 
 (defun get-text (nodes)
   (labels ((rec (nodes)

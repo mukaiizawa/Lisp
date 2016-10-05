@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(provide "ahead-reader")
+(require :stdlib *module-stdlib*)
+(provide :ahead-reader)
 
 (defstruct ahead-reader
   (stream nil :type stream)

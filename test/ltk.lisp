@@ -1,7 +1,7 @@
 
-(require "ltk" *module-ltk*)
-(require "stdlib" *module-stdlib*)
-(require "test-utils" *module-test-utils*)
+(require :ltk *module-ltk*)
+(require :stdlib *module-stdlib*)
+(require :test-utils *module-test-utils*)
 
 (with-ltk ()
   (bind *tk* "<Alt-q>" (ilambda (event) (setf *exit-mainloop* t)))

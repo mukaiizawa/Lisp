@@ -1,6 +1,6 @@
 
 (load "compute")
-(require "test-utils" *module-test-utils*)
+(require :test-utils *module-test-utils*)
 
 (defmacro test-calc (str)
   `(with-input-from-string (in ,str)

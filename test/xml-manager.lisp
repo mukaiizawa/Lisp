@@ -1,6 +1,6 @@
 
-(require "xml-manager" *module-xml-manager*)
-(require "test-utils" *module-test-utils*)
+(require :xml-manager *module-xml-manager*)
+(require :test-utils *module-test-utils*)
 
 (defmacro test-xml->DSL (str)
   `(with-input-from-string (in ,str)

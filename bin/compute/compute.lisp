@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(require "ahead-reader" *module-ahead-reader*)
+(require :stdlib *module-stdlib*)
+(require :ahead-reader *module-ahead-reader*)
 
 ;;
 ;; <expr>   ::= <term> | <expr> "+" <term> | <expr> "-" <term>

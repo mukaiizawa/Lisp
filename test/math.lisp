@@ -1,6 +1,6 @@
 
-(require "math" *module-math*)
-(require "test-utils" *module-test-utils*)
+(require :math *module-math*)
+(require :test-utils *module-test-utils*)
 
 ;; fact {{{
 

@@ -1,7 +1,7 @@
 
-(require "stdlib" *module-stdlib*)
-(require "graph-utils" *module-graph-utils*)
-(provide "database-manager")
+(require :stdlib *module-stdlib*)
+(require :graph-utils *module-graph-utils*)
+(provide :database-manager)
 
 (defstruct table
   (phisical-name "" :type string)

@@ -1,6 +1,6 @@
 
-(require "stdlib" *module-stdlib*)
-(require "math" *module-math*)
+(require :stdlib *module-stdlib*)
+(require :math *module-math*)
 
 ;; queueing-theory
 ;; A/B/C

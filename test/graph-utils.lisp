@@ -1,7 +1,7 @@
 
-(require "stdlib" *module-stdlib*)
-(require "graph-utils" *module-graph-utils*)
-(require "test-utils" *module-test-utils*)
+(require :stdlib *module-stdlib*)
+(require :graph-utils *module-graph-utils*)
+(require :test-utils *module-test-utils*)
 
 (test-all 
   (make-continuous-edges-01
