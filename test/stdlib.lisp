@@ -33,6 +33,15 @@ END
   (mkstr-02 (mkstr "1" #\2 3 '4) "1234"))
 
 ;; }}}
+;; mkstr-if {{{
+
+(test-all
+  (mkstr-if-01 (mkstr-if t "a") "a")
+  (mkstr-if-02 (mkstr-if t "1" #\2 3 '4) "1234")
+  (mkstr-if-03 (mkstr-if nil "a") "")
+  (mkstr-if-04 (mkstr-if nil "1" #\2 3 '4) ""))
+
+;; }}}
 ;; mkkey {{{
 
 (test-all

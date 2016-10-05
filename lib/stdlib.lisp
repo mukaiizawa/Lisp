@@ -70,6 +70,14 @@
       (if i (princ i str)))))
 
 ;; }}}
+;; mkstr-if {{{
+
+(defun mkstr-if (test &rest args)
+  (if test
+    (apply #'mkstr args)
+    +empty-string+))
+
+;; }}}
 ;; mksym {{{
 
 (defun mksym (&rest args)
