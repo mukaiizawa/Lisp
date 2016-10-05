@@ -60,28 +60,37 @@
 ;; extension
 ;; tables->nodes {{{
 
-(defun tables->nodes (tables)
+(defun tables->nodes (tables &optional with-logical-table-name? with-logical-column-name?)
   (let (nodes)
     (dolist (table tables)
       (let* ((table-phisical-name (mkstr (table-phisical-name table)))
              (attr-shape (list 'shape "plaintext"))
              (attr-label (list 'label
                                (with-output-to-string (out)
-                                 (format out "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>")
-                                 (format out "<TR><TD BGCOLOR='GRAY' WIDTH='200'>~A</TD></TR>" table-phisical-name)
-                                 (dolist (column (table-columns table))
-                                   (format out "<TR><TD PORT='~A' BGCOLOR='~A' ALIGN='LEFT'><FONT COLOR='~A'>~A</FONT></TD></TR>"
-                                           (mkstr table-phisical-name "_" (column-phisical-name column))
-                                           (if (column-primarykey? column)
-                                             "#E0FFFF"
-                                             "#FFFFFF")
-                                           (if (or (column-primarykey? column)
-                                                   (column-required? column))
-                                             "RED" "BLACK")
-                                           (column-phisical-name column)))
-                                 (format out "</TABLE>>")))))
-        (push (list table-phisical-name (list attr-shape attr-label)) nodes)))
-    (nreverse nodes)))
+                                 (format out
+                                         "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>
+                                         <TR>
+                                         <TD BGCOLOR='GRAY' WIDTH='200'>~A~A</TD>
+                                         </TR>"
+                                         table-phisical-name
+                                         (mkstr-if with-logical-table-name?
+                                           "(" (table-logical-name table) ")"))
+                                         (dolist (column (table-columns table))
+                                           (format out "<TR><TD PORT='~A' BGCOLOR='~A' ALIGN='LEFT'><FONT COLOR='~A'>~A~A</FONT></TD></TR>"
+                                                   (mkstr table-phisical-name "_" (column-phisical-name column))
+                                                   (if (column-primarykey? column)
+                                                     "#E0FFFF"
+                                                     "#FFFFFF")
+                                                   (if (or (column-primarykey? column)
+                                                           (column-required? column))
+                                                     "RED"
+                                                     "BLACK")
+                                                   (column-phisical-name column)
+                                                   (mkstr-if with-logical-column-name?
+                                                     "(" (column-logical-name column) ")")))
+                                         (format out "</TABLE>>")))))
+             (push (list table-phisical-name (list attr-shape attr-label)) nodes)))
+      (nreverse nodes)))
 
 ;; }}}
 ;; tables->edges {{{
