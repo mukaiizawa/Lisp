@@ -5,8 +5,8 @@
 
 (defvar *drawing-interval* 1.0)
 (defvar *cell-width* 30)
-(defvar *board-width* 6)
-(defvar *board-height* 8)
+(defvar *board-width* 10)
+(defvar *board-height* 20)
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
 (defparameter *tetriminos* nil)
 (defparameter *current-tetrimino* nil) 
@@ -154,13 +154,17 @@
 (defun get-next-coordinates (direction)
   (mapcar (lambda (current-coordinate)
             (vector+ current-coordinate
-                     (tetrimino-coordinate-origin *current-tetrimino*)
                      direction))
-          (mapcar (lambda (current-coordinate)
-                    (if (vector-origin? direction)
-                      current-coordinate
-                      (vector-rotate current-coordinate (/ pi 2))))
-                  (tetrimino-coordinates *current-tetrimino*))))
+          (get-current-coordinates)))
+
+;; }}}
+;; get-rotate-coordinates {{{
+
+(defun get-rotate-coordinates ()
+  (mapcar (lambda (current-coordinate)
+            (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
+                     (vector-rotate current-coordinate (/ pi 2))))
+          (tetrimino-coordinates *current-tetrimino*)))
 
 ;; }}}
 ;; set-new-current-tetrimino {{{
@@ -211,9 +215,9 @@
                   (get-current-coordinates)))))
 
 ;; }}}
-;; try-move-tetrimino {{{
+;; try-move {{{
 
-(defmacro try-move-tetrimino (&optional (direction (make-vector)))
+(defmacro try-move (direction)
   `(let ((current-coordinates (get-current-coordinates))
          (next-coordinates (get-next-coordinates ,direction)))
      (unless (find-if (complement (movable?)) next-coordinates)
@@ -221,6 +225,20 @@
        (setf (tetrimino-coordinate-origin *current-tetrimino*)
              (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
                       ,direction))
+       (draw-current-tetrimino))))
+
+;; }}}
+;; try-rotate {{{
+
+(defmacro try-rotate ()
+  `(let ((current-coordinates (get-current-coordinates))
+         (rotate-coordinates (get-rotate-coordinates)))
+     (unless (find-if (complement (movable?)) rotate-coordinates)
+       (delete-rectangles current-coordinates)
+       (setf (tetrimino-coordinates *current-tetrimino*)
+             (mapcar (lambda (coordinate)
+                       (vector-rotate coordinate (/ pi 2)))
+                     (tetrimino-coordinates *current-tetrimino*)))
        (draw-current-tetrimino))))
 
 ;; }}}
@@ -241,16 +259,11 @@
                                      :height (* *cell-width* *board-height*))))
     (force-focus canvas)
     (draw-board)
-    ; (after-time 3 (lambda ()
-    ;                 (try-move-tetrimino (make-vector 0 1))))
-    ; (after-time 3 (alambda ()
-    ;                 (try-move-tetrimino (make-vector 0 1))
-    ;                 (after-time 3 self)))
     (set-new-current-tetrimino)
-    (bind-keypress #\o (try-move-tetrimino))
-    (bind-keypress #\h (try-move-tetrimino (make-vector -1 0)))
-    (bind-keypress #\k (try-move-tetrimino (make-vector 0 -1)))
-    (bind-keypress #\j (try-move-tetrimino (make-vector 0 1)))
-    (bind-keypress #\l (try-move-tetrimino (make-vector 1 0)))
+    (bind-keypress #\o (try-rotate))
+    (bind-keypress #\h (try-move (make-vector -1 0)))
+    (bind-keypress #\k (try-move (make-vector 0 -1)))
+    (bind-keypress #\j (try-move (make-vector 0 1)))
+    (bind-keypress #\l (try-move (make-vector 1 0)))
     (bind-keypress #\i (set-new-current-tetrimino))))
 
