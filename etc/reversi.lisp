@@ -5,29 +5,17 @@
 
 (defparameter *width* 40)
 (defparameter *board* (make-array '(8 8) :initial-element 'green))
+(defparameter *directions*
+  (make-vector-list
+    '((0 -1)    ;; top
+      (0 1)     ;; bottom
+      (-1 0)    ;; left
+      (1 0)     ;; right
+      (-1 -1)   ;; top-left
+      (1 -1)    ;; top-right
+      (-1 1)    ;; bottom-left
+      (1 1))))  ;; bottom-right
 
-;; direction {{{
-
-(defmacro defdirection (direction x y)
-  `(defmacro ,direction ()
-     (make-coordinate :x ,x :y ,y)))
-
-(defmacro defdirections (&rest directions)
-  `(progn ,@(mapcar (lambda (direction)
-                      `(defdirection ,@direction))
-                    directions)))
-
-(defdirections
-  (top 0 -1)
-  (bottom 0 1)
-  (left -1 0)
-  (right 1 0)
-  (top-left -1 -1)
-  (top-right 1 -1)
-  (bottom-left -1 1)
-  (bottom-right 1 1))
-
-;; }}}
 ;; draw-board {{{
 
 (defmacro draw-board ()
@@ -61,7 +49,6 @@
                     "fill" (mkstr ,turn))
      (setf (aref *board* x1 y1) ,turn)
      (echo #\( x1 #\, y1 #\))
-     (print-board *board*)
      (values)))
 
 ;; }}}
@@ -74,25 +61,20 @@
                     (or (eq turn this-turn)
                         (rec (vector+ coordinate search-direction)))))))
     (let1 (next-coordinate (vector+ coordinate search-direction))
-      (when (eq (toggle turn)
-                (safety-aref *board* next-coordinate))
-        (rec (vector+ next-coordinate search-direction))))))
+      (and (eq (toggle turn)
+               (safety-aref *board* next-coordinate))
+           (rec (vector+ next-coordinate search-direction))
+           search-direction))))
 
 ;; }}}
 ;; can-put-disk? {{{
 
 (defmacro can-put-disk? (turn coordinate)
-  `(with-coordinates (,coordinate)
-     (let (direction)
-       (when (find-puttable-direction ,turn r1 (top)) (push 'top direction))
-       (when (find-puttable-direction ,turn r1 (bottom)) (push 'bottom direction))
-       (when (find-puttable-direction ,turn r1 (left)) (push 'left direction))
-       (when (find-puttable-direction ,turn r1 (right)) (push 'right direction))
-       (when (find-puttable-direction ,turn r1 (top-left)) (push 'top-left direction))
-       (when (find-puttable-direction ,turn r1 (top-right)) (push 'top-right direction))
-       (when (find-puttable-direction ,turn r1 (bottom-left)) (push 'bottom-left direction))
-       (when (find-puttable-direction ,turn r1 (bottom-right)) (push 'bottom-right direction))
-       direction)))
+  `(let (reversible-direction)
+     (dolist (direction *directions*)
+       (awhen (find-puttable-direction ,turn ,coordinate direction)
+         (push it reversible-direction)))
+     (values reversible-direction)))
 
 ;; }}}
 ;; do-reverse {{{
@@ -107,15 +89,8 @@
 ;; reverse-disc {{{
 
 (defmacro reverse-disc (turn coordinate directions)
-  `(progn
-     (when (find 'top ,directions) (do-reverse ,turn ,coordinate (top)))
-     (when (find 'right ,directions) (do-reverse ,turn ,coordinate (right)))
-     (when (find 'left ,directions) (do-reverse ,turn ,coordinate (left)))
-     (when (find 'bottom ,directions) (do-reverse ,turn ,coordinate (bottom)))
-     (when (find 'top-left ,directions) (do-reverse ,turn ,coordinate (top-left)))
-     (when (find 'top-right ,directions) (do-reverse ,turn ,coordinate (top-right)))
-     (when (find 'bottom-left ,directions) (do-reverse ,turn ,coordinate (bottom-left)))
-     (when (find 'bottom-right ,directions) (do-reverse ,turn ,coordinate (bottom-right)))))
+  `(dolist (direction ,directions)
+     (do-reverse ,turn ,coordinate direction)))
 
 ;; }}}
 ;; safety-aref {{{
@@ -134,28 +109,22 @@
   (if (eq turn 'black) 'white 'black))
 
 ;; }}}
-;; print-board {{{
-
-(defun print-board (board)
-  (fresh-line)
-  (dorange (x 0 7)
-    (dorange (y 0 7)
-      (princ (mkstr (aref board y x) #\Space)))
-    (princ #\Newline)))
-
-;; }}}
 
 (with-ltk ()
-  (bind *tk* "<Alt-q>" (ilambda (event) (setf *exit-mainloop* t)))
-  (let ((canvas (pack (make-instance 'canvas  :width (* *width* 8) :height (* *width* 8))))
+  (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
+  (let ((canvas (pack
+                  (make-instance 'canvas
+                                 :width (* *width* 8)
+                                 :height (* *width* 8))))
         (turn 'black))
     (draw-board)
+    (force-focus canvas)
     (bind canvas "<ButtonPress-1>"
           (lambda (event)
             (with-coordinates ((make-coordinate :x (truncate (event-x event) *width*)
-                                              :y (truncate (event-y event) *width*)))
+                                                :y (truncate (event-y event) *width*)))
               (awhen (can-put-disk? turn r1)
                 (draw-disc turn r1)
-                (reverse-disc turn r1 it))
-              (setq turn (toggle turn)))))))
+                (reverse-disc turn r1 it)
+                (setq turn (toggle turn))))))))
 
