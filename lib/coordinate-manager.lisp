@@ -51,11 +51,14 @@
 ;; }}}
 ;; vector+ {{{
 
-(defmethod vector+ ((r1 coordinate) (r2 coordinate))
-  (with-coordinates (r1 r2)
-    (make-coordinate :x (+ x1 x2)
-                    :y (+ y1 y2)
-                    :z (+ z1 z2))))
+(defmethod vector+ ((r1 coordinate) &rest coordinates)
+  (reduce (lambda (r1 r2)
+            (with-coordinates (r1 r2)
+              (make-vector (+ x1 x2)
+                           (+ y1 y2)
+                           (+ z1 z2))))
+          coordinates
+          :initial-value r1))
 
 ;; }}}
 ;; vector= {{{
@@ -65,6 +68,15 @@
     (and (= x1 x2)
          (= y1 y2)
          (= z1 z2))))
+
+;; }}}
+;; vector-origin? {{{
+
+(defmethod vector-origin? ((r1 coordinate))
+  (with-coordinates (r1)
+    (and (= x1 0)
+         (= y1 0)
+         (= z1 0))))
 
 ;; }}}
 ;; vector-rotate {{{
