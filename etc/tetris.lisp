@@ -151,14 +151,14 @@
 ;; }}}
 ;; get-next-coordinates {{{
 
-(defun get-next-coordinates (&optional direction)
-  (mapcar (lambda (coordinate)
-            (if (null direction)
-              ;; rotation
-              (vector-rotate coordinate (/ pi 2))
-              ;; move vertical or horizontal
-              (vector+ coordinate direction)))
-          (get-current-coordinates)))
+(defun get-next-coordinates (direction)
+  (mapcar (lambda (current-coordinate)
+            (vector+ current-coordinate
+                     (tetrimino-coordinate-origin *current-tetrimino*)
+                     direction))
+          (if (vector-origin? direction)
+            (vector-rotate (tetrimino-coordinates *current-tetrimino*) (/ pi 2))
+            (tetrimino-coordinates *current-tetrimino*))))
 
 ;; }}}
 ;; set-new-current-tetrimino {{{
@@ -202,17 +202,16 @@
 ;; movable? {{{
 
 (defmacro movable? ()
-  `(lambda (coordinate)
-     (let1 (current-coordinates (get-current-coordinates))
-       (or (aand (safety-aref coordinate) (= it 0))
-           (find-if (lambda (current-coordinate)
-                      (vector= current-coordinate coordinate))
-                    current-coordinates)))))
+  `(lambda (next-coordinate)
+     (or (aand (safety-aref next-coordinate) (= it 0))
+         (find-if (lambda (current-coordinate)
+                    (vector= current-coordinate next-coordinate))
+                  (get-current-coordinates)))))
 
 ;; }}}
 ;; try-move-tetrimino {{{
 
-(defmacro try-move-tetrimino (&optional direction)
+(defmacro try-move-tetrimino (&optional (direction (make-vector)))
   `(let ((current-coordinates (get-current-coordinates))
          (next-coordinates (get-next-coordinates ,direction)))
      (unless (find-if (complement (movable?)) next-coordinates)
@@ -221,7 +220,7 @@
              next-coordinates
              (tetrimino-coordinate-origin *current-tetrimino*)
              (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
-                      (or ,direction (make-vector 0 0))))
+                      ,direction))
        (print *current-tetrimino*)
        (draw-current-tetrimino))))
 
