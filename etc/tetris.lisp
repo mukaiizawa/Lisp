@@ -19,7 +19,7 @@
   `(push ,(make-tetrimino 
             :shape shape
             :color color 
-            :coordinate-origin (make-vector (/ *board-width* 2) 3)
+            :coordinate-origin (make-vector (/ *board-width* 2) 0)
             :coordinates (make-vector-list coordinates))
          *tetriminos*))
 
@@ -156,9 +156,11 @@
             (vector+ current-coordinate
                      (tetrimino-coordinate-origin *current-tetrimino*)
                      direction))
-          (if (vector-origin? direction)
-            (vector-rotate (tetrimino-coordinates *current-tetrimino*) (/ pi 2))
-            (tetrimino-coordinates *current-tetrimino*))))
+          (mapcar (lambda (current-coordinate)
+                    (if (vector-origin? direction)
+                      current-coordinate
+                      (vector-rotate current-coordinate (/ pi 2))))
+                  (tetrimino-coordinates *current-tetrimino*))))
 
 ;; }}}
 ;; set-new-current-tetrimino {{{
@@ -166,7 +168,7 @@
 (defmacro set-new-current-tetrimino ()
   `(progn
      (setf *current-tetrimino*
-           (copy-structure
+           (copy-tetrimino
              (nth (random (length *tetriminos*))
                   *tetriminos*)))
      (draw-current-tetrimino)))
@@ -216,12 +218,9 @@
          (next-coordinates (get-next-coordinates ,direction)))
      (unless (find-if (complement (movable?)) next-coordinates)
        (delete-rectangles current-coordinates)
-       (setf (tetrimino-coordinates *current-tetrimino*)
-             next-coordinates
-             (tetrimino-coordinate-origin *current-tetrimino*)
+       (setf (tetrimino-coordinate-origin *current-tetrimino*)
              (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
                       ,direction))
-       (print *current-tetrimino*)
        (draw-current-tetrimino))))
 
 ;; }}}
@@ -253,7 +252,5 @@
     (bind-keypress #\k (try-move-tetrimino (make-vector 0 -1)))
     (bind-keypress #\j (try-move-tetrimino (make-vector 0 1)))
     (bind-keypress #\l (try-move-tetrimino (make-vector 1 0)))
-    (bind-keypress #\i (set-new-current-tetrimino)
-                   )))
-
+    (bind-keypress #\i (set-new-current-tetrimino))))
 
