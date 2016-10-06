@@ -189,20 +189,18 @@
 ;; }}}
 ;; delete-line {{{
 
+;; include bug
 (defmacro delete-lines ()
-  `(do ((x 0)
-        (y 0))
-     ((>= y *board-height*))
-     (cond ((= (aref x y) 0)
-            (setf x 0
-                  y (1+ y)))
-           (t
-             (setf x (mod (1+ x) *board-width*)
-                   y (if (= (1+ x) *board-width*) (1+ y) y))
-             (when (and (= x 0) (/= y *board-height*))
-               (delete-rectangles (mapcar (lambda (x)
-                                            (make-vector x y))
-                                          (iota 0 *board-width*))))))))
+  `(dotimes (y *board-height*)
+     (when (not
+             (find-if #'zerop
+                      (mapcar (lambda (x)
+                                (aref *board* x y))
+                              (iota 0 (1- *board-width*)))))
+       (delete-rectangles
+         (mapcar (lambda (x)
+                   (make-vector x y))
+                 (iota 0 (1- *board-width*)))))))
 
 ;; }}}
 ;; movable? {{{
@@ -263,6 +261,7 @@
     (bind-keypress #\o (try-rotate))
     (bind-keypress #\h (try-move (make-vector -1 0)))
     (bind-keypress #\k (try-move (make-vector 0 -1)))
+    ; (bind-keypress #\j (try-move (make-vector 0 1)) (delete-lines))
     (bind-keypress #\j (try-move (make-vector 0 1)))
     (bind-keypress #\l (try-move (make-vector 1 0)))
     (bind-keypress #\i (set-new-current-tetrimino))))
