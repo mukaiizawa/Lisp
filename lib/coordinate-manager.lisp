@@ -7,17 +7,17 @@
   (y 0 :type number)
   (z 0 :type number))
 
-(defmacro with-coordinates ((coordinate &rest coordinates) &body body)
+(defmacro with-coordinates ((&rest coordinates) &body body)
   `(ilet* (,@(do* ((acc)
                    (counter 1 (1+ counter))
-                   (coordinates (cons coordinate coordinates) (rest coordinates))
+                   (coordinates coordinates (rest coordinates))
                    (coordinate (first coordinates) (first coordinates)))
                ((null coordinate) (nreverse acc))
                (push `(,(mksym 'r counter) ,coordinate) acc)
                (push `(,(mksym 'x counter) (coordinate-x ,coordinate)) acc)
                (push `(,(mksym 'y counter) (coordinate-y ,coordinate)) acc)
                (push `(,(mksym 'z counter) (coordinate-z ,coordinate)) acc)))
-          ,@body))
+     ,@body))
 
 ;; make-vector {{{
 
