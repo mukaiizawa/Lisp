@@ -23,8 +23,8 @@
 
 (defun make-vector (&optional (x 0) (y 0) (z 0))
   (make-coordinate :x x
-                  :y y
-                  :z z))
+                   :y y
+                   :z z))
 
 ;; }}}
 ;; make-vector-list {{{
