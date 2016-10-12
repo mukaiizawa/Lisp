@@ -190,14 +190,15 @@
 ;; }}}
 ;; delete-line {{{
 
-;; include bug
 (defmacro delete-lines ()
-  `(dotimes (y *board-height*)
-     (when (not
-             (find-if #'zerop
+  `(dolist (y (sort
+                (remove-duplicates
+                  (mapcar #'coordinate-y (get-current-coordinates)))
+                #'>))
+     (unless (find-if #'zerop
                       (mapcar (lambda (x)
-                                (aref *board* x y))
-                              (iota 0 (1- *board-width*)))))
+                                (aif (safety-aref (make-vector x y)) it 0))
+                              (iota 0 (1- *board-width*))))
        (delete-rectangles
          (mapcar (lambda (x)
                    (make-vector x y))
