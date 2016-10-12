@@ -3,30 +3,31 @@
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)
 
-(defvar *drawing-interval* 1.0)
+(defvar *drawing-interval* 1000)
 (defvar *cell-width* 30)
-(defvar *board-width* 10)
-(defvar *board-height* 20)
+(defvar *board-width* 4)
+(defvar *board-height* 10)
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
-(defparameter *tetriminos* nil)
-(defparameter *current-tetrimino* nil) 
+(defparameter *tetrominos* nil)
+(defparameter *current-tetromino* nil) 
+(defparameter canvas nil) 
 
-(defstruct tetrimino shape color coordinate-origin coordinates)
+(defstruct tetromino shape color coordinate-origin coordinates)
 
-;; deftetrimino {{{
+;; deftetromino {{{
 
-(defmacro deftetrimino (shape color &rest coordinates)
-  `(push ,(make-tetrimino 
+(defmacro deftetromino (shape color &rest coordinates)
+  `(push ,(make-tetromino 
             :shape shape
             :color color 
             :coordinate-origin (make-vector (/ *board-width* 2) 0)
             :coordinates (make-vector-list coordinates))
-         *tetriminos*))
+         *tetrominos*))
 
 ;; }}}
 ;; I {{{
 
-(deftetrimino
+(deftetromino
   'I
   "#00ffff"
   (0 2)
@@ -37,7 +38,7 @@
 ;; }}}
 ;; J {{{
 
-(deftetrimino
+(deftetromino
   'J
   "#ff00ff"
          (0 2)
@@ -47,7 +48,7 @@
 ;; }}}
 ;; L {{{
 
-(deftetrimino
+(deftetromino
   'L
   "#ffff00"
   (0 2)
@@ -57,7 +58,7 @@
 ;; }}}
 ;; O {{{
 
-(deftetrimino
+(deftetromino
   'O
   "#ff0000"
   (0 1) (1 1)
@@ -66,7 +67,7 @@
 ;; }}}
 ;; S {{{
 
-(deftetrimino
+(deftetromino
   'S
   "#00ff00"
          (0 1) (1 1)
@@ -75,7 +76,7 @@
 ;; }}}
 ;; T {{{
 
-(deftetrimino
+(deftetromino
   'T
   "#0000ff"
   (-1 0) (0 0) (1 0)
@@ -84,7 +85,7 @@
 ;; }}}
 ;; Z {{{
 
-(deftetrimino
+(deftetromino
   'Z
   "#000000"
   (-1 1) (0 1)
@@ -105,14 +106,14 @@
        (values item))))
 
 ;; }}}
-;; draw-current-tetrimino {{{
+;; draw-current-tetromino {{{
 
-(defmacro draw-current-tetrimino ()
+(defmacro draw-current-tetromino ()
   `(dolist (coordinate (get-current-coordinates))
      (when (safety-aref coordinate)
        (set-board coordinate
                   (draw-rectangle coordinate
-                                  (tetrimino-color *current-tetrimino*))))))
+                                  (tetromino-color *current-tetromino*))))))
 
 ;; }}}
 ;; draw-board {{{
@@ -144,9 +145,9 @@
 
 (defun get-current-coordinates ()
   (mapcar (lambda (coordinate)
-            (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
+            (vector+ (tetromino-coordinate-origin *current-tetromino*)
                      coordinate))
-          (tetrimino-coordinates *current-tetrimino*)))
+          (tetromino-coordinates *current-tetromino*)))
 
 ;; }}}
 ;; get-next-coordinates {{{
@@ -162,20 +163,20 @@
 
 (defun get-rotate-coordinates ()
   (mapcar (lambda (current-coordinate)
-            (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
+            (vector+ (tetromino-coordinate-origin *current-tetromino*)
                      (vector-rotate current-coordinate (/ pi 2))))
-          (tetrimino-coordinates *current-tetrimino*)))
+          (tetromino-coordinates *current-tetromino*)))
 
 ;; }}}
-;; set-new-current-tetrimino {{{
+;; set-new-current-tetromino {{{
 
-(defmacro set-new-current-tetrimino ()
+(defmacro set-new-current-tetromino ()
   `(progn
-     (setf *current-tetrimino*
-           (copy-tetrimino
-             (nth (random (length *tetriminos*))
-                  *tetriminos*)))
-     (draw-current-tetrimino)))
+     (setf *current-tetromino*
+           (copy-tetromino
+             (nth (random (length *tetrominos*))
+                  *tetrominos*)))
+     (draw-current-tetromino)))
 
 ;; }}}
 ;; delete-rectangles {{{
@@ -218,12 +219,16 @@
 (defmacro try-move (direction)
   `(let ((current-coordinates (get-current-coordinates))
          (next-coordinates (get-next-coordinates ,direction)))
-     (unless (find-if (complement (movable?)) next-coordinates)
-       (delete-rectangles current-coordinates)
-       (setf (tetrimino-coordinate-origin *current-tetrimino*)
-             (vector+ (tetrimino-coordinate-origin *current-tetrimino*)
-                      ,direction))
-       (draw-current-tetrimino))))
+     (cond ((not (find-if (complement (movable?)) next-coordinates))
+            (delete-rectangles current-coordinates)
+            (setf (tetromino-coordinate-origin *current-tetromino*)
+                  (vector+ (tetromino-coordinate-origin *current-tetromino*)
+                           ,direction))
+            (draw-current-tetromino))
+           ((vector= ,direction (make-vector 0 1))
+            (delete-lines)
+            (set-new-current-tetromino))
+           (t nil))))
 
 ;; }}}
 ;; try-rotate {{{
@@ -233,11 +238,20 @@
          (rotate-coordinates (get-rotate-coordinates)))
      (unless (find-if (complement (movable?)) rotate-coordinates)
        (delete-rectangles current-coordinates)
-       (setf (tetrimino-coordinates *current-tetrimino*)
+       (setf (tetromino-coordinates *current-tetromino*)
              (mapcar (lambda (coordinate)
                        (vector-rotate coordinate (/ pi 2)))
-                     (tetrimino-coordinates *current-tetrimino*)))
-       (draw-current-tetrimino))))
+                     (tetromino-coordinates *current-tetromino*)))
+       (draw-current-tetromino))))
+
+;; }}}
+;; main {{{
+
+(defun main ()
+  (after-time *drawing-interval*
+              (lambda ()
+                (try-move (make-vector 0 1))
+                (main))))
 
 ;; }}}
 ;; bind-keypress {{{
@@ -252,17 +266,15 @@
 
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
-  (let1 (canvas (pack (make-instance 'canvas
-                                     :width (* *cell-width* *board-width*)
-                                     :height (* *cell-width* *board-height*))))
-    (force-focus canvas)
-    (draw-board)
-    (set-new-current-tetrimino)
-    (bind-keypress #\o (try-rotate))
-    (bind-keypress #\h (try-move (make-vector -1 0)))
-    (bind-keypress #\k (try-move (make-vector 0 -1)))
-    ; (bind-keypress #\j (try-move (make-vector 0 1)) (delete-lines))
-    (bind-keypress #\j (try-move (make-vector 0 1)))
-    (bind-keypress #\l (try-move (make-vector 1 0)))
-    (bind-keypress #\i (set-new-current-tetrimino))))
+  (setf canvas (pack (make-instance 'canvas
+                                    :width (* *cell-width* *board-width*)
+                                    :height (* *cell-width* *board-height*))))
+  (force-focus canvas)
+  (draw-board)
+  (set-new-current-tetromino)
+  (bind-keypress #\h (try-move (make-vector -1 0)))
+  (bind-keypress #\j (try-move (make-vector 0 1)))
+  (bind-keypress #\k (try-rotate))
+  (bind-keypress #\l (try-move (make-vector 1 0)))
+  (main))
 
