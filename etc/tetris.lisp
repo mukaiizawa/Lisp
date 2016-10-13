@@ -145,8 +145,9 @@
 ;; safety-aref {{{
 
 (defun safety-aref (coordinate)
-  (when (in-board? coordinate)
-    (aref *board* x1 y1)))
+  (with-coordinates (coordinate)
+    (when (in-board? r1)
+      (aref *board* x1 y1))))
 
 ;; }}}
 ;; get-current-coordinates {{{
@@ -199,24 +200,33 @@
 ;; delete-line {{{
 
 (defmacro delete-lines ()
-  `(let1 (search-range (remove-duplicates
-                         (mapcar #'coordinate-y (get-current-coordinates))))
-     (dolist (y search-range)
-       (unless (find-if #'zerop
-                        (mapcar (lambda (x)
-                                  (aif (safety-aref (make-vector x y)) it 0))
-                                (iota 0 (1- *board-width*))))
-         (delete-rectangles
-           (mapcar (lambda (x)
-                     (make-vector x y))
-                   (iota 0 (1- *board-width*))))
-         (shift-lines)))))
+  `(do* ((xlines (iota 0 (1- *board-width*)))
+         (search-candidate (filter (lambda (y)
+                                     (unless (find-if #'zerop
+                                                      (mapcar (lambda (x)
+                                                                (aif (safety-aref (make-vector x y)) it 0))
+                                                              xlines))
+                                       y))
+                                   (sort (remove-duplicates
+                                           (mapcar #'coordinate-y (get-current-coordinates)))
+                                         #'<))
+                           (rest search-candidate))
+         (y (first search-candidate) (first search-candidate)))
+     ((null search-candidate))
+     (delete-rectangles
+       (mapcar (lambda (x)
+                 (make-vector x y))
+               xlines))
+     (dorange (y y 0)
+       (dolist (x xlines)
+         (move-rectangle (make-vector x (1+ y))
+                         (make-vector x y))))))
 
 ;; }}}
 ;; move-rectangle {{{
 
-(defmacro move-rectangle (coordinate direction)
-  `(with-coordinates (,coordinate ,direction)
+(defmacro move-rectangle (position direction)
+  `(with-coordinates (,position ,direction)
      (itemmove *canvas*
                (safety-aref r1)
                (* x2 *cell-width*)
@@ -225,23 +235,6 @@
                 (safety-aref r1))
      (set-board r2 0)
      (values)))
-
-;; }}}
-;; shift-lines {{{
-
-(defmacro shift-lines ()
-  `(dotimes (y *board-height*)
-     (unless (find-if (complement #'zerop)
-                      (mapcar (lambda (x)
-                                (aref *board* x y))
-                              (iota 0 (1- *board-width*))))
-       (dotimes (x *board-width*)
-         (set-board (make-vector x y)
-                    (if (aand (safety-aref (make-vector x (1- y)))
-                              (zerop it))
-                      0
-                      (draw-rectangle (make-vector x y) "#ffffff")))
-         (delete-rectangles (make-vector x (1- y)))))))
 
 ;; }}}
 ;; movable? {{{
@@ -260,11 +253,10 @@
   `(let ((current-coordinates (get-current-coordinates))
          (next-coordinates (get-next-coordinates ,direction)))
      (cond ((not (find-if (complement (movable?)) next-coordinates))
-            (delete-rectangles current-coordinates)
-            (setf (tetromino-coordinate-origin *current-tetromino*)
-                  (vector+ (tetromino-coordinate-origin *current-tetromino*)
-                           ,direction))
-            (draw-current-tetromino))
+            (dolist (curr current-coordinates)
+              (move-rectangle curr ,direction)
+              (asetf (tetromino-coordinate-origin *current-tetromino*)
+                     (vector+ it ,direction))))
            ((vector= ,direction (make-vector 0 1))
             (delete-lines)
             (set-new-current-tetromino))
@@ -278,10 +270,10 @@
          (rotate-coordinates (get-rotate-coordinates)))
      (unless (find-if (complement (movable?)) rotate-coordinates)
        (delete-rectangles current-coordinates)
-       (setf (tetromino-coordinates *current-tetromino*)
-             (mapcar (lambda (coordinate)
-                       (vector-rotate coordinate (/ pi 2)))
-                     (tetromino-coordinates *current-tetromino*)))
+       (asetf (tetromino-coordinates *current-tetromino*)
+              (mapcar (lambda (coordinate)
+                        (vector-rotate coordinate (/ pi 2)))
+                      it))
        (draw-current-tetromino))))
 
 ;; }}}
@@ -306,9 +298,9 @@
 
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
-  (setf *canvas* (pack (make-instance '*canvas*
-                                    :width (* *cell-width* *board-width*)
-                                    :height (* *cell-width* *board-height*))))
+  (setf *canvas* (pack (make-instance 'canvas
+                                      :width (* *cell-width* *board-width*)
+                                      :height (* *cell-width* *board-height*))))
   (force-focus *canvas*)
   (draw-board)
   (set-new-current-tetromino)
