@@ -200,25 +200,23 @@
 ;; delete-line {{{
 
 (defmacro delete-lines ()
-  `(do* ((xlines (iota 0 (1- *board-width*)))
-         (search-candidate (filter (lambda (y)
-                                     (unless (find-if #'zerop
-                                                      (mapcar (lambda (x)
-                                                                (aif (safety-aref (make-vector x y)) it 0))
-                                                              xlines))
-                                       y))
-                                   (sort (remove-duplicates
-                                           (mapcar #'coordinate-y (get-current-coordinates)))
-                                         #'<))
-                           (rest search-candidate))
-         (y (first search-candidate) (first search-candidate)))
-     ((null search-candidate))
-     (delete-rectangles
-       (mapcar (lambda (x)
-                 (make-vector x y))
-               xlines))
-     (dorange (y y 0)
-       (dolist (x xlines)
+  `(do* ((range-x (iota 0 (1- *board-width*)))
+         (range-y (filter (lambda (y)
+                            (unless (find-if #'zerop
+                                             (mapcar (lambda (x)
+                                                       (aif (safety-aref (make-vector x y)) it 0))
+                                                     range-x))
+                              y))
+                          (sort (remove-duplicates
+                                  (mapcar #'coordinate-y (get-current-coordinates)))
+                                #'<))
+                  (rest range-y))
+         (y (first range-y) (first range-y)))
+     ((null range-y))
+     (dolist (x range-x)
+       (delete-rectangles (make-vector x y)))
+     (dorange (y y 1)
+       (dolist (x range-x)
          (move-rectangle (make-vector x (1+ y))
                          (make-vector x y))))))
 
