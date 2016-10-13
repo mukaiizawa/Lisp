@@ -182,7 +182,7 @@
 ;; delete-rectangles {{{
 
 (defmacro delete-rectangles (coordinates)
-  `(dolist (coordinate ,coordinates)
+  `(dolist (coordinate (mklist ,coordinates))
      (awhen (safety-aref coordinate)
        (itemdelete canvas it)
        (set-board coordinate 0))))
@@ -191,18 +191,35 @@
 ;; delete-line {{{
 
 (defmacro delete-lines ()
-  `(dolist (y (sort
-                (remove-duplicates
-                  (mapcar #'coordinate-y (get-current-coordinates)))
-                #'>))
-     (unless (find-if #'zerop
+  `(let1 (search-range (remove-duplicates
+                         (mapcar #'coordinate-y (get-current-coordinates))))
+     (dolist (y search-range)
+       (unless (find-if #'zerop
+                        (mapcar (lambda (x)
+                                  (aif (safety-aref (make-vector x y)) it 0))
+                                (iota 0 (1- *board-width*))))
+         (delete-rectangles
+           (mapcar (lambda (x)
+                     (make-vector x y))
+                   (iota 0 (1- *board-width*))))
+         (shift-lines)))))
+
+;; }}}
+;; shift-lines {{{
+
+(defmacro shift-lines ()
+  `(dotimes (y *board-height*)
+     (unless (find-if (complement #'zerop)
                       (mapcar (lambda (x)
-                                (aif (safety-aref (make-vector x y)) it 0))
+                                (aref *board* x y))
                               (iota 0 (1- *board-width*))))
-       (delete-rectangles
-         (mapcar (lambda (x)
-                   (make-vector x y))
-                 (iota 0 (1- *board-width*)))))))
+       (dotimes (x *board-width*)
+         (set-board (make-vector x y)
+                    (if (aand (safety-aref (make-vector x (1- y)))
+                              (zerop it))
+                      0
+                      (draw-rectangle (make-vector x y) "#ffffff")))
+         (delete-rectangles (make-vector x (1- y)))))))
 
 ;; }}}
 ;; movable? {{{
