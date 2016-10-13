@@ -10,7 +10,7 @@
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
 (defparameter *tetrominos* nil)
 (defparameter *current-tetromino* nil) 
-(defparameter canvas nil) 
+(defparameter *canvas* nil) 
 
 (defstruct tetromino shape color coordinate-origin coordinates)
 
@@ -97,12 +97,12 @@
 
 (defmacro draw-rectangle (coordinate color)
   `(with-coordinates (,coordinate)
-     (let1 (item (create-rectangle canvas
+     (let1 (item (create-rectangle *canvas*
                                    (* x1 *cell-width*)
                                    (* y1 *cell-width*)
                                    (+ (* *cell-width* x1) *cell-width*)
                                    (+ (* *cell-width* y1) *cell-width*)))
-       (itemconfigure canvas item "fill" ,color)
+       (itemconfigure *canvas* item "fill" ,color)
        (values item))))
 
 ;; }}}
@@ -132,13 +132,21 @@
           val)))
 
 ;; }}}
+;; in-board? {{{
+
+(defun in-board? (x &optional y)
+  (with-coordinates ((if (coordinate-p x)
+                       x
+                       (make-vector x y)))
+    (and (<= 0 x1) (< x1 *board-width*)
+         (<= 0 y1) (< y1 *board-height*))))
+
+;; }}}
 ;; safety-aref {{{
 
 (defun safety-aref (coordinate)
-  (with-coordinates (coordinate)
-    (if (and (<= 0 x1) (< x1 *board-width*)
-             (<= 0 y1) (< y1 *board-height*))
-      (aref *board* x1 y1))))
+  (when (in-board? coordinate)
+    (aref *board* x1 y1)))
 
 ;; }}}
 ;; get-current-coordinates {{{
@@ -184,7 +192,7 @@
 (defmacro delete-rectangles (coordinates)
   `(dolist (coordinate (mklist ,coordinates))
      (awhen (safety-aref coordinate)
-       (itemdelete canvas it)
+       (itemdelete *canvas* it)
        (set-board coordinate 0))))
 
 ;; }}}
@@ -203,6 +211,20 @@
                      (make-vector x y))
                    (iota 0 (1- *board-width*))))
          (shift-lines)))))
+
+;; }}}
+;; move-rectangle {{{
+
+(defmacro move-rectangle (coordinate direction)
+  `(with-coordinates (,coordinate ,direction)
+     (itemmove *canvas*
+               (safety-aref r1)
+               (* x2 *cell-width*)
+               (* y2 *cell-width*))
+     (set-board (vector+ r1 r2) 
+                (safety-aref r1))
+     (set-board r2 0)
+     (values)))
 
 ;; }}}
 ;; shift-lines {{{
@@ -284,10 +306,10 @@
 
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
-  (setf canvas (pack (make-instance 'canvas
+  (setf *canvas* (pack (make-instance '*canvas*
                                     :width (* *cell-width* *board-width*)
                                     :height (* *cell-width* *board-height*))))
-  (force-focus canvas)
+  (force-focus *canvas*)
   (draw-board)
   (set-new-current-tetromino)
   (bind-keypress #\h (try-move (make-vector -1 0)))
