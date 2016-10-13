@@ -90,6 +90,22 @@
   (values (intern (apply #'mkstr args) :keyword)))
 
 ;; }}}
+;; asetf {{{
+
+(defmacro asetf (&rest args)
+  `(setf ,@(do* ((acc)
+                 (pairs (group args 2) (rest pairs))
+                 (pair (first pairs) (first pairs)))
+             ((null pair) (nreverse acc))
+             (push (first pair) acc)
+             (push  (maptree (lambda (val)
+                               (if (eq val 'it)
+                                 (first pair)
+                                 val))
+                             (second pair))
+                    acc))))
+
+;; }}}
 ;; let1 {{{
 
 (defmacro let1 ((var val) &body body)
