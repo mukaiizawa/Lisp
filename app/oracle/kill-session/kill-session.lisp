@@ -5,7 +5,7 @@
 
 (defexe kill-session (-s --help)
   "s:help"
-  (let ((args (list->string args))
+  (let ((args (list->string args #\Space))
         (tmp-file "inactive-session.csv")
         (usage (usage :title "kill-session [OPTION] [SCHEMA]/[PASSWORD]@[SID]"
                       :desc  "Kill inactive session."

@@ -15,7 +15,7 @@
       (funcall usage))
     (princ
       (if args
-        (with-input-from-string (in (list->string args))
+        (with-input-from-string (in (list->string args #\Space))
           (aprint in))
         (aprint *standard-input*)))))
 

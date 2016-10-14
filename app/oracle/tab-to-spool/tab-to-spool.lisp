@@ -19,7 +19,7 @@
 (defexe tab-to-spool (-e --help)
   "e;help"
   (with-encoding (:cp932 :windows)
-    (let ((args (list->string args))
+    (let ((args (list->string args #\Space))
           (usage (usage :title "tab-to-spool [OPTION] [SCHEMA]/[PASSWORD]@[SID]"
                         :desc  "Convert tab file to sql. (for sqlplus)"
                         :opts  '("-e" "escape comma and CRLF."))))

@@ -5,7 +5,7 @@
 (defexe mktab (-n -o (-t --table) --help)
   "n;o;t:table:help"
   (with-encoding (:cp932 :windows)
-    (let ((args (list->string args))
+    (let ((args (list->string args #\Space))
           (usage (usage :title "mktab [OPTION} [SCHEMA]/[PASSWORD]@[SID]"
                         :desc  "Create tab files."
                         :opts  '("-o" "only output tabs file"

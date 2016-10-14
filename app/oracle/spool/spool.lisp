@@ -10,10 +10,10 @@
                          :desc  "Execute sqlfile and spool result."
                          :opts  '("-l" "a path of spool file." )
                          :foot '("Example:" "  spool foo/bar@foobar @hoge.sql")))
-           (arg-sql-file (after #\@ (list->string args) :from-end t))
-           (args (before #\@ (list->string args) :from-end t)))
+           (arg-sql-file (after #\@ (list->string args #\Space) :from-end t))
+           (args (before #\@ (list->string args #\Space) :from-end t)))
       (with-dbinfo args
-                   (execute-query (list->string (read-from arg-sql-file))
+                   (execute-query (list->string (read-from arg-sql-file) #\Space)
                                   :spool (aif -l
                                            it
                                            (mkstr (pathname-name arg-sql-file) ".csv")))))

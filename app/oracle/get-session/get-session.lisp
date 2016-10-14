@@ -6,7 +6,7 @@
 (defexe get-session (-a -i -s+ --help)
   "a;i;s:help"
   (with-encoding (:cp932 :windows) 
-    (let ((args (list->string args))
+    (let ((args (list->string args #\Space))
           (usage (usage :title "get-session [OPTION} [SCHEMA]/[PASSWORD]@[SID]"
                         :desc  "See session."
                         :opts  '("-s" "Target schema"
