@@ -593,19 +593,17 @@
 ;; }}}
 ;; list->string {{{
 
-(defun list->string (lis &key (char nil))
+(defun list->string (lis &optional (segment +empty-string+))
   (mkstr-if lis
-    (let ((*print-case* :downcase))
-      (reduce (lambda (x y)
-                (mkstr x (aif char it #\Space) y))
-              lis))))
+    (reduce (lambda (x y)
+              (mkstr x segment y))
+            lis)))
 
 ;; Examples: {{{
 ;;
 ;; (echo (list->string '(a b c d)))
 ;; => a b c d
-;;
-;; (echo (list->string '(a b c d) :char #\/))
+;; (echo (list->string '(a b c d) #\/))
 ;; => a/b/c/d
 ;;
 ;; }}}
