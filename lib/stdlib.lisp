@@ -594,12 +594,11 @@
 ;; list->string {{{
 
 (defun list->string (lis &key (char nil))
-  (if lis
+  (mkstr-if lis
     (let ((*print-case* :downcase))
       (reduce (lambda (x y)
                 (mkstr x (aif char it #\Space) y))
-              lis))
-    ""))
+              lis))))
 
 ;; Examples: {{{
 ;;
