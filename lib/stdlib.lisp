@@ -78,6 +78,15 @@
     +empty-string+))
 
 ;; }}}
+;; mkstr-aif {{{
+
+(defmacro mkstr-aif (test &rest args)
+  `(let ((it ,test))
+     (if it
+       (mkstr ,@args)
+       +empty-string+)))
+
+;; }}}
 ;; mksym {{{
 
 (defun mksym (&rest args)
