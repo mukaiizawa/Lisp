@@ -122,7 +122,6 @@
 (defun tables->create-sql (tables)
   (with-output-to-string (out)
     (dolist (table (mklist tables))
-      (format out "~%DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%" (get-table-name table))
       (format out "CREATE TABLE ~A (~%" (get-table-name table))
       (dolist (column (table-columns table))
         (write-string
@@ -139,6 +138,17 @@
               (table-phisical-name table)
               (get-primarykeys table))
       (format out ");~%"))))
+
+;; }}}
+;; tables->create-sql! {{{
+
+(defun tables->create-sql! (tables)
+  (list->string
+    (mapcar (lambda (table)
+              (format nil "DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%~A"
+                      (get-table-name table)
+                      (tables->create-sql tables)))
+            (mklist tables))))
 
 ;; }}}
 
