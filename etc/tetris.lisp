@@ -3,9 +3,9 @@
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)
 
-(defvar *drawing-interval* 1000)
+(defvar *drawing-interval* 500)
 (defvar *cell-width* 30)
-(defvar *board-width* 4)
+(defvar *board-width* 6)
 (defvar *board-height* 10)
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
 (defparameter *tetrominos* nil)
@@ -93,6 +93,32 @@
 
 ;; }}}
 
+;; in-board? {{{
+
+(defun in-board? (x &optional y)
+  (with-coordinates ((if (coordinate-p x)
+                       x
+                       (make-vector x y)))
+    (and (<= 0 x1) (< x1 *board-width*)
+         (<= 0 y1) (< y1 *board-height*))))
+
+;; }}}
+;; set-board {{{
+
+(defun set-board (coordinate val)
+  (with-coordinates (coordinate)
+    (setf (aref *board* x1 y1)
+          val)))
+
+;; }}}
+;; safety-aref {{{
+
+(defun safety-aref (coordinate)
+  (with-coordinates (coordinate)
+    (when (in-board? r1)
+      (aref *board* x1 y1))))
+
+;; }}}
 ;; draw-rectangle {{{
 
 (defmacro draw-rectangle (coordinate color)
@@ -124,32 +150,6 @@
        (draw-rectangle (make-vector x y) "#a0a0a0"))))
 
 ;; }}}
-;; set-board {{{
-
-(defun set-board (coordinate val)
-  (with-coordinates (coordinate)
-    (setf (aref *board* x1 y1)
-          val)))
-
-;; }}}
-;; in-board? {{{
-
-(defun in-board? (x &optional y)
-  (with-coordinates ((if (coordinate-p x)
-                       x
-                       (make-vector x y)))
-    (and (<= 0 x1) (< x1 *board-width*)
-         (<= 0 y1) (< y1 *board-height*))))
-
-;; }}}
-;; safety-aref {{{
-
-(defun safety-aref (coordinate)
-  (with-coordinates (coordinate)
-    (when (in-board? r1)
-      (aref *board* x1 y1))))
-
-;; }}}
 ;; get-current-coordinates {{{
 
 (defun get-current-coordinates ()
@@ -159,8 +159,7 @@
           (tetromino-coordinates *current-tetromino*)))
 
 ;; }}}
-;; get-next-coordinates {{{
-
+;; get-next-coordinates {{{ 
 (defun get-next-coordinates (direction)
   (mapcar (lambda (current-coordinate)
             (vector+ current-coordinate
@@ -217,22 +216,29 @@
        (delete-rectangles (make-vector x y)))
      (dorange (y y 1)
        (dolist (x range-x)
-         (move-rectangle (make-vector x (1+ y))
-                         (make-vector x y))))))
+         (move-rectangle (make-vector x (1- y))
+                         (make-vector 0 1))))))
 
 ;; }}}
 ;; move-rectangle {{{
 
-(defmacro move-rectangle (position direction)
-  `(with-coordinates (,position ,direction)
-     (itemmove *canvas*
-               (safety-aref r1)
-               (* x2 *cell-width*)
-               (* y2 *cell-width*))
-     (set-board (vector+ r1 r2) 
-                (safety-aref r1))
-     (set-board r2 0)
-     (values)))
+(defmacro move-rectangle (coordinates direction)
+  `(let* ((coordinates (mklist ,coordinates))
+          (coordinates-copy (mapcar (lambda (coordinate)
+                                      (list coordinate (safety-aref coordinate)))
+                                    coordinates)))
+     (dolist (coordinate coordinates)
+       (set-board coordinate 0))
+     (dolist (coordinate (mklist ,coordinates))
+       (with-coordinates (coordinate ,direction)
+         (set-board (vector+ r1 r2)
+                    (second (find-if (lambda (copy)
+                                       (vector= r1 (first copy)))
+                                     coordinates-copy)))
+         (itemmove *canvas*
+                   (safety-aref (vector+ r1 r2))
+                   (* x2 *cell-width*)
+                   (* y2 *cell-width*))))))
 
 ;; }}}
 ;; movable? {{{
@@ -251,10 +257,9 @@
   `(let ((current-coordinates (get-current-coordinates))
          (next-coordinates (get-next-coordinates ,direction)))
      (cond ((not (find-if (complement (movable?)) next-coordinates))
-            (dolist (curr current-coordinates)
-              (move-rectangle curr ,direction)
-              (asetf (tetromino-coordinate-origin *current-tetromino*)
-                     (vector+ it ,direction))))
+            (move-rectangle current-coordinates ,direction)
+            (asetf (tetromino-coordinate-origin *current-tetromino*)
+                   (vector+ it ,direction)))
            ((vector= ,direction (make-vector 0 1))
             (delete-lines)
             (set-new-current-tetromino))
