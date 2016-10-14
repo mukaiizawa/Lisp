@@ -125,14 +125,17 @@
       (format out "CREATE TABLE ~A (~%" (get-table-name table))
       (dolist (column (table-columns table))
         (write-string
-          (mkstr (column-phisical-name column) " " (column-type column)
-                 (when (/= (column-length column) -1)
-                   (mkstr "(" (column-length column) ")"))
-                 (unless (empty? (column-default-value column))
-                   (mkstr " DEFAULT " (column-default-value column)))
+          (mkstr (column-phisical-name column)
+                 #\Space
+                 (column-type column)
+                 (mkstr-if (/= (column-length column) -1)
+                   "(" (column-length column) ")")
+                 (mkstr-if (not (empty? (column-default-value column)))
+                   " DEFAULT " (column-default-value column))
                  (when (column-required? column)
                    " NOT NULL")
-                 #\, #\Newline)
+                 #\,
+                 #\Newline)
           out))
       (format out "CONSTRAINT PK_~A PRIMARY KEY (~{~A~^,~})~%"
               (table-phisical-name table)
