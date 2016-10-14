@@ -20,7 +20,8 @@
   `(push ,(make-tetromino 
             :shape shape
             :color color 
-            :coordinate-origin (make-vector (/ *board-width* 2) 0)
+            :coordinate-origin (make-vector (/ *board-width* 2)
+                                            (most #'second coordinates))
             :coordinates (make-vector-list coordinates))
          *tetrominos*))
 
