@@ -5,8 +5,8 @@
 
 (defvar *drawing-interval* 500)
 (defvar *cell-width* 30)
-(defvar *board-width* 6)
-(defvar *board-height* 10)
+(defvar *board-width* 10)
+(defvar *board-height* 20)
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
 (defparameter *tetrominos* nil)
 (defparameter *current-tetromino* nil) 
@@ -21,7 +21,7 @@
             :shape shape
             :color color 
             :coordinate-origin (make-vector (/ *board-width* 2)
-                                            (most #'second coordinates))
+                                            (- (most #'- (mapcar #'second coordinates))))
             :coordinates (make-vector-list coordinates))
          *tetrominos*))
 
@@ -300,6 +300,7 @@
 
 ;; }}}
 
+(print *tetrominos*)
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
   (setf *canvas* (pack (make-instance 'canvas
@@ -313,4 +314,3 @@
   (bind-keypress #\k (try-rotate))
   (bind-keypress #\l (try-move (make-vector 1 0)))
   (main))
-
