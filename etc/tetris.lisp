@@ -11,6 +11,8 @@
 (defparameter *tetrominos* nil)
 (defparameter *current-tetromino* nil) 
 (defparameter *canvas* nil) 
+(defparameter *delete-line-count* 0) 
+(defparameter *game-over?* nil) 
 
 (defstruct tetromino shape color coordinate-origin coordinates)
 
@@ -213,6 +215,7 @@
                   (rest range-y))
          (y (first range-y) (first range-y)))
      ((null range-y))
+     (incf *delete-line-count*)
      (dolist (x range-x)
        (delete-rectangles (make-vector x y)))
      (dorange (y y 1)
@@ -263,7 +266,14 @@
                    (vector+ it ,direction)))
            ((vector= ,direction (make-vector 0 1))
             (delete-lines)
-            (set-new-current-tetromino))
+            (set-new-current-tetromino)
+            (when (find-if (complement (movable?)) (get-next-coordinates (make-vector 0 1)))
+              (setq *game-over?* t)
+              (pack (make-instance 'button
+                                   :master (pack (make-instance 'labelframe :text "game over"))
+                                   :text (mkstr "delete line count: " *delete-line-count*)
+                                   :command (lambda () (setq *exit-mainloop* t))))))
+
            (t nil))))
 
 ;; }}}
@@ -286,8 +296,9 @@
 (defun main ()
   (after-time *drawing-interval*
               (lambda ()
-                (try-move (make-vector 0 1))
-                (main))))
+                (unless *game-over?*
+                  (try-move (make-vector 0 1))
+                  (main)))))
 
 ;; }}}
 ;; bind-keypress {{{
@@ -296,11 +307,11 @@
   `(bind *tk* ,(mkstr "<KeyPress-" key ">")
          (ilambda (event)
            (print *board*)
-           ,@body)))
+           (unless *game-over?*
+             ,@body))))
 
 ;; }}}
 
-(print *tetrominos*)
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
   (setf *canvas* (pack (make-instance 'canvas
@@ -314,3 +325,4 @@
   (bind-keypress #\k (try-rotate))
   (bind-keypress #\l (try-move (make-vector 1 0)))
   (main))
+
