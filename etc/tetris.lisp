@@ -163,10 +163,10 @@
 
 ;; }}}
 ;; get-next-coordinates {{{ 
+
 (defun get-next-coordinates (direction)
   (mapcar (lambda (current-coordinate)
-            (vector+ current-coordinate
-                     direction))
+            (vector+ current-coordinate direction))
           (get-current-coordinates)))
 
 ;; }}}
