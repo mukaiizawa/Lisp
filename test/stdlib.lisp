@@ -150,7 +150,7 @@ END
   (mklist-03 (mklist '(a)) '(a)))
 
 ;; }}}
-;; mklist {{{
+;; mkalist {{{
 
 (test-all
   (mkalist-01 (mkalist nil) nil)
