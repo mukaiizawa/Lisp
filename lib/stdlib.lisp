@@ -107,12 +107,12 @@
                  (pair (first pairs) (first pairs)))
              ((null pair) (nreverse acc))
              (push (first pair) acc)
-             (push  (maptree (lambda (val)
-                               (if (eq val 'it)
-                                 (first pair)
-                                 val))
-                             (second pair))
-                    acc))))
+             (push (maptree (lambda (val)
+                              (if (eq val 'it)
+                                (first pair)
+                                val))
+                            (second pair))
+                   acc))))
 
 ;; }}}
 ;; let1 {{{
