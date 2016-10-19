@@ -290,4 +290,12 @@ END
   (explode-01 (explode 'sym) '(S Y M)))
 
 ;; }}}
+;; string->list {{{
+
+(test-all
+  (string->list-01 (string->list #\, "1,2,3") '("1" "2" "3"))
+  (string->list-02 (string->list #\, "1,,") '("1" "" ""))
+  (string->list-03 (string->list #\, "123") '("123")))
+
+;; }}}
 

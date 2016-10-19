@@ -596,9 +596,6 @@
                   (reverse (cons str acc)))))
     (rec str nil)))
 
-;;(string->list #\, "abcd,e,f,,g,hi,j,klmnop,qr,")
-;; => ("abcd" "e" "f" "" "g" "hi" "j" "klmnop" "qr" "") 
-
 ;; }}}
 ;; list->string {{{
 
