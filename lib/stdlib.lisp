@@ -605,15 +605,6 @@
               (mkstr x segment y))
             lis)))
 
-;; Examples: {{{
-;;
-;; (echo (list->string '(a b c d)))
-;; => a b c d
-;; (echo (list->string '(a b c d) #\/))
-;; => a/b/c/d
-;;
-;; }}}
-
 ;; }}}
 ;; string->byte {{{
 

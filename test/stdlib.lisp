@@ -298,4 +298,12 @@ END
   (string->list-03 (string->list #\, "123") '("123")))
 
 ;; }}}
+;; list->string {{{
+
+(test-all
+  (list->string-01 (list->string '(1 2 3)) "123")
+  (list->string-02 (list->string '(1 2 3) #\,) "1,2,3")
+  (list->string-03 (list->string '(1 2 3) "||") "1||2||3"))
+
+;; }}}
 
