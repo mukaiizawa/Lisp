@@ -336,6 +336,24 @@
            (dcond ,@(cdr clauses)))))))
 
 ;; }}}
+;; chain {{{
+
+(defmacro chain (&rest args)
+  (loop
+    with curr = (first args)
+    for form in (rest args)
+    do (let ((vform (if (consp form)
+                      form
+                      (list form))))
+         (if (find 'it (flatten vform))
+           (setf curr `(let ((it ,curr))
+                         ,form))
+           (let ((x (cons curr (rest vform))))
+             (rplacd vform x)
+             (setf curr vform))))
+    finally (return curr)))
+
+;; }}}
 
 ;; sequential
 ;; before {{{
