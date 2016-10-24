@@ -406,7 +406,7 @@
 ;; vassoc {{{
 
 (defun vassoc (key alist &key (test #'eql))
-  (rest (assoc key alist test)))
+  (rest (assoc key alist :test test)))
 
 ;; }}}
 ;; mklist {{{
@@ -586,7 +586,7 @@
 ;; }}}
 ;; group-by {{{
 
-(defun group-by (fn lis &key (test 'eql))
+(defun group-by (fn lis &key (test #'eql))
   (let1 (hash (make-hash-table :test test))
     (dolist (val lis)
       (let1 (key (funcall fn val))
