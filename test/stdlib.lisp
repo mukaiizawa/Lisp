@@ -163,6 +163,13 @@ END
   (mkalist-07 (mkalist '((a a a) (b b b))) '((a a a) (b b b))))
 
 ;; }}}
+;; group-by {{{
+
+(test-all
+  (group-by-01 (group-by (lambda (x) (mod x 2)) '(1 2 3 4 5))
+               '((1 5 3 1) (0 4 2))))
+
+;; }}}
 ;; iota {{{
 
 (test-all
