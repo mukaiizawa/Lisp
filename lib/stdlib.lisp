@@ -117,7 +117,7 @@
 ;; }}}
 ;; let1 {{{
 
-(defmacro let1 ((var val) &body body)
+(defmacro let1 ((var &optional val) &body body)
   `(let ((,var ,val))
      ,@body))
 

@@ -154,4 +154,15 @@
             (mklist tables))))
 
 ;; }}}
+;; tables->doc {{{
+
+(defun tables->doc (tables)
+  (list->string
+    (mapcar (lambda (table)
+              (format nil "DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%~A"
+                      (get-table-name table)
+                      (tables->create-sql table)))
+            (mklist tables))))
+
+;; }}}
 
