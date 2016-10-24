@@ -403,6 +403,12 @@
   (nconc lst (list obj)))
 
 ;; }}}
+;; vassoc {{{
+
+(defun vassoc (key alist &key (test #'eql))
+  (rest (assoc key alist test)))
+
+;; }}}
 ;; mklist {{{
 
 (defun mklist (obj)
