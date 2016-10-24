@@ -542,8 +542,6 @@
       (values wins max))))
 
 ;; }}}
-
-;; functional utils
 ;; maptree {{{
 
 (defun maptree (fn &rest args)
@@ -578,6 +576,27 @@
                 :from-end t
                 :initial-value (apply fn1 args))))
     #'identity))
+
+;; }}}
+;; group-by {{{
+
+(defun group-by (fn lis &key (test 'eql))
+  (let1 (hash (make-hash-table :test test))
+    (dolist (val lis)
+      (let1 (key (funcall fn val))
+        (asetf (gethash key hash)
+               (cons val it))))
+    (hash->alist hash)))
+
+;; }}}
+;; hash->alist {{{
+
+(defun hash->alist (hash)
+  (let1 (acc)
+    (maphash (lambda (key val)
+               (setq acc (acons key val acc)))
+             hash)
+    acc))
 
 ;; }}}
 
