@@ -260,7 +260,7 @@
 (defmacro try-move (direction)
   `(let ((current-coordinates (get-current-coordinates))
          (next-coordinates (get-next-coordinates ,direction)))
-     (cond ((not (find-if (complement (movable?)) next-coordinates))
+     (cond ((every (movable?) next-coordinates)
             (move-rectangle current-coordinates ,direction)
             (asetf (tetromino-coordinate-origin *current-tetromino*)
                    (vector+ it ,direction)))
