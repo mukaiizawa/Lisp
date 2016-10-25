@@ -3,10 +3,14 @@
 (require :graph-utils *module-graph-utils*)
 (provide :database-manager)
 
+(defstruct schema
+  (phisical-name "" :type string)
+  (logical-name "" :type string)
+  (tables nil :type list))
+
 (defstruct table
   (phisical-name "" :type string)
   (logical-name "" :type string)
-  (schema "" :type string)
   (columns nil :type list))
 
 (defstruct column
@@ -30,21 +34,20 @@
                                              ,@(nthcdr 2 col)))
                                         columns))))
 
-(defmacro deftables (&rest tables)
-  `(list
-     ,@(mapcar (lambda (table) 
-                 `(deftable ,(first table)
-                    ,@(rest table)))
-               tables)))
+(defmacro defschema (schema-phisical-name schema-logical-name &rest tables)
+  `(make-schema
+     :phisical-name (mkstr ',schema-phisical-name)
+     :logical-name (mkstr ',schema-logical-name)
+     :tables (list ,@(mapcar (lambda (table) 
+                               `(deftable ,(first table)
+                                  ,@(rest table)))
+                             tables))))
 
 ;; utility
 ;; get-table-name {{{
 
-(defun get-table-name (table)
-  (with-output-to-string (out)
-    (unless (empty? (table-schema table))
-      (princ (mkstr (table-schema table) ".") out))
-    (princ (table-phisical-name table) out)))
+(defun get-table-name (schema table)
+  (mkstr (schema-phisical-name schema) #\.  (table-phisical-name table)))
 
 ;; }}}
 ;; get-primarykeys {{{
@@ -58,11 +61,11 @@
 ;; }}}
 
 ;; extension
-;; tables->nodes {{{
+;; schema->nodes {{{
 
-(defun tables->nodes (tables &optional with-logical-table-name? with-logical-column-name?)
+(defun schema->nodes (schema &optional with-logical-table-name? with-logical-column-name?)
   (let (nodes)
-    (dolist (table tables)
+    (dolist (table (schema-tables schema))
       (let* ((table-phisical-name (mkstr (table-phisical-name table)))
              (attr-shape (list 'shape "plaintext"))
              (attr-label (list 'label
@@ -93,11 +96,11 @@
       (nreverse nodes)))
 
 ;; }}}
-;; tables->edges {{{
+;; schema->edges {{{
 
-(defun tables->edges (tables)
+(defun schema->edges (schema)
   (let (edges)
-    (dolist (table tables)
+    (dolist (table (schema-tables schema))
       (dolist (column (table-columns table))
         (awhen (column-foreignkey column)
           (let* ((table-name-from (table-phisical-name table))
@@ -110,19 +113,19 @@
     (nreverse edges)))
 
 ;; }}}
-;; tables->graph {{{
+;; schema->graph {{{
 
-(defun tables->graph (tables)
-  (make-graph :nodes (tables->nodes tables)
-              :edges (tables->edges tables)))
+(defun schema->graph (schema)
+  (make-graph :nodes (schema->nodes schema)
+              :edges (schema->edges schema)))
 
 ;; }}}
-;; tables->create-sql {{{
+;; schema->create-sql {{{
 
-(defun tables->create-sql (tables)
+(defun schema->create-sql (schema)
   (with-output-to-string (out)
-    (dolist (table (mklist tables))
-      (format out "CREATE TABLE ~A (~%" (get-table-name table))
+    (dolist (table (schema-tables schema))
+      (format out "CREATE TABLE ~A (~%" (get-table-name schema table))
       (dolist (column (table-columns table))
         (write-string
           (mkstr (column-phisical-name column)
@@ -143,26 +146,51 @@
       (format out ");~%"))))
 
 ;; }}}
-;; tables->create-sql! {{{
+;; schema->create-sql! {{{
 
-(defun tables->create-sql! (tables)
+(defun schema->create-sql! (schemas)
   (list->string
-    (mapcar (lambda (table)
-              (format nil "DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%~A"
-                      (get-table-name table)
-                      (tables->create-sql table)))
-            (mklist tables))))
+    (flatten
+      (mapcar (lambda (schema)
+                (mapcar (lambda (table)
+                          (format nil "DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%~A"
+                                  (get-table-name schema table)
+                                  (schema->create-sql schema)))
+                        (schema-tables schema)))
+              (mklist schemas)))))
 
 ;; }}}
-;; tables->doc {{{
+;; schemas->doc {{{
 
-(defun tables->doc (tables)
-  (list->string
-    (mapcar (lambda (table)
-              (format nil "DROP TABLE ~A CASCADE CONSTRAINTS PURGE;~%~A"
-                      (get-table-name table)
-                      (tables->create-sql table)))
-            (mklist tables))))
+(defun schemas->doc (schemas &key (with-table-header t) (segment #\Tab))
+  (dolist (schema (mklist schemas))
+    (let ((schema-name (schema-phisical-name schema))
+          (tables (schema-tables schema)))
+      (mkdir schema-name)
+      (dolist (table tables)
+        (with-open-file (out (mkstr schema-name "/" (table-phisical-name table))
+                             :direction :output
+                             :if-exists :supersede
+                             :if-does-not-exist :create)
+          (when with-table-header
+            (princln (list->string
+                       '(phisical-name logical-name data-type length primarykey? required? foreignkey default-value remarks)
+                       segment)
+                     out))
+          (dolist (column (table-columns table))
+            (princln (list->string
+                       (list
+                         (column-phisical-name column)
+                         (column-logical-name column)
+                         (column-type column)
+                         (column-length column)
+                         (column-primarykey? column)
+                         (column-required? column)
+                         (column-foreignkey column)
+                         (column-default-value column)
+                         (column-remarks column))
+                       segment)
+                     out)))))))
 
 ;; }}}
 
