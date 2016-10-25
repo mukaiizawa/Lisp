@@ -96,16 +96,6 @@
 
 ;; }}}
 
-;; in-board? {{{
-
-(defun in-board? (x &optional y)
-  (with-coordinates ((if (coordinate-p x)
-                       x
-                       (make-vector x y)))
-    (and (<= 0 x1) (< x1 *board-width*)
-         (<= 0 y1) (< y1 *board-height*))))
-
-;; }}}
 ;; set-board {{{
 
 (defun set-board (coordinate val)
@@ -116,10 +106,13 @@
 ;; }}}
 ;; safety-aref {{{
 
-(defun safety-aref (coordinate)
-  (with-coordinates (coordinate)
-    (when (in-board? r1)
-      (aref *board* x1 y1))))
+(defun safety-aref (x &optional y)
+  (with-coordinates ((if (coordinate-p x)
+                       x
+                       (make-vector x y)))
+    (and (<= 0 x1) (< x1 *board-width*)
+         (<= 0 y1) (< y1 *board-height*)
+         (aref *board* x1 y1))))
 
 ;; }}}
 ;; draw-rectangle {{{
@@ -203,15 +196,14 @@
 
 (defmacro delete-lines ()
   `(do* ((range-x (iota 0 (1- *board-width*)))
-         (range-y (filter (lambda (y)
-                            (unless (find-if #'zerop
-                                             (mapcar (lambda (x)
-                                                       (aif (safety-aref (make-vector x y)) it 0))
-                                                     range-x))
-                              y))
-                          (sort (remove-duplicates
-                                  (mapcar #'coordinate-y (get-current-coordinates)))
-                                #'<))
+         (range-y (remove-if (lambda (y)
+                               (not (every (lambda (x)
+                                             (aand (safety-aref x y)
+                                                   (not (zerop it))))
+                                           range-x)))
+                             (sort (remove-duplicates
+                                     (mapcar #'coordinate-y (get-current-coordinates)))
+                                   #'<))
                   (rest range-y))
          (y (first range-y) (first range-y)))
      ((null range-y))
@@ -267,13 +259,13 @@
            ((vector= ,direction (make-vector 0 1))
             (delete-lines)
             (set-new-current-tetromino)
-            (when (find-if (complement (movable?)) (get-next-coordinates (make-vector 0 1)))
+            (when (find-if (complement (movable?))
+                           (get-next-coordinates (make-vector 0 1)))
               (setq *game-over?* t)
               (pack (make-instance 'button
                                    :master (pack (make-instance 'labelframe :text "game over"))
                                    :text (mkstr "delete line count: " *delete-line-count*)
                                    :command (lambda () (setq *exit-mainloop* t))))))
-
            (t nil))))
 
 ;; }}}
@@ -282,7 +274,7 @@
 (defmacro try-rotate ()
   `(let ((current-coordinates (get-current-coordinates))
          (rotate-coordinates (get-rotate-coordinates)))
-     (unless (find-if (complement (movable?)) rotate-coordinates)
+     (when (every (movable?) rotate-coordinates)
        (delete-rectangles current-coordinates)
        (asetf (tetromino-coordinates *current-tetromino*)
               (mapcar (lambda (coordinate)
