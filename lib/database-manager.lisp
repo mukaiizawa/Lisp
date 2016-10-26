@@ -162,7 +162,7 @@
 ;; }}}
 ;; schemas->doc {{{
 
-(defun schemas->doc (schemas &key (with-table-header t) (segment #\Tab))
+(defun schemas->doc (schemas &key (with-title t) (with-header t) (segment #\Tab))
   (dolist (schema (mklist schemas))
     (let ((schema-name (schema-phisical-name schema))
           (tables (schema-tables schema)))
@@ -172,9 +172,24 @@
                              :direction :output
                              :if-exists :supersede
                              :if-does-not-exist :create)
-          (when with-table-header
+          (when with-title
             (princln (list->string
-                       '(phisical-name logical-name data-type length primarykey? required? foreignkey default-value remarks)
+                       (list
+                         (table-phisical-name table)
+                         (table-logical-name table))
+                       segment)
+                     out))
+          (when with-header
+            (princln (list->string
+                       '(phisical-name
+                          logical-name
+                          data-type
+                          length
+                          primarykey?
+                          required?
+                          foreignkey
+                          default-value
+                          remarks)
                        segment)
                      out))
           (dolist (column (table-columns table))
