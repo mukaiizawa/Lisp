@@ -644,7 +644,7 @@
 
 (defun list->string (lis &optional (segment +empty-string+))
   (mkstr-if lis
-    (reduce (lambda (x y)
+    (reduce (lambda (&optional x y)
               (mkstr x segment y))
             lis)))
 
