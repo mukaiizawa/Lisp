@@ -83,9 +83,9 @@
 
 ;; }}}
 
-;; set-attr! {{{
+;; set-graph-attr! {{{
 
-(defun set-attr! (key val alist)
+(defun set-graph-attr! (key val alist)
   (if (assoc key alist)
     (rplacd (assoc key alist) (list val))
     (nconc alist (list (list key val))))
