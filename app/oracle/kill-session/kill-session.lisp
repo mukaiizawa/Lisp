@@ -8,7 +8,8 @@
   (let ((args (list->string args #\Space))
         (tmp-file "inactive-session.csv")
         (usage (usage :title "kill-session [OPTION] [SCHEMA]/[PASSWORD]@[SID]"
-                      :desc  "Kill inactive session."
+                      :desc  '("Kill inactive session."
+                               "Required root authority")
                       :opts  '("-s" "Target schema."))))
     (with-dbinfo args
                  (execute-query (list
@@ -19,9 +20,9 @@
                                   "   V$SESSION S "
                                   " WHERE "
                                   "   S.TYPE <> 'BACKGROUND' AND "
-                                  (aif -s
-                                    (format nil "(~{ S.SCHEMANAME = '~A' ~^ OR ~}) AND"
-                                            (mapcar #'string-upcase (string->list #\, it))))
+                                  (mkstr-aif -s
+                                    (format nil "~:@((~{ S.SCHEMANAME = '~A' ~^ OR ~}) AND~)"
+                                            (string->list #\, it)))
                                   "   S.STATUS = 'INACTIVE';")
                                 :spool tmp-file)
                  (execute-query (mapcar (lambda (sid-serial)
