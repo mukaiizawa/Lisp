@@ -3,15 +3,22 @@
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)
 
-(defvar *drawing-interval* 500)
-(defvar *cell-width* 30)
-(defvar *board-width* 10)
-(defvar *board-height* 20)
+;; game config
+(defparameter *cell-width* 30)
+(defparameter *board-width* 10)
+(defparameter *board-height* 20)
+(defparameter *drawing-interval* 500)
+(defparameter *score* 0)
+
+;; widget
+(defparameter *frame* nil)
+(defparameter *canvas* nil)
+(defparameter *text-area* nil)
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
+
+;; global parameter
 (defparameter *tetrominos* nil)
 (defparameter *current-tetromino* nil) 
-(defparameter *canvas* nil) 
-(defparameter *delete-line-count* 0) 
 (defparameter *game-over?* nil) 
 
 (defstruct tetromino shape color coordinate-origin coordinates)
@@ -146,6 +153,22 @@
        (draw-rectangle (make-vector x y) "#a0a0a0"))))
 
 ;; }}}
+;; update-drawing-interval {{{
+
+(defun update-drawing-interval (msec)
+  (when (>= *drawing-interval* 200)
+    (decf *drawing-interval* msec)))
+
+;; }}}
+;; update-score {{{
+
+(defmacro update-score (score)
+  `(progn
+     (incf *score* (* ,score 1000))
+     (clear-text *text-area*)
+     (append-text *text-area* (mkstr "Score: " *score*))))
+
+;; }}}
 ;; get-current-coordinates {{{
 
 (defun get-current-coordinates ()
@@ -180,6 +203,8 @@
            (copy-tetromino
              (nth (random (length *tetrominos*))
                   *tetrominos*)))
+     (update-drawing-interval 5)
+     (update-score 1)
      (draw-current-tetromino)))
 
 ;; }}}
@@ -207,7 +232,8 @@
                   (rest range-y))
          (y (first range-y) (first range-y)))
      ((null range-y))
-     (incf *delete-line-count*)
+     (update-drawing-interval 10)
+     (update-score (* (expt 2 (length range-y))))
      (dolist (x range-x)
        (delete-rectangles (make-vector x y)))
      (dorange (y y 1)
@@ -261,11 +287,7 @@
             (set-new-current-tetromino)
             (when (find-if (complement (movable?))
                            (get-next-coordinates (make-vector 0 1)))
-              (setq *game-over?* t)
-              (pack (make-instance 'button
-                                   :master (pack (make-instance 'labelframe :text "game over"))
-                                   :text (mkstr "delete line count: " *delete-line-count*)
-                                   :command (lambda () (setq *exit-mainloop* t))))))
+              (setq *game-over?* t)))
            (t nil))))
 
 ;; }}}
@@ -308,7 +330,9 @@
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
   (setf *canvas* (pack (make-instance 'canvas
                                       :width (* *cell-width* *board-width*)
-                                      :height (* *cell-width* *board-height*))))
+                                      :height (* *cell-width* *board-height*)))
+        *frame* (pack (make-instance 'frame))
+        *text-area* (pack (make-text *frame* :width nil :height 2)))
   (force-focus *canvas*)
   (draw-board)
   (set-new-current-tetromino)
