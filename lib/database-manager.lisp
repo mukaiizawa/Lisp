@@ -200,7 +200,7 @@
                          (column-type column)
                          (column-length column)
                          (column-primarykey? column)
-                         (or (column-primarykey?)
+                         (or (column-primarykey? column)
                              (column-required? column))
                          (mkstr-aif (column-foreignkey column)
                            (first it) "." (second it))
