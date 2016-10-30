@@ -268,6 +268,35 @@
         buf))))
 
 ;; }}}
+;; with-html-decode {{{
+
+(defun with-html-decode (str)
+  (with-output-to-string (out)
+    (with-string-ahead-reader (reader str)
+      (while (not (reach-eof? reader))
+        (write-string (get-buf (read-if (ilambda (c)
+                                          (char/= c #\&))
+                                        reader))
+                      out)
+        (let1 (token (get-buf (read-if (ilambda (c)
+                                         (char/= c #\;))
+                                       reader)))
+          (write-string
+            (aif (and (reader-next-in? reader #\;)
+                      (find-if (lambda (esc)
+                                 (string= token esc))
+                               '(("\"" "&quot")
+                                 ("&" "&amp")
+                                 ("<" "&lt")
+                                 (">" "&gt")
+                                 ("©" "&copy"))
+                               :key #'second))
+              (and (read-next reader :cache nil)
+                   (first it))
+              token)
+            out))))))
+
+;; }}}
 ;; merge-node-name {{{
 
 (defun merge-node-name (name &optional namespace)
@@ -320,9 +349,10 @@
     ;; text-node
     (make-xml-node
       :type 'text
-      :value (get-buf (read-if (lambda (c)
-                                 (char/= c #\<))
-                               reader)))
+      :value (with-html-decode
+               (get-buf (read-if (lambda (c)
+                                   (char/= c #\<))
+                                 reader))))
     (let ((linecount-at-open-tag (1+ (get-linecount reader)))
           (tag (parse-tag reader)))
       (cond ((find (xml-node-type tag) '(etag document-type comment))
@@ -386,8 +416,7 @@
                           :value (funcall #~s/-->$//    ; trim right and remove hyphen
                                           (get-buf
                                             (read-next    ; skip `>'
-                                              (read-if (lambda(c)
-                                                         (declare (ignore c))
+                                              (read-if (ilambda(c)
                                                          (not (and (char= (get-next reader) #\-)
                                                                    (char= (get-next reader 2) #\-)
                                                                    (char= (get-next reader 3) #\>))))
@@ -480,6 +509,8 @@
                                            nodes)))
                           ((eq (xml-node-type nodes) 'text)
                            (format out "~A~A~A" indent (with-xml-encode (xml-node-value nodes)) (indent-newline)))
+                          ((eq (xml-node-type nodes) 'plain-text)
+                           (format out "~A~A~A" indent (xml-node-value nodes) (indent-newline)))
                           ((eq (xml-node-type nodes) 'document-type)
                            (format out "<!DOCTYPE ~A>~A" (xml-node-value nodes) (indent-newline)))
                           ((eq (xml-node-type nodes) 'comment)
@@ -515,8 +546,7 @@
   (let ((left-trimmer (lambda (str)
                         (with-string-ahead-reader (reader str)
                           (get-buf
-                            (read-if (lambda (c)
-                                       (declare (ignore c))
+                            (read-if (ilambda (c)
                                        (not (reach-eof? reader)))
                                      (read-if (lambda (c)
                                                 (find c '(#\Newline #\Space)))
