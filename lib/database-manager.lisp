@@ -59,6 +59,15 @@
                      (table-columns table))))
 
 ;; }}}
+;; get-foreignkeys {{{
+
+(defun get-foreignkeys (table)
+  (filter (lambda (column)
+            (awhen (column-foreignkey column)
+              (list (column-phisical-name column) it)))
+          (table-columns table)))
+
+;; }}}
 
 ;; extension
 ;; schema->nodes {{{
@@ -125,24 +134,37 @@
 (defun schema->create-sql (schema)
   (with-output-to-string (out)
     (dolist (table (schema-tables schema))
-      (format out "CREATE TABLE ~A (~%" (get-table-name schema table))
-      (dolist (column (table-columns table))
-        (write-string
-          (mkstr (column-phisical-name column)
-                 #\Space
-                 (column-type column)
-                 (mkstr-if (/= (column-length column) -1)
-                   "(" (column-length column) ")")
-                 (mkstr-if (not (empty? (column-default-value column)))
-                   " DEFAULT " (column-default-value column))
-                 (when (column-required? column)
-                   " NOT NULL")
-                 #\,
-                 #\Newline)
-          out))
-      (format out "CONSTRAINT PK_~A PRIMARY KEY (~{~A~^,~})~%"
-              (table-phisical-name table)
-              (get-primarykeys table))
+      (format out "~%CREATE TABLE ~A (~%" (table-phisical-name table))
+      (write-string
+        (list->string
+          (append
+            (mapcar (lambda (column)
+                      (mkstr (column-phisical-name column)
+                             #\Space
+                             (column-type column)
+                             (mkstr-if (/= (column-length column) -1)
+                               "(" (column-length column) ")")
+                             (mkstr-if (not (empty? (column-default-value column)))
+                               " DEFAULT " (column-default-value column))
+                             (when (column-required? column)
+                               " NOT NULL")))
+                    (table-columns table))
+            (aand (get-primarykeys table)
+                  (list (mkstr "CONSTRAINT PK_" (table-phisical-name table) " PRIMARY KEY (" (list->string it ",") ")")))
+            (mapcar (lambda (foreignkeys no)
+                      (let ((cols (mapcar #'first (rest foreignkeys)))
+                            (refer-table (first foreignkeys))
+                            (refer-cols (mapcar (compose #'second #'second) (rest foreignkeys))))
+                        (format nil "CONSTRAINT FK_~A~A FOREIGN KEY (~A) REFERENCES ~A(~A)"
+                                (table-phisical-name table)
+                                no
+                                (list->string cols #\,)
+                                refer-table
+                                (list->string refer-cols #\,))))
+                    (group-by (compose #'first #'second) (get-foreignkeys table))
+                    (iota 1 (length (group-by (compose #'first #'second) (get-foreignkeys table))))))
+          (mkstr #\, #\Newline))
+        out)
       (format out ");~%"))))
 
 ;; }}}

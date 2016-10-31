@@ -138,11 +138,11 @@
 ;; Case Conversion
 ;; {{{
 
-(format nil "before:~A, after:~:*~(~A~)" "ASDF")
+(format nil "before:~A, after:~1:*~(~A~)" "ASDF")
 ;; =>  "before:ASDF, after:asdf" 
-(format nil "before:~A, after:~:*~@(~A~)" "ASDF")
+(format nil "before:~A, after:~1:*~@(~A~)" "ASDF")
 ;; =>  "before:ASDF, after:Asdf" 
-(format nil "before:~A, after:~:*~:@(~A~)" "ASDF")
+(format nil "before:~A, after:~1:*~:@(~A~)" "ASDF")
 ;; =>  "before:ASDF, after:ASDF" 
 
 
@@ -150,19 +150,19 @@
 ;; Justification
 ;;{{{
 
-(print (format nil "~10<foo~;bar~>"))
+(format nil "~10<foo~;bar~>")
 ;; => "foo    bar" 
-(print (format nil "~10:<foo~;bar~>"))
+(format nil "~10:<foo~;bar~>")
 ;; => "  foo  bar" 
-(print (format nil "~10<foobar~>"))
+(format nil "~10<foobar~>")
 ;; => "    foobar" 
-(print (format nil "~10:<foobar~>"))
+(format nil "~10:<foobar~>")
 ;; => "    foobar" 
-(print (format nil "~10:@<foo~;bar~>"))
+(format nil "~10:@<foo~;bar~>")
 ;; => "  foo bar " 
-(print (format nil "~10@<foobar~>"))
+(format nil "~10@<foobar~>")
 ;; => "foobar    " 
-(print (format nil "~10:@<foobar~>"))
+(format nil "~10:@<foobar~>")
 ;; => "  foobar  " 
 
 ;; }}}
