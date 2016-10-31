@@ -405,8 +405,11 @@
                  (single? (or (and (reader-next-in? reader #\/) t)
                               (single-tag? name))))    ; defined *single-tag*
              (read-if (lambda (c)
-                        (find c '(#\/ #\>)))
-                      reader :cache nil)    ; skip `>' or `/>'
+                        (char= c #\>))
+                      (read-if (lambda (c)
+                                 (char= c #\/))
+                               reader :cache nil)
+                      :cache nil)    ; skip `>' or `/>'
              (make-xml-node :type tag-type
                             :name name
                             :attrs attrs
