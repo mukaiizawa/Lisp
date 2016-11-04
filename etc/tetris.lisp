@@ -10,15 +10,17 @@
 (defparameter *drawing-interval* 500)
 (defparameter *score* 0)
 
-;; widget
+;; ltk widget
 (defparameter *frame* nil)
-(defparameter *canvas* nil)
+(defparameter *canvas-left* nil)
+(defparameter *canvas-right* nil)
 (defparameter *text-area* nil)
 (defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
 
 ;; global parameter
 (defparameter *tetrominos* nil)
-(defparameter *current-tetromino* nil) 
+(defparameter *current-tetromino* nil)
+(defparameter *next-tetromino* nil)
 (defparameter *game-over?* nil) 
 
 (defstruct tetromino shape color coordinate-origin coordinates)
@@ -126,12 +128,12 @@
 
 (defmacro draw-rectangle (coordinate color)
   `(with-coordinates (,coordinate)
-     (let1 (item (create-rectangle *canvas*
+     (let1 (item (create-rectangle *canvas-right*
                                    (* x1 *cell-width*)
                                    (* y1 *cell-width*)
                                    (+ (* *cell-width* x1) *cell-width*)
                                    (+ (* *cell-width* y1) *cell-width*)))
-       (itemconfigure *canvas* item "fill" ,color)
+       (itemconfigure *canvas-right* item "fill" ,color)
        (values item))))
 
 ;; }}}
@@ -145,11 +147,36 @@
                                   (tetromino-color *current-tetromino*))))))
 
 ;; }}}
+;; draw-next-tetromino {{{
+
+(defmacro draw-next-tetromino ()
+  `(dolist (coordinate (mapcar (lambda (coordinate)
+                                 (vector+ (tetromino-coordinate-origin *next-tetromino*)
+                                          coordinate))
+                               (tetromino-coordinates *next-tetromino*)))
+     (create-rectangle *canvas-right* 0 0 90 90)
+     (with-coordinates (coordinate)
+       (let1 (rect (create-rectangle *canvas-right* 
+                                     (* x1 *cell-width*)
+                                     (* y1 *cell-width*)
+                                     (+ (* *cell-width* x1) *cell-width*)
+                                     (+ (* *cell-width* y1) *cell-width*)))
+         (itemconfigure *canvas-right* rect "fill" (tetromino-color *next-tetromino*))))))
+
+;; }}}
 ;; draw-board {{{
 
 (defmacro draw-board ()
   `(dorange (x 0 *board-width*)
      (dorange (y 0 *board-height*)
+       (draw-rectangle (make-vector x y) "#a0a0a0"))))
+
+;; }}}
+;; draw-right-board {{{
+
+(defmacro draw-right-board ()
+  `(dorange (x 0 3)
+     (dorange (y 0 3)
        (draw-rectangle (make-vector x y) "#a0a0a0"))))
 
 ;; }}}
@@ -195,16 +222,23 @@
           (tetromino-coordinates *current-tetromino*)))
 
 ;; }}}
+;; get-random-tetromino {{{
+
+(defmacro get-random-tetromino ()
+  `(copy-tetromino
+     (nth (random (length *tetrominos*))
+          *tetrominos*)))
+
+;; }}}
 ;; set-new-current-tetromino {{{
 
 (defmacro set-new-current-tetromino ()
   `(progn
-     (setf *current-tetromino*
-           (copy-tetromino
-             (nth (random (length *tetrominos*))
-                  *tetrominos*)))
+     (setf *current-tetromino* (copy-tetromino *next-tetromino*)
+           *next-tetromino* (get-random-tetromino))
      (update-drawing-interval 5)
      (update-score 1)
+     (draw-next-tetromino)
      (draw-current-tetromino)))
 
 ;; }}}
@@ -213,7 +247,7 @@
 (defmacro delete-rectangles (coordinates)
   `(dolist (coordinate (mklist ,coordinates))
      (awhen (safety-aref coordinate)
-       (itemdelete *canvas* it)
+       (itemdelete *canvas-left* it)
        (set-board coordinate 0))))
 
 ;; }}}
@@ -257,7 +291,7 @@
                     (second (find-if (lambda (copy)
                                        (vector= r1 (first copy)))
                                      coordinates-copy)))
-         (itemmove *canvas*
+         (itemmove *canvas-left*
                    (safety-aref (vector+ r1 r2))
                    (* x2 *cell-width*)
                    (* y2 *cell-width*))))))
@@ -328,13 +362,21 @@
 
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
-  (setf *canvas* (pack (make-instance 'canvas
-                                      :width (* *cell-width* *board-width*)
-                                      :height (* *cell-width* *board-height*)))
-        *frame* (pack (make-instance 'frame))
-        *text-area* (pack (make-text *frame* :width nil :height 2)))
-  (force-focus *canvas*)
+  (setf *frame* (pack (make-instance 'frame))
+        *canvas-left* (pack (make-canvas *frame*
+                                         :width (* *cell-width* *board-width*)
+                                         :height (* *cell-width* *board-height*))
+                            :side :left)
+        *canvas-right* (pack (make-canvas *frame*
+                                          :width (* *cell-width* 4)
+                                          :height (* *cell-width* 4))
+                             :side :left)
+        *text-area* (pack (make-text *frame* :width nil :height 2)
+                          :side :bottom)
+        *next-tetromino* (get-random-tetromino))
+  (force-focus *canvas-left*)
   (draw-board)
+  (draw-right-board)
   (set-new-current-tetromino)
   (bind-keypress #\h (try-move (make-vector -1 0)))
   (bind-keypress #\j (try-move (make-vector 0 1)))
