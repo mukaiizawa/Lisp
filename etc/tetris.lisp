@@ -133,14 +133,14 @@
                                   (* y1 *cell-width*)
                                   (+ (* *cell-width* x1) *cell-width*)
                                   (+ (* *cell-width* y1) *cell-width*)))
-      (itemconfigure *canvas-right* item "fill" color)
+      (itemconfigure canvas item "fill" color)
       (values item))))
 
 ;; }}}
 ;; draw-tetromino {{{
 
-(defun draw-tetromino (canvas coordinates)
-  (dolist (coordinate coordinates)
+(defun draw-tetromino (canvas tetromino)
+  (dolist (coordinate (to-absolute-coordinate tetromino))
     (when (safety-aref coordinate)
       (set-board coordinate
                  (draw-rectangle canvas
@@ -171,13 +171,13 @@
   (append-text *text-area* (mkstr "Score: " *score*)))
 
 ;; }}}
-;; get-current-coordinates {{{
+;; to-absolute-coordinate {{{
 
-(defun get-current-coordinates ()
+(defun to-absolute-coordinate (tetromino)
   (mapcar (lambda (coordinate)
-            (vector+ (tetromino-coordinate-origin *current-tetromino*)
+            (vector+ (tetromino-coordinate-origin tetromino)
                      coordinate))
-          (tetromino-coordinates *current-tetromino*)))
+          (tetromino-coordinates tetromino)))
 
 ;; }}}
 ;; get-next-coordinates {{{ 
@@ -185,7 +185,7 @@
 (defun get-next-coordinates (direction)
   (mapcar (lambda (current-coordinate)
             (vector+ current-coordinate direction))
-          (get-current-coordinates)))
+          (to-absolute-coordinate *current-tetromino*)))
 
 ;; }}}
 ;; get-rotate-coordinates {{{
@@ -212,8 +212,8 @@
         *next-tetromino* (get-random-tetromino))
   (update-drawing-interval 5)
   (update-score 1)
-  (draw-tetromino *canvas-right* (tetromino-coordinates *next-tetromino*))
-  (draw-tetromino *canvas-left* (get-current-coordinates)))
+  (draw-tetromino *canvas-right* *next-tetromino*)
+  (draw-tetromino *canvas-left* *current-tetromino*))
 
 ;; }}}
 ;; delete-rectangles {{{
@@ -235,7 +235,7 @@
                                                   (not (zerop it))))
                                           range-x)))
                             (sort (remove-duplicates
-                                    (mapcar #'coordinate-y (get-current-coordinates)))
+                                    (mapcar #'coordinate-y (to-absolute-coordinate *current-tetromino*)))
                                   #'<))
                  (rest range-y))
         (y (first range-y) (first range-y)))
@@ -278,13 +278,13 @@
     (or (aand (safety-aref next-coordinate) (= it 0))
         (find-if (lambda (current-coordinate)
                    (vector= current-coordinate next-coordinate))
-                 (get-current-coordinates)))))
+                 (to-absolute-coordinate *current-tetromino*)))))
 
 ;; }}}
 ;; try-move {{{
 
 (defun try-move (direction)
-  (let ((current-coordinates (get-current-coordinates))
+  (let ((current-coordinates (to-absolute-coordinate *current-tetromino*))
         (next-coordinates (get-next-coordinates direction)))
     (cond ((every (movable?) next-coordinates)
            (move-rectangle current-coordinates direction)
@@ -302,7 +302,7 @@
 ;; try-rotate {{{
 
 (defun try-rotate ()
-  (let ((current-coordinates (get-current-coordinates))
+  (let ((current-coordinates (to-absolute-coordinate *current-tetromino*))
         (rotate-coordinates (get-rotate-coordinates)))
     (when (every (movable?) rotate-coordinates)
       (delete-rectangles current-coordinates)
@@ -310,7 +310,7 @@
              (mapcar (lambda (coordinate)
                        (vector-rotate coordinate (/ pi 2)))
                      it))
-      (draw-tetromino *canvas-left* (get-current-coordinates)))))
+      (draw-tetromino *canvas-left* *current-tetromino*))))
 
 ;; }}}
 ;; main {{{
