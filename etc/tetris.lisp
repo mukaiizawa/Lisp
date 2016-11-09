@@ -3,10 +3,14 @@
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)
 
+;; todo create structure include board, height, width ...
+
 ;; game config
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
+(defparameter *board-width* 8)
+(defparameter *board-height* 8)
 (defparameter *drawing-interval* 500)
 (defparameter *score* 0)
 
@@ -140,19 +144,19 @@
 ;; draw-tetromino {{{
 
 (defun draw-tetromino (canvas tetromino)
-  (dolist (coordinate (to-absolute-coordinate tetromino))
+  (dolist (coordinate (to-absolute-coordinates tetromino))
     (when (safety-aref coordinate)
       (set-board coordinate
                  (draw-rectangle canvas
                                  coordinate
-                                 (tetromino-color *current-tetromino*))))))
+                                 (tetromino-color tetromino))))))
 
 ;; }}}
 ;; draw-board {{{
 
-(defun draw-board (canvas)
-  (dorange (x 0 *board-width*)
-    (dorange (y 0 *board-height*)
+(defun draw-board (canvas width height)
+  (dorange (x 0 (1- width))
+    (dorange (y 0 (1- height))
       (draw-rectangle canvas (make-vector x y) "#a0a0a0"))))
 
 ;; }}}
@@ -171,9 +175,9 @@
   (append-text *text-area* (mkstr "Score: " *score*)))
 
 ;; }}}
-;; to-absolute-coordinate {{{
+;; to-absolute-coordinates {{{
 
-(defun to-absolute-coordinate (tetromino)
+(defun to-absolute-coordinates (tetromino)
   (mapcar (lambda (coordinate)
             (vector+ (tetromino-coordinate-origin tetromino)
                      coordinate))
@@ -185,7 +189,7 @@
 (defun get-next-coordinates (direction)
   (mapcar (lambda (current-coordinate)
             (vector+ current-coordinate direction))
-          (to-absolute-coordinate *current-tetromino*)))
+          (to-absolute-coordinates *current-tetromino*)))
 
 ;; }}}
 ;; get-rotate-coordinates {{{
@@ -205,23 +209,31 @@
          *tetrominos*)))
 
 ;; }}}
-;; set-new-current-tetromino {{{
+;; set-new-tetromino {{{
 
-(defun set-new-current-tetromino ()
+(defun set-new-tetromino ()
   (setf *current-tetromino* (copy-tetromino *next-tetromino*)
         *next-tetromino* (get-random-tetromino))
   (update-drawing-interval 5)
   (update-score 1)
-  (draw-tetromino *canvas-right* *next-tetromino*)
+  (dorange (i 0 3)
+    (dorange (j 0 3)
+      (delete-rectangles *canvas-right* (make-vector i j))))
+  (draw-tetromino *canvas-right* (funcall (lambda (x)
+                                            (let1 (new-tetromino (copy-tetromino x))
+                                              (setf (tetromino-coordinate-origin new-tetromino)
+                                                    (make-vector 2 (- (most #'- (mapcar #'coordinate-y (tetromino-coordinates new-tetromino))))))
+                                              new-tetromino))
+                                          *next-tetromino*))
   (draw-tetromino *canvas-left* *current-tetromino*))
 
 ;; }}}
 ;; delete-rectangles {{{
 
-(defun delete-rectangles (coordinates)
+(defun delete-rectangles (canvas coordinates)
   (dolist (coordinate (mklist coordinates))
     (awhen (safety-aref coordinate)
-      (itemdelete *canvas-left* it)
+      (itemdelete canvas it)
       (set-board coordinate 0))))
 
 ;; }}}
@@ -235,7 +247,7 @@
                                                   (not (zerop it))))
                                           range-x)))
                             (sort (remove-duplicates
-                                    (mapcar #'coordinate-y (to-absolute-coordinate *current-tetromino*)))
+                                    (mapcar #'coordinate-y (to-absolute-coordinates *current-tetromino*)))
                                   #'<))
                  (rest range-y))
         (y (first range-y) (first range-y)))
@@ -243,7 +255,7 @@
     (update-drawing-interval 10)
     (update-score (* (expt 2 (length range-y))))
     (dolist (x range-x)
-      (delete-rectangles (make-vector x y)))
+      (delete-rectangles *canvas-left* (make-vector x y)))
     (dorange (y y 1)
       (dolist (x range-x)
         (move-rectangle (make-vector x (1- y))
@@ -278,13 +290,13 @@
     (or (aand (safety-aref next-coordinate) (= it 0))
         (find-if (lambda (current-coordinate)
                    (vector= current-coordinate next-coordinate))
-                 (to-absolute-coordinate *current-tetromino*)))))
+                 (to-absolute-coordinates *current-tetromino*)))))
 
 ;; }}}
 ;; try-move {{{
 
 (defun try-move (direction)
-  (let ((current-coordinates (to-absolute-coordinate *current-tetromino*))
+  (let ((current-coordinates (to-absolute-coordinates *current-tetromino*))
         (next-coordinates (get-next-coordinates direction)))
     (cond ((every (movable?) next-coordinates)
            (move-rectangle current-coordinates direction)
@@ -292,7 +304,7 @@
                   (vector+ it direction)))
           ((vector= direction (make-vector 0 1))
            (delete-lines)
-           (set-new-current-tetromino)
+           (set-new-tetromino)
            (when (find-if (complement (movable?))
                           (get-next-coordinates (make-vector 0 1)))
              (setq *game-over?* t)))
@@ -302,10 +314,10 @@
 ;; try-rotate {{{
 
 (defun try-rotate ()
-  (let ((current-coordinates (to-absolute-coordinate *current-tetromino*))
+  (let ((current-coordinates (to-absolute-coordinates *current-tetromino*))
         (rotate-coordinates (get-rotate-coordinates)))
     (when (every (movable?) rotate-coordinates)
-      (delete-rectangles current-coordinates)
+      (delete-rectangles *canvas-left* current-coordinates)
       (asetf (tetromino-coordinates *current-tetromino*)
              (mapcar (lambda (coordinate)
                        (vector-rotate coordinate (/ pi 2)))
@@ -349,9 +361,9 @@
                           :side :bottom)
         *next-tetromino* (get-random-tetromino))
   (force-focus *canvas-left*)
-  (draw-board *canvas-left*)
-  (draw-board *canvas-right*)
-  (set-new-current-tetromino)
+  (draw-board *canvas-left* *board-width* *board-height*)
+  (draw-board *canvas-right* 4 4)
+  (set-new-tetromino)
   (bind-keypress #\h (try-move (make-vector -1 0)))
   (bind-keypress #\j (try-move (make-vector 0 1)))
   (bind-keypress #\k (try-rotate))
