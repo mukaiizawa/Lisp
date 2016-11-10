@@ -9,8 +9,8 @@
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
-(defparameter *board-width* 6)
-(defparameter *board-height* 4)
+; (defparameter *board-width* 6)
+; (defparameter *board-height* 4)
 
 ;; ltk widgets
 (defparameter *widgets* nil)
@@ -128,8 +128,8 @@
 ;; }}}
 ;; draw-rectangle {{{
 
-(defun draw-rectangle (canvas coordinate color)
-  (with-coordinates (coordinate)
+(defmethod draw-rectangle ((canvas canvas) (r coordinate) (color string))
+  (with-coordinates (r)
     (let1 (item (create-rectangle canvas
                                   (* x1 *cell-width*)
                                   (* y1 *cell-width*)
@@ -190,7 +190,7 @@
 ;; }}}
 ;; get-next-coordinates {{{ 
 
-(defun get-next-coordinates (direction)
+(defmethod get-next-coordinates ((direction coordinate))
   (mapcar (lambda (current-coordinate)
             (vector+ current-coordinate direction))
           (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))))
@@ -200,7 +200,7 @@
 
 (defun get-rotate-coordinates ()
   (mapcar (lambda (current-coordinate)
-            (vector+ (tetromino-coordinate-origin (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))
+            (vector+ (tetromino-coordinate-origin (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
                      (vector-rotate current-coordinate (/ pi 2))))
           (tetromino-coordinates (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))))
 
@@ -279,9 +279,9 @@
 (defun move-rectangle (coordinates direction)
   (let* ((c (tetris-widgets-canvas-left *widgets*))
          (coordinates (mklist coordinates))
-         (coordinates-copy (mapcar (lambda (coordinate)
-                                     (list coordinate (safety-aref c coordinate)))
-                                   coordinates)))
+         (coordinates-move-before (mapcar (lambda (coordinate)
+                                            (list coordinate (safety-aref c coordinate)))
+                                          coordinates)))
     (dolist (coordinate coordinates)
       (set-board c coordinate 0))
     (dolist (coordinate (mklist coordinates))
@@ -290,8 +290,8 @@
                    (vector+ r1 r2)
                    (second (find-if (lambda (copy)
                                       (vector= r1 (first copy)))
-                                    coordinates-copy)))
-        (itemmove (tetris-widgets-canvas-left *widgets*)
+                                    coordinates-move-before)))
+        (itemmove (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*))
                   (safety-aref c (vector+ r1 r2))
                   (* x2 *cell-width*)
                   (* y2 *cell-width*))))))
@@ -309,12 +309,12 @@
 ;; }}}
 ;; try-move {{{
 
-(defun try-move (direction)
+(defmethod try-move ((direction coordinate))
   (let ((current-coordinates (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))))
         (next-coordinates (get-next-coordinates direction)))
     (cond ((every (movable?) next-coordinates)
            (move-rectangle current-coordinates direction)
-           (asetf (tetromino-coordinate-origin (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))
+           (asetf (tetromino-coordinate-origin (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
                   (vector+ it direction)))
           ((vector= direction (make-vector 0 1))
            (delete-lines)
