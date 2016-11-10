@@ -9,25 +9,26 @@
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
-(defparameter *board-width* 8)
-(defparameter *board-height* 8)
-(defparameter *drawing-interval* 500)
-(defparameter *score* 0)
+(defparameter *board-width* 6)
+(defparameter *board-height* 4)
 
-;; ltk widget
-(defparameter *frame* nil)
-(defparameter *canvas-left* nil)
-(defparameter *canvas-right* nil)
-(defparameter *text-area* nil)
-(defparameter *board* (make-array (list *board-width* *board-height*) :initial-element 0))
+;; ltk widgets
+(defparameter *widgets* nil)
 
 ;; global parameter
 (defparameter *tetrominos* nil)
-(defparameter *current-tetromino* nil)
-(defparameter *next-tetromino* nil)
+(defparameter *score* 0)
 (defparameter *game-over?* nil) 
+(defparameter *drawing-interval* 500)
 
-(defstruct tetromino shape color coordinate-origin coordinates)
+(defstruct tetris-widgets
+  frame canvas-left canvas-right text-area)
+
+(defstruct tetris-canvas
+  widget board tetromino width height)
+
+(defstruct tetromino
+  shape color coordinate-origin coordinates)
 
 ;; deftetromino {{{
 
@@ -35,8 +36,7 @@
   `(push ,(make-tetromino 
             :shape shape
             :color color 
-            :coordinate-origin (make-vector (/ *board-width* 2)
-                                            (- (most #'- (mapcar #'second coordinates))))
+            :coordinate-origin nil
             :coordinates (make-vector-list coordinates))
          *tetrominos*))
 
@@ -57,8 +57,8 @@
 (deftetromino
   'J
   "#ff00ff"
-         (0 2)
-         (0 1)
+  (0 2)
+  (0 1)
   (-1 0) (0 0))
 
 ;; }}}
@@ -86,7 +86,7 @@
 (deftetromino
   'S
   "#00ff00"
-         (0 1) (1 1)
+  (0 1) (1 1)
   (-1 0) (0 0))
 
 ;; }}}
@@ -96,7 +96,7 @@
   'T
   "#0000ff"
   (-1 0) (0 0) (1 0)
-         (0 -1))
+  (0 -1))
 
 ;; }}}
 ;; Z {{{
@@ -105,27 +105,25 @@
   'Z
   "#000000"
   (-1 1) (0 1)
-         (0 0) (1 0))
+  (0 0) (1 0))
 
 ;; }}}
 
 ;; set-board {{{
 
-(defun set-board (coordinate val)
-  (with-coordinates (coordinate)
-    (setf (aref *board* x1 y1)
+(defmethod set-board ((c tetris-canvas) (r coordinate) (val number))
+  (with-coordinates (r)
+    (setf (aref (tetris-canvas-board c) x1 y1)
           val)))
 
 ;; }}}
 ;; safety-aref {{{
 
-(defun safety-aref (x &optional y)
-  (with-coordinates ((if (coordinate-p x)
-                       x
-                       (make-vector x y)))
-    (and (<= 0 x1) (< x1 *board-width*)
-         (<= 0 y1) (< y1 *board-height*)
-         (aref *board* x1 y1))))
+(defmethod safety-aref ((c tetris-canvas) x &optional y)
+  (with-coordinates ((if y (make-vector x y) x))
+    (and (<= 0 x1) (< x1 (tetris-canvas-width c))
+         (<= 0 y1) (< y1 (tetris-canvas-height c))
+         (aref (tetris-canvas-board c) x1 y1))))
 
 ;; }}}
 ;; draw-rectangle {{{
@@ -143,21 +141,26 @@
 ;; }}}
 ;; draw-tetromino {{{
 
-(defun draw-tetromino (canvas tetromino)
-  (dolist (coordinate (to-absolute-coordinates tetromino))
-    (when (safety-aref coordinate)
-      (set-board coordinate
-                 (draw-rectangle canvas
-                                 coordinate
-                                 (tetromino-color tetromino))))))
+(defmethod draw-tetromino ((c tetris-canvas) &optional tetromino)
+  (print (tetris-canvas-board c))
+  (let1 (tetromino (or tetromino (tetris-canvas-tetromino c)))
+    (dolist (coordinate (to-absolute-coordinates tetromino))
+      (when (safety-aref c coordinate)
+        (set-board c
+                   coordinate
+                   (draw-rectangle (tetris-canvas-widget c)
+                                   coordinate
+                                   (tetromino-color tetromino)))))))
 
 ;; }}}
 ;; draw-board {{{
 
-(defun draw-board (canvas width height)
-  (dorange (x 0 (1- width))
-    (dorange (y 0 (1- height))
-      (draw-rectangle canvas (make-vector x y) "#a0a0a0"))))
+(defmethod draw-board ((c tetris-canvas))
+  (dorange (x 0 (1- (tetris-canvas-width c)))
+    (dorange (y 0 (1- (tetris-canvas-height c)))
+      (draw-rectangle (tetris-canvas-widget c)
+                      (make-vector x y)
+                      "#a0a0a0"))))
 
 ;; }}}
 ;; update-drawing-interval {{{
@@ -171,13 +174,14 @@
 
 (defun update-score (score)
   (incf *score* (* score 1000))
-  (clear-text *text-area*)
-  (append-text *text-area* (mkstr "Score: " *score*)))
+  (clear-text (tetris-widgets-text-area *widgets*))
+  (append-text (tetris-widgets-text-area *widgets*)
+               (mkstr "Score: " *score*)))
 
 ;; }}}
 ;; to-absolute-coordinates {{{
 
-(defun to-absolute-coordinates (tetromino)
+(defmethod to-absolute-coordinates ((tetromino tetromino))
   (mapcar (lambda (coordinate)
             (vector+ (tetromino-coordinate-origin tetromino)
                      coordinate))
@@ -189,52 +193,60 @@
 (defun get-next-coordinates (direction)
   (mapcar (lambda (current-coordinate)
             (vector+ current-coordinate direction))
-          (to-absolute-coordinates *current-tetromino*)))
+          (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))))
 
 ;; }}}
 ;; get-rotate-coordinates {{{
 
 (defun get-rotate-coordinates ()
   (mapcar (lambda (current-coordinate)
-            (vector+ (tetromino-coordinate-origin *current-tetromino*)
+            (vector+ (tetromino-coordinate-origin (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))
                      (vector-rotate current-coordinate (/ pi 2))))
-          (tetromino-coordinates *current-tetromino*)))
+          (tetromino-coordinates (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))))
 
 ;; }}}
-;; get-random-tetromino {{{
+;; get-next-tetromino {{{
 
-(defun get-random-tetromino ()
-  (copy-tetromino
-    (nth (random (length *tetrominos*))
-         *tetrominos*)))
+(defmethod get-next-tetromino ((c tetris-canvas) &optional new-tetromino)
+  (let1 (copy (copy-tetromino (or new-tetromino (nth (random (length *tetrominos*)) *tetrominos*))))
+    (setf (tetromino-coordinate-origin copy) 
+          (make-vector (/ (tetris-canvas-width c) 2)
+                       (- (most #'- (mapcar #'coordinate-y (tetromino-coordinates copy))))))
+    copy))
 
 ;; }}}
 ;; set-new-tetromino {{{
 
 (defun set-new-tetromino ()
-  (setf *current-tetromino* (copy-tetromino *next-tetromino*)
-        *next-tetromino* (get-random-tetromino))
+  (setf (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
+        (get-next-tetromino (tetris-widgets-canvas-left *widgets*)
+                            (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*)))
+        (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
+        (get-next-tetromino (tetris-widgets-canvas-right *widgets*)))
   (update-drawing-interval 5)
   (update-score 1)
-  (dorange (i 0 3)
-    (dorange (j 0 3)
-      (delete-rectangles *canvas-right* (make-vector i j))))
-  (draw-tetromino *canvas-right* (funcall (lambda (x)
-                                            (let1 (new-tetromino (copy-tetromino x))
-                                              (setf (tetromino-coordinate-origin new-tetromino)
-                                                    (make-vector 2 (- (most #'- (mapcar #'coordinate-y (tetromino-coordinates new-tetromino))))))
-                                              new-tetromino))
-                                          *next-tetromino*))
-  (draw-tetromino *canvas-left* *current-tetromino*))
+  (clear-canvas (tetris-widgets-canvas-right *widgets*))
+  (draw-tetromino (tetris-widgets-canvas-right *widgets*))
+  (draw-tetromino (tetris-widgets-canvas-left *widgets*)))
 
 ;; }}}
 ;; delete-rectangles {{{
 
-(defun delete-rectangles (canvas coordinates)
+(defmethod delete-rectangles ((c tetris-canvas) coordinates)
   (dolist (coordinate (mklist coordinates))
-    (awhen (safety-aref coordinate)
-      (itemdelete canvas it)
-      (set-board coordinate 0))))
+    (awhen (safety-aref c coordinate)
+      (itemdelete c it)
+      (set-board c coordinate 0))))
+
+;; }}}
+;; clear-canvas {{{
+
+(defmethod clear-canvas ((c tetris-canvas))
+  (dotimes (x (tetris-canvas-width c))
+    (dotimes (y (tetris-canvas-height c))
+      (aif (safety-aref c (make-vector x y))
+        (itemdelete (tetris-canvas-widget c) it)
+        (set-board c (make-vector x y) 0)))))
 
 ;; }}}
 ;; delete-line {{{
@@ -243,11 +255,11 @@
   (do* ((range-x (iota 0 (1- *board-width*)))
         (range-y (remove-if (lambda (y)
                               (not (every (lambda (x)
-                                            (aand (safety-aref x y)
+                                            (aand (safety-aref (tetris-widgets-canvas-left *widgets*) x y)
                                                   (not (zerop it))))
                                           range-x)))
                             (sort (remove-duplicates
-                                    (mapcar #'coordinate-y (to-absolute-coordinates *current-tetromino*)))
+                                    (mapcar #'coordinate-y (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))))
                                   #'<))
                  (rest range-y))
         (y (first range-y) (first range-y)))
@@ -255,7 +267,7 @@
     (update-drawing-interval 10)
     (update-score (* (expt 2 (length range-y))))
     (dolist (x range-x)
-      (delete-rectangles *canvas-left* (make-vector x y)))
+      (delete-rectangles (tetris-widgets-canvas-left *widgets*) (make-vector x y)))
     (dorange (y y 1)
       (dolist (x range-x)
         (move-rectangle (make-vector x (1- y))
@@ -265,20 +277,22 @@
 ;; move-rectangle {{{
 
 (defun move-rectangle (coordinates direction)
-  (let* ((coordinates (mklist coordinates))
+  (let* ((c (tetris-widgets-canvas-left *widgets*))
+         (coordinates (mklist coordinates))
          (coordinates-copy (mapcar (lambda (coordinate)
-                                     (list coordinate (safety-aref coordinate)))
+                                     (list coordinate (safety-aref c coordinate)))
                                    coordinates)))
     (dolist (coordinate coordinates)
-      (set-board coordinate 0))
+      (set-board c coordinate 0))
     (dolist (coordinate (mklist coordinates))
       (with-coordinates (coordinate direction)
-        (set-board (vector+ r1 r2)
+        (set-board c
+                   (vector+ r1 r2)
                    (second (find-if (lambda (copy)
                                       (vector= r1 (first copy)))
                                     coordinates-copy)))
-        (itemmove *canvas-left*
-                  (safety-aref (vector+ r1 r2))
+        (itemmove (tetris-widgets-canvas-left *widgets*)
+                  (safety-aref c (vector+ r1 r2))
                   (* x2 *cell-width*)
                   (* y2 *cell-width*))))))
 
@@ -287,20 +301,20 @@
 
 (defun movable? ()
   (lambda (next-coordinate)
-    (or (aand (safety-aref next-coordinate) (= it 0))
+    (or (aand (safety-aref (tetris-widgets-canvas-left *widgets*) next-coordinate) (= it 0))
         (find-if (lambda (current-coordinate)
                    (vector= current-coordinate next-coordinate))
-                 (to-absolute-coordinates *current-tetromino*)))))
+                 (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))))))
 
 ;; }}}
 ;; try-move {{{
 
 (defun try-move (direction)
-  (let ((current-coordinates (to-absolute-coordinates *current-tetromino*))
+  (let ((current-coordinates (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))))
         (next-coordinates (get-next-coordinates direction)))
     (cond ((every (movable?) next-coordinates)
            (move-rectangle current-coordinates direction)
-           (asetf (tetromino-coordinate-origin *current-tetromino*)
+           (asetf (tetromino-coordinate-origin (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))
                   (vector+ it direction)))
           ((vector= direction (make-vector 0 1))
            (delete-lines)
@@ -314,15 +328,15 @@
 ;; try-rotate {{{
 
 (defun try-rotate ()
-  (let ((current-coordinates (to-absolute-coordinates *current-tetromino*))
+  (let ((current-coordinates (to-absolute-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))))
         (rotate-coordinates (get-rotate-coordinates)))
     (when (every (movable?) rotate-coordinates)
-      (delete-rectangles *canvas-left* current-coordinates)
-      (asetf (tetromino-coordinates *current-tetromino*)
+      (delete-rectangles (tetris-widgets-canvas-left *widgets*) current-coordinates)
+      (asetf (tetromino-coordinates (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))
              (mapcar (lambda (coordinate)
                        (vector-rotate coordinate (/ pi 2)))
                      it))
-      (draw-tetromino *canvas-left* *current-tetromino*))))
+      (draw-tetromino (tetris-widgets-canvas-left *widgets*) (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*))))))
 
 ;; }}}
 ;; main {{{
@@ -340,29 +354,48 @@
 (defmacro bind-keypress (key &body body)
   `(bind *tk* ,(mkstr "<KeyPress-" key ">")
          (ilambda (event)
-           (print *board*)
            (unless *game-over?*
              ,@body))))
+
+;; }}}
+;; initialize-widgets! {{{
+
+(defmethod initialize-widgets! ((w tetris-widgets))
+  (setf (tetris-widgets-frame w)
+        (pack (make-instance 'frame))
+        (tetris-widgets-text-area w)
+        (pack (make-text (tetris-widgets-frame w) :width nil :height 2) :side :bottom)
+        (tetris-widgets-canvas-left w)
+        (create-tetris-canvas (tetris-widgets-frame w) *board-width* *board-height*)
+        (tetris-widgets-canvas-right w)
+        (create-tetris-canvas (tetris-widgets-frame w) 4 4)))
+
+;; }}}
+;; create-tetris-canvas {{{
+
+(defun create-tetris-canvas (frame width height)
+  (let ((canvas (make-tetris-canvas)))
+    (setf (tetris-canvas-widget canvas)
+          (pack (make-canvas frame :width (* *cell-width* *board-width*) :height (* *cell-width* *board-height*)) :side :left)
+          (tetris-canvas-board canvas)
+          (make-array (list width height) :initial-element 0)
+          (tetris-canvas-width canvas)
+          width
+          (tetris-canvas-height canvas)
+          height
+          (tetris-canvas-tetromino canvas)
+          (get-next-tetromino canvas))
+    canvas))
 
 ;; }}}
 
 (with-ltk ()
   (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
-  (setf *frame* (pack (make-instance 'frame))
-        *canvas-left* (pack (make-canvas *frame*
-                                         :width (* *cell-width* *board-width*)
-                                         :height (* *cell-width* *board-height*))
-                            :side :left)
-        *canvas-right* (pack (make-canvas *frame*
-                                          :width (* *cell-width* 4)
-                                          :height (* *cell-width* 4))
-                             :side :left)
-        *text-area* (pack (make-text *frame* :width nil :height 2)
-                          :side :bottom)
-        *next-tetromino* (get-random-tetromino))
-  (force-focus *canvas-left*)
-  (draw-board *canvas-left* *board-width* *board-height*)
-  (draw-board *canvas-right* 4 4)
+  (setq *widgets* (make-tetris-widgets))
+  (initialize-widgets! *widgets*)
+  (force-focus (tetris-widgets-frame *widgets*))
+  (draw-board (tetris-widgets-canvas-left *widgets*))
+  (draw-board (tetris-widgets-canvas-right *widgets*))
   (set-new-tetromino)
   (bind-keypress #\h (try-move (make-vector -1 0)))
   (bind-keypress #\j (try-move (make-vector 0 1)))
