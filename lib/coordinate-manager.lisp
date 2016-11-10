@@ -109,3 +109,13 @@
 
 ;; }}}
 
+;; constant vector
+(defconstant +vector-top+ (make-vector 0 1))
+(defconstant +vector-bottom+ (make-vector 0 -1))
+(defconstant +vector-right+ (make-vector 1 0))
+(defconstant +vector-left+ (make-vector -1 0))
+(defconstant +vector-top-right+ (make-vector 1 1))
+(defconstant +vector-top-left+ (make-vector -1 1))
+(defconstant +vector-bottom-right+ (make-vector 1 -1))
+(defconstant +vector-bottom-left+ (make-vector -1 -1))
+
