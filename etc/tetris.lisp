@@ -340,6 +340,20 @@
       (draw-tetromino (tetris-widgets-canvas-left *widgets*)))))
 
 ;; }}}
+;; change-tetromino {{{
+
+(defun change-tetromino ()
+  (let* ((curr-tetromino (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
+         (next-tetoromino (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*))))
+    (when t
+      (setf (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
+            (copy-tetromino next-tetoromino)
+            (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
+            (copy-tetromino curr-tetromino)))
+    (draw-tetromino (tetris-widgets-canvas-right *widgets*))
+    (draw-tetromino (tetris-widgets-canvas-left *widgets*))))
+
+;; }}}
 ;; main {{{
 
 (defun main ()
@@ -398,9 +412,10 @@
   (draw-board (tetris-widgets-canvas-left *widgets*))
   (draw-board (tetris-widgets-canvas-right *widgets*))
   (set-new-tetromino)
-  (bind-keypress #\h (try-move (make-vector -1 0)))
-  (bind-keypress #\j (try-move (make-vector 0 1)))
+  (bind-keypress #\o (change-tetromino))
+  (bind-keypress #\h (try-move +vector-left+))
+  (bind-keypress #\j (try-move +vector-top+))
   (bind-keypress #\k (try-rotate))
-  (bind-keypress #\l (try-move (make-vector 1 0)))
+  (bind-keypress #\l (try-move +vector-right+))
   (main))
 
