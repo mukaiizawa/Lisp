@@ -9,8 +9,8 @@
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
-; (defparameter *board-width* 6)
-; (defparameter *board-height* 4)
+(defparameter *board-width* 6)
+(defparameter *board-height* 10)
 
 ;; ltk widgets
 (defparameter *widgets* nil)
@@ -200,9 +200,10 @@
 
 (defun get-rotate-coordinates ()
   (mapcar (lambda (current-coordinate)
-            (vector+ (tetromino-coordinate-origin (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
+            (vector+ (tetromino-coordinate-origin
+                       (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
                      (vector-rotate current-coordinate (/ pi 2))))
-          (tetromino-coordinates (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))))
+          (tetromino-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))))
 
 ;; }}}
 ;; get-next-tetromino {{{
@@ -221,7 +222,7 @@
   (setf (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
         (get-next-tetromino (tetris-widgets-canvas-left *widgets*)
                             (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*)))
-        (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
+        (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*))
         (get-next-tetromino (tetris-widgets-canvas-right *widgets*)))
   (update-drawing-interval 5)
   (update-score 1)
@@ -235,7 +236,7 @@
 (defmethod delete-rectangles ((c tetris-canvas) coordinates)
   (dolist (coordinate (mklist coordinates))
     (awhen (safety-aref c coordinate)
-      (itemdelete c it)
+      (itemdelete (tetris-canvas-widget c) it)
       (set-board c coordinate 0))))
 
 ;; }}}
@@ -332,11 +333,11 @@
         (rotate-coordinates (get-rotate-coordinates)))
     (when (every (movable?) rotate-coordinates)
       (delete-rectangles (tetris-widgets-canvas-left *widgets*) current-coordinates)
-      (asetf (tetromino-coordinates (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*)))
+      (asetf (tetromino-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
              (mapcar (lambda (coordinate)
                        (vector-rotate coordinate (/ pi 2)))
                      it))
-      (draw-tetromino (tetris-widgets-canvas-left *widgets*) (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*))))))
+      (draw-tetromino (tetris-widgets-canvas-left *widgets*)))))
 
 ;; }}}
 ;; main {{{
