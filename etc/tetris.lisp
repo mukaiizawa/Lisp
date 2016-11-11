@@ -9,8 +9,8 @@
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
-(defparameter *board-width* 6)
-(defparameter *board-height* 10)
+; (defparameter *board-width* 6)
+; (defparameter *board-height* 10)
 
 ;; ltk widgets
 (defparameter *widgets* nil)
@@ -141,9 +141,9 @@
 ;; }}}
 ;; draw-tetromino {{{
 
-(defmethod draw-tetromino ((c tetris-canvas) &optional tetromino)
+(defmethod draw-tetromino ((c tetris-canvas))
   (print (tetris-canvas-board c))
-  (let1 (tetromino (or tetromino (tetris-canvas-tetromino c)))
+  (let1 (tetromino (tetris-canvas-tetromino c))
     (dolist (coordinate (to-absolute-coordinates tetromino))
       (when (safety-aref c coordinate)
         (set-board c
@@ -344,14 +344,23 @@
 
 (defun change-tetromino ()
   (let* ((curr-tetromino (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
-         (next-tetoromino (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*))))
-    (when t
-      (setf (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
-            (copy-tetromino next-tetoromino)
-            (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
-            (copy-tetromino curr-tetromino)))
-    (draw-tetromino (tetris-widgets-canvas-right *widgets*))
-    (draw-tetromino (tetris-widgets-canvas-left *widgets*))))
+         (next-tetromino (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*))))
+    (when 'can-chage?-fixme
+      (delete-rectangles (tetris-widgets-canvas-left *widgets*)
+                         (to-absolute-coordinates curr-tetromino))
+      (setf 
+        (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*))
+        next-tetromino
+        (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*))
+        curr-tetromino
+        (tetromino-coordinate-origin (tetris-canvas-tetromino (tetris-widgets-canvas-left *widgets*)))
+        (tetromino-coordinate-origin (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*)))
+        (tetromino-coordinate-origin (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*)))
+        (make-vector (/ (tetris-canvas-width (tetris-widgets-canvas-right *widgets*)) 2)
+                     (- (most #'- (mapcar #'coordinate-y (tetromino-coordinates (tetris-canvas-tetromino (tetris-widgets-canvas-right *widgets*))))))))
+      (clear-canvas (tetris-widgets-canvas-right *widgets*))
+      (draw-tetromino (tetris-widgets-canvas-right *widgets*))
+      (draw-tetromino (tetris-widgets-canvas-left *widgets*)))))
 
 ;; }}}
 ;; main {{{
