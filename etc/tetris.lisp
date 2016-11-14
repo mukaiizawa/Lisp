@@ -9,8 +9,6 @@
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
-; (defparameter *board-width* 6)
-; (defparameter *board-height* 10)
 
 ;; ltk widgets
 (defparameter *widgets* nil)
@@ -166,7 +164,7 @@
 ;; update-drawing-interval {{{
 
 (defun update-drawing-interval (msec)
-  (when (>= *drawing-interval* 200)
+  (when (>= *drawing-interval* 150)
     (decf *drawing-interval* msec)))
 
 ;; }}}
