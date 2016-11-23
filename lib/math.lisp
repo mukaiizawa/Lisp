@@ -2,6 +2,9 @@
 (require :stdlib *module-stdlib*)
 (provide :math)
 
+(defun % (n divisor)
+  (second (multiple-value-list (floor n divisor))))
+
 (defun fact (n)
   (if (or (= n 0) (= n 1))
     1

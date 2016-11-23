@@ -2,6 +2,14 @@
 (require :math *module-math*)
 (require :test-utils *module-test-utils*)
 
+;; % {{{
+
+(test-all
+  (%-01 (% 1 4) 1)
+  (%-02 (% 2 4) 2)
+  (%-03 (% 3 4) 3))
+
+;; }}}
 ;; fact {{{
 
 (test-all
