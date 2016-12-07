@@ -3,8 +3,6 @@
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)
 
-;; todo create structure include board, height, width ...
-
 ;; game config
 (defparameter *cell-width* 30)
 (defparameter *board-width* 10)
@@ -55,8 +53,8 @@
 (deftetromino
   'J
   "#ff00ff"
-  (0 2)
-  (0 1)
+         (0 2)
+         (0 1)
   (-1 0) (0 0))
 
 ;; }}}
@@ -84,7 +82,7 @@
 (deftetromino
   'S
   "#00ff00"
-  (0 1) (1 1)
+         (0 1) (1 1)
   (-1 0) (0 0))
 
 ;; }}}
@@ -94,7 +92,7 @@
   'T
   "#0000ff"
   (-1 0) (0 0) (1 0)
-  (0 -1))
+         (0 -1))
 
 ;; }}}
 ;; Z {{{
@@ -103,7 +101,7 @@
   'Z
   "#000000"
   (-1 1) (0 1)
-  (0 0) (1 0))
+         (0 0) (1 0))
 
 ;; }}}
 
