@@ -55,7 +55,7 @@
   (put (put stream obj) #\Newline))
 
 ;; life game main
-(defvar n 3)
+(defvar n 17)
 (defvar board (init (make-matrix) (@ n n)))
 (defvar neighbors (init (make-matrix) (@ n n)))
 (defun setNeighbors (neighbors)
@@ -77,12 +77,13 @@
 (defun setup (board)
   (doMatrix (board p)
     (putAt board p (evenp (random 1000 (make-random-state t))))))
-(defun main ()
+(defun main (&optional args)
   (setup board)
   (dotimes (i 100)
     #+clisp(shell "clear")    ; depend on clisp
     (showBoard (nextGeneration (setNeighbors neighbors)))
-    (sleep 1)))
+    (sleep 0.1)))
 
 (main)
+
 
