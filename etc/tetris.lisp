@@ -4,7 +4,7 @@
 (require :stdlib *module-stdlib*)
 
 ;; game config
-(defparameter *cell-width* 30)
+(defparameter *cell-size* 30)
 (defparameter *board-width* 10)
 (defparameter *board-height* 20)
 
@@ -127,10 +127,10 @@
 (defmethod draw-rectangle ((canvas canvas) (r coordinate) (color string))
   (with-coordinates (r)
     (let1 (item (create-rectangle canvas
-                                  (* x1 *cell-width*)
-                                  (* y1 *cell-width*)
-                                  (+ (* *cell-width* x1) *cell-width*)
-                                  (+ (* *cell-width* y1) *cell-width*)))
+                                  (* x1 *cell-size*)
+                                  (* y1 *cell-size*)
+                                  (+ (* *cell-size* x1) *cell-size*)
+                                  (+ (* *cell-size* y1) *cell-size*)))
       (itemconfigure canvas item "fill" color)
       (values item))))
 
@@ -152,11 +152,20 @@
 ;; draw-board {{{
 
 (defmethod draw-board ((c tetris-canvas))
-  (dorange (x 0 (1- (tetris-canvas-width c)))
-    (dorange (y 0 (1- (tetris-canvas-height c)))
-      (draw-rectangle (tetris-canvas-widget c)
-                      (make-vector x y)
-                      "#a0a0a0"))))
+  (let* ((canvas (tetris-canvas-widget c))
+         (board-width (tetris-canvas-width c))
+         (board-height (tetris-canvas-height c))
+         (canvas-width (* *cell-size* board-width))
+         (canvas-height (* *cell-size* board-height)))
+    (itemconfigure canvas
+                   (create-rectangle canvas 0 0 canvas-width canvas-height)
+                   "fill" "#c0c0c0")
+    (dorange (x 1 board-width)
+      (let1 (dx (* x *cell-size*))
+        (create-line canvas (list dx 0 dx canvas-height))))
+    (dorange (y 1 board-height)
+      (let1 (dy (* y *cell-size*))
+        (create-line canvas (list 0 dy canvas-width dy))))))
 
 ;; }}}
 ;; update-drawing-interval {{{
@@ -290,8 +299,8 @@
                                     coordinates-move-before)))
         (itemmove (tetris-canvas-widget (tetris-widgets-canvas-left *widgets*))
                   (safety-aref c (vector+ r1 r2))
-                  (* x2 *cell-width*)
-                  (* y2 *cell-width*))))))
+                  (* x2 *cell-size*)
+                  (* y2 *cell-size*))))))
 
 ;; }}}
 ;; movable? {{{
@@ -396,7 +405,7 @@
 (defun create-tetris-canvas (frame width height)
   (let ((canvas (make-tetris-canvas)))
     (setf (tetris-canvas-widget canvas)
-          (pack (make-canvas frame :width (* *cell-width* *board-width*) :height (* *cell-width* *board-height*)) :side :left)
+          (pack (make-canvas frame :width (* *cell-size* *board-width*) :height (* *cell-size* *board-height*)) :side :left)
           (tetris-canvas-board canvas)
           (make-array (list width height) :initial-element 0)
           (tetris-canvas-width canvas)
@@ -423,4 +432,3 @@
   (bind-keypress #\k (try-rotate))
   (bind-keypress #\l (try-move +vector-right+))
   (main))
-
