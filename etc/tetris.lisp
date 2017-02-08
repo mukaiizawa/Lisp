@@ -160,10 +160,10 @@
     (itemconfigure canvas
                    (create-rectangle canvas 0 0 canvas-width canvas-height)
                    "fill" "#c0c0c0")
-    (dorange (x 1 board-width)
+    (dorange (x 0 board-width)
       (let1 (dx (* x *cell-size*))
         (create-line canvas (list dx 0 dx canvas-height))))
-    (dorange (y 1 board-height)
+    (dorange (y 0 board-height)
       (let1 (dy (* y *cell-size*))
         (create-line canvas (list 0 dy canvas-width dy))))))
 
