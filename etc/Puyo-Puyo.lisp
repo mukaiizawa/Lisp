@@ -26,60 +26,16 @@
 (defmethod widget ((pc puyo-canvas))
   (puyo-canvas-widget pc))
 
-; ;; put-next-puyo {{{
-;
-; (defun put-next-puyo ()
-;   (setf
-;     (puyo-canvas-puyo-puyo (puyo-root-canvas-right *puyo-root*))
-;     (loop for i from 0 to 1 collect
-;           (let ((puyo (copy-puyo (nth (random (length *puyos*)) *puyos*))))
-;             (setf (puyo-p puyo)
-;                   (make-vector (/ *board-width* 2) i))
-;             (put-puyo (puyo-root-canvas-right *puyo-root*) puyo)
-;             puyo))))
-;
-; ;; }}}
-; ;; move-puyo {{{
-;
-; (defun move-puyo (puyo r)
-;   (with-coordinates (r)
-;     (itemmove (puyo-canvas-widget (puyo-root-canvas-left *puyo-root*))
-;               (puyo-id puyo)
-;               (* x1 *cell-size*)
-;               (* y1 *cell-size*))))
-;
-; ;; }}}
-; ;; move-puyo-puyo {{{
-;
-; (defun move-puyo-puyo (dir)
-;   (dolist (puyo (puyo-canvas-puyo-puyo (puyo-root-canvas-left *puyo-root*)))
-;     (move-puyo puyo dir)))
-;
-; ;; }}}
-; ;; movable? {{{
-;
-; (defun movable? (dir)
-;   (let* ((puyo-puyo (mapcar (lambda (x)
-;                               (vector+ dir (puyo-p x)))
-;                             (puyo-canvas-puyo-puyo (puyo-root-canvas-left *puyo-root*))))
-;          (puyo1 (first puyo-puyo))
-;          (puyo2 (second puyo-puyo)))
-;     (not
-;       (some (lambda (x)
-;               (or (vector= x puyo1)
-;                   (vector= x puyo2)))
-;             (puyo-root-puyo-list *puyo-root*)))))
-;
-; ;; }}}
-;; try-move {{{
 
-(defun try-move (arg) )
-; (defun try-move (dir)
-;   (if (movable? dir)
-;     (move-puyo-puyo dir)
-;     (progn
-;       (set-puyo-from-next)
-;       (put-next-puyo))))
+;; move-puyos {{{
+
+(defun move-puyos (dir)
+  (with-coordinates (dir)
+    (dolist (puyo curr-puyos)
+      (itemmove (widget canvas)
+                (puyo-id puyo)
+                (* x1 cell-size)
+                (* y1 cell-size)))))
 
 ;; }}}
 ;; try-rotate {{{
@@ -87,7 +43,38 @@
 (defun try-rotate ())
 
 ;; }}}
+;; in-canvas? {{{
 
+(defun in-canvas? (p)
+  (with-coordinates (p)
+    (and (<= 0 x1) (< x1 (width canvas))
+         (<= 0 y1) (< y1 (height canvas)))))
+
+;; }}}
+;; movable? {{{
+
+(defun movable? (dir)
+  (let* ((puyos-point (mapcar (lambda (x)
+                                (vector+ dir (puyo-point x)))
+                              curr-puyos))
+         (puyo1-point (first puyos-point))
+         (puyo2-point (second puyos-point)))
+    (and (in-canvas? puyo1-point)
+         (in-canvas? puyo2-point)
+         (not
+           (some (lambda (p)
+                   (or (vector= p puyo1-point)
+                       (vector= p puyo2-point)))
+                 canvas-puyos)))))
+
+;; }}}
+;; try-move {{{
+
+(defun try-move (dir)
+  (if (movable? dir)
+    (move-puyos dir)))
+
+;; }}}
 ;; put-puyo {{{
 
 (defmethod put-puyo ((pc puyo-canvas) (puyo puyo) (point coordinate))
@@ -119,7 +106,8 @@
 
 (defun create-next-puyos ()
   (loop for i from 0 to 1 collect
-        (let ((puyo (copy-puyo (nth (random (length puyos)) puyos))))
+        (let ((puyo (copy-puyo (nth (random (length puyos) (make-random-state t))
+                                    puyos))))
           (put-puyo canvas-next puyo (make-vector 0 i))
           puyo)))
 
@@ -174,6 +162,7 @@
                 (make-puyo :sym 'green :color "#00ff00")
                 (make-puyo :sym 'blue :color "#0000ff")
                 (make-puyo :sym 'purple :color "#ff00ff"))
+        canvas-puyos nil
         curr-puyos nil
         next-puyos (create-next-puyos))
   (init-canvas canvas)
