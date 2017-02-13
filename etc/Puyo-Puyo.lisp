@@ -108,11 +108,10 @@
 ;; put-next-puyos {{{
 
 (defun put-next-puyos ()
-  (setf curr-puyos (mapcar (lambda (i)
-                             (let ((puyo (nth i next-puyos)))
-                               (put-puyo canvas puyo (make-vector 2 i))
-                               puyo))
-                           '(0 1)))
+  (setf curr-puyos (loop for i from 0 to 1 collect
+                         (let ((puyo (nth i next-puyos)))
+                           (put-puyo canvas puyo (make-vector 2 i))
+                           puyo)))
   (create-next-puyos))
 
 ;; }}}
@@ -121,7 +120,7 @@
 (defun create-next-puyos ()
   (loop for i from 0 to 1 collect
         (let ((puyo (copy-puyo (nth (random (length puyos)) puyos))))
-          (put-puyo canvas-next puyo (make-vector (/ (width canvas-next) 2) i))
+          (put-puyo canvas-next puyo (make-vector 0 i))
           puyo)))
 
 ;; }}}
