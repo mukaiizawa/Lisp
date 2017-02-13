@@ -19,11 +19,11 @@
 (defstruct puyo id sym color point)
 
 (defstruct puyo-canavs width height widget)
-(defmethod width ((pc puyo-canvas ))
+(defmethod width ((pc puyo-canvas))
   (puyo-canvas-width pc))
-(defmethod height ((pc puyo-canvas ))
+(defmethod height ((pc puyo-canvas))
   (puyo-canvas-height pc))
-(defmethod widget ((pc puyo-canvas ))
+(defmethod widget ((pc puyo-canvas))
   (puyo-canvas-widget pc))
 
 ; ;; put-next-puyo {{{
@@ -87,30 +87,41 @@
 (defun try-rotate ())
 
 ;; }}}
-; ;; put-puyo {{{
-;
-; (defmethod put-puyo ((pc puyo-canvas) (puyo puyo))
-;   (with-coordinates ((puyo-p puyo))
-;     (setf (puyo-id puyo)
-;           (create-oval (puyo-canvas-widget pc)
-;                        (* x1 *cell-size*)
-;                        (* y1 *cell-size*)
-;                        (+ (* *cell-size* x1) *cell-size*)
-;                        (+ (* *cell-size* y1) *cell-size*)))
-;     (itemconfigure (puyo-canvas-widget pc)
-;                    (puyo-id puyo)
-;                    "fill"
-;                    (puyo-color puyo))
-;     (values)))
-;
-; ;; }}}
 
-;; create-puyo {{{
+;; put-puyo {{{
 
-(defun create-puyo ()
+(defmethod put-puyo ((pc puyo-canvas) (puyo puyo) (point coordinate))
+  (with-coordinates (point)
+    (setf (puyo-point puyo) point
+          (puyo-id puyo) (create-oval (widget pc)
+                                      (* x1 cell-size)
+                                      (* y1 cell-size)
+                                      (+ (* cell-size x1) cell-size)
+                                      (+ (* cell-size y1) cell-size)))
+    (itemconfigure (widget pc)
+                   (puyo-id puyo)
+                   "fill"
+                   (puyo-color puyo))
+    (values)))
+
+;; }}}
+;; put-next-puyos {{{
+
+(defun put-next-puyos ()
+  (setf curr-puyos (mapcar (lambda (i)
+                             (let ((puyo (nth i next-puyos)))
+                               (put-puyo canvas puyo (make-vector 2 i))
+                               puyo))
+                           '(0 1)))
+  (create-next-puyos))
+
+;; }}}
+;; create-next-puyos {{{
+
+(defun create-next-puyos ()
   (loop for i from 0 to 1 collect
         (let ((puyo (copy-puyo (nth (random (length puyos)) puyos))))
-          (setf (puyo-point puyo) (make-vector (/ (width canvas) 2) i))
+          (put-puyo canvas-next puyo (make-vector (/ (width canvas-next) 2) i))
           puyo)))
 
 ;; }}}
@@ -144,29 +155,31 @@
                     (make-text frame :width nil :height 2)
                     :side :bottom)
         canvas (make-puyo-canvas
-                 :width 10
-                 :height 20
+                 :width 6
+                 :height 12
                  :widget (pack
                            (make-canvas frame
                                         :width (* cell-size 10)
                                         :height (* cell-size 20))
                            :side :left))
         canvas-next (make-puyo-canvas
-                      :width 3
-                      :height 3
+                      :width 1
+                      :height 2
                       :widget (pack
                                 (make-canvas frame
-                                             :width 3
-                                             :height 3)
+                                             :width (* cell-size 1)
+                                             :height (* cell-size 2))
                                 :side :left))
         puyos (list
                 (make-puyo :sym 'red :color "#ff0000")
                 (make-puyo :sym 'green :color "#00ff00")
                 (make-puyo :sym 'blue :color "#0000ff")
                 (make-puyo :sym 'purple :color "#ff00ff"))
-        next-puyos (create-puyo))
+        curr-puyos nil
+        next-puyos (create-next-puyos))
   (init-canvas canvas)
-  (init-canvas canvas-next))
+  (init-canvas canvas-next)
+  (put-next-puyos))
 
 ;; }}}
 ;; bind-key {{{
