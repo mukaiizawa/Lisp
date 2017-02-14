@@ -19,28 +19,35 @@
 (defstruct puyo id sym color point)
 
 (defstruct puyo-canavs width height widget)
+
 (defmethod width ((pc puyo-canvas))
   (puyo-canvas-width pc))
+
 (defmethod height ((pc puyo-canvas))
   (puyo-canvas-height pc))
+
 (defmethod widget ((pc puyo-canvas))
   (puyo-canvas-widget pc))
 
+;; move-bottom {{{
 
-;; move-puyos {{{
-
-(defun move-puyos (dir)
-  (with-coordinates (dir)
-    (dolist (puyo curr-puyos)
-      (itemmove (widget canvas)
-                (puyo-id puyo)
-                (* x1 cell-size)
-                (* y1 cell-size)))))
+(defun move-bottom ()
+  (while (movable? +vector-top+)
+    (move-puyos +vector-top+)))
 
 ;; }}}
-;; try-rotate {{{
+;; puttable? {{{
 
-(defun try-rotate ())
+(defun puttable? (puyo-points)
+  (let ((puyo1-point (first puyo-points))
+        (puyo2-point (second puyo-points)))
+    (and (in-canvas? puyo1-point)
+         (in-canvas? puyo2-point)
+         (not
+           (some (lambda (puyo)
+                   (or (vector= (puyo-point puyo) puyo1-point)
+                       (vector= (puyo-point puyo) puyo2-point)))
+                 canvas-puyos)))))
 
 ;; }}}
 ;; in-canvas? {{{
@@ -51,28 +58,57 @@
          (<= 0 y1) (< y1 (height canvas)))))
 
 ;; }}}
+;; rotate-puyos {{{
+
+(defun rotate-puyos (dir))
+
+;; }}}
+;; rotatable? {{{
+
+(defun rotatable? (dir)
+  (puttable? (mapcar (lambda (puyo)
+                       (vector-rotate (puyo-point puyo)
+                                      (if (eq dir 'right)
+                                        (/ pi 2)
+                                        (- (/ pi 2)))))
+                     curr-puyos)))
+
+;; }}}
+;; try-rotate {{{
+
+(defun try-rotate (dir)
+  (if (rotatable? dir)
+    (rotate dir)))
+
+;; }}}
+;; move-puyos {{{
+
+(defun move-puyos (dir)
+  (with-coordinates (dir)
+    (dolist (puyo curr-puyos)
+      (setf (puyo-point puyo) (vector+ (puyo-point puyo) dir))
+      (itemmove (widget canvas)
+                (puyo-id puyo)
+                (* x1 cell-size)
+                (* y1 cell-size)))))
+
+;; }}}
 ;; movable? {{{
 
 (defun movable? (dir)
-  (let* ((puyos-point (mapcar (lambda (x)
-                                (vector+ dir (puyo-point x)))
-                              curr-puyos))
-         (puyo1-point (first puyos-point))
-         (puyo2-point (second puyos-point)))
-    (and (in-canvas? puyo1-point)
-         (in-canvas? puyo2-point)
-         (not
-           (some (lambda (p)
-                   (or (vector= p puyo1-point)
-                       (vector= p puyo2-point)))
-                 canvas-puyos)))))
+  (puttable? (mapcar (lambda (puyo)
+                       (vector+ dir (puyo-point puyo)))
+                     curr-puyos)))
 
 ;; }}}
 ;; try-move {{{
 
 (defun try-move (dir)
   (if (movable? dir)
-    (move-puyos dir)))
+    (move-puyos dir)
+    (when (vector= dir +vector-top+)
+      (setf canvas-puyos (append canvas-puyos curr-puyos))
+      (put-next-puyos))))
 
 ;; }}}
 ;; put-puyo {{{
@@ -97,9 +133,10 @@
 (defun put-next-puyos ()
   (setf curr-puyos (loop for i from 0 to 1 collect
                          (let ((puyo (nth i next-puyos)))
+                           (itemdelete (widget canvas-next) (puyo-id puyo))
                            (put-puyo canvas puyo (make-vector 2 i))
-                           puyo)))
-  (create-next-puyos))
+                           puyo))
+        next-puyos (create-next-puyos)))
 
 ;; }}}
 ;; create-next-puyos {{{
@@ -183,9 +220,10 @@
 
 (defmacro bind-keys ()
   `(progn
+     (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
      (bind-key #\h (try-move +vector-left+))
-     (bind-key #\j (try-move +vector-top+))
-     (bind-key #\k (try-rotate))
+     (bind-key #\j (move-bottom))
+     (bind-key #\k (try-rotate 'right))
      (bind-key #\l (try-move +vector-right+))))
 
 ;; }}}
@@ -203,7 +241,6 @@
 (defun puyo-puyo ()
   (with-ltk ()
     (init)
-    (bind *tk* "<Control-c>" (ilambda (event) (setf *exit-mainloop* t)))
     (bind-keys)
     (force-focus frame)
     (main)))
