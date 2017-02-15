@@ -29,6 +29,19 @@
 (defmethod widget ((pc puyo-canvas))
   (puyo-canvas-widget pc))
 
+;; cutting-puyo {{{
+
+(defun cutting-puyo ()
+  (dolist (puyo curr-puyos)
+    (while (puttable? (vector+ (puyo-point puyo) +vector-top+))
+      (with-coordinates ((vector+ (puyo-point puyo) +vector-top+))
+        (setf (puyo-point puyo) (vector+ (puyo-point puyo) +vector-top+))
+        (itemmove (widget canvas)
+                  (puyo-id puyo)
+                  0
+                  (* y1 cell-size))))))
+
+;; }}}
 ;; move-bottom {{{
 
 (defun move-bottom ()
@@ -123,6 +136,7 @@
   (if (movable? dir)
     (move-puyos dir)
     (when (vector= dir +vector-top+)
+      (cutting-puyo)
       (setf canvas-puyos (append canvas-puyos curr-puyos))
       (put-next-puyos))))
 
