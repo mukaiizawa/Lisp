@@ -61,6 +61,15 @@
           :initial-value r1))
 
 ;; }}}
+;; vector- {{{
+
+(defmethod vector- ((r1 coordinate) (r2 coordinate))
+  (with-coordinates (r1 r2)
+    (make-vector (- x1 x2)
+                 (- y1 y2)
+                 (- z1 z2))))
+
+;; }}}
 ;; vector= {{{
 
 (defmethod vector= ((r1 coordinate) (r2 coordinate))
