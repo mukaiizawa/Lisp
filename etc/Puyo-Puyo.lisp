@@ -38,16 +38,14 @@
 ;; }}}
 ;; puttable? {{{
 
-(defun puttable? (puyo-points)
-  (let ((puyo1-point (first puyo-points))
-        (puyo2-point (second puyo-points)))
-    (and (in-canvas? puyo1-point)
-         (in-canvas? puyo2-point)
-         (not
-           (some (lambda (puyo)
-                   (or (vector= (puyo-point puyo) puyo1-point)
-                       (vector= (puyo-point puyo) puyo2-point)))
-                 canvas-puyos)))))
+(defun puttable? (points)
+  (every (lambda (point)
+           (and (in-canvas? point)
+                (not
+                  (some (lambda (puyo)
+                          (vector= (puyo-point puyo) point))
+                        canvas-puyos))))
+         (mklist points)))
 
 ;; }}}
 ;; in-canvas? {{{
@@ -58,27 +56,45 @@
          (<= 0 y1) (< y1 (height canvas)))))
 
 ;; }}}
+;; get-rotated-outer-puyo-point {{{
+
+(defun get-rotated-outer-puyo-point (rot-dir)
+  (let* ((axis-puyo (first curr-puyos))
+         (outer-puyo (second curr-puyos))
+         (vector-axis (puyo-point axis-puyo))
+         (vector-outer (copy-coordinate (puyo-point outer-puyo))))
+    (vector+ vector-axis
+             (vector-rotate (vector- (puyo-point outer-puyo)
+                                     (puyo-point axis-puyo))
+                            (if (eq rot-dir 'right)
+                              (/ pi 2)
+                              (- (/ pi 2)))))))
+
+;; }}}
 ;; rotate-puyos {{{
 
-(defun rotate-puyos (dir))
+(defun rotate-puyos (rot-dir)
+  (let* ((outer-puyo (second curr-puyos))
+         (vector-outer (copy-coordinate (puyo-point outer-puyo))))
+    (setf (puyo-point outer-puyo) (get-rotated-outer-puyo-point rot-dir))
+    (with-coordinates ((vector- (puyo-point outer-puyo) vector-outer))
+      (itemmove (widget canvas)
+                (puyo-id outer-puyo)
+                (* x1 cell-size)
+                (* y1 cell-size)))))
 
 ;; }}}
 ;; rotatable? {{{
 
-(defun rotatable? (dir)
-  (puttable? (mapcar (lambda (puyo)
-                       (vector-rotate (puyo-point puyo)
-                                      (if (eq dir 'right)
-                                        (/ pi 2)
-                                        (- (/ pi 2)))))
-                     curr-puyos)))
+(defun rotatable? (rot-dir)
+  (puttable? (get-rotated-outer-puyo-point rot-dir)))
 
 ;; }}}
 ;; try-rotate {{{
 
-(defun try-rotate (dir)
-  (if (rotatable? dir)
-    (rotate dir)))
+(defun try-rotate (rot-dir)
+  (if (rotatable? rot-dir)
+    (rotate-puyos rot-dir)))
 
 ;; }}}
 ;; move-puyos {{{
