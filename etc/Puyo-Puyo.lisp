@@ -22,16 +22,20 @@
 
 ;; cutting-puyo {{{
 
- (defun cutting-puyo (player) (print player))
-; (defun cutting-puyo (player)
-;   (dolist (puyo curr-puyos)
-;     (while (puttable? player (vector+ (puyo-point puyo) +vector-top+))
-;       (with-coordinates ((vector+ (puyo-point puyo) +vector-top+))
-;         (setf (puyo-point puyo) r1)
-;         (itemmove canvas
-;                   (puyo-id puyo)
-;                   0
-;                   (* y1 cell-size))))))
+ (defmethod cutting-puyo ((player player))
+   (dotimes (i 2)
+     (let ((target-puyo (nth i (player-curr-puyos player)))
+           (onother-puyo (nth (- 1 i) (player-curr-puyos player))))
+       (unless (vector= (vector+ (puyo-point target-puyo)
+                                 +vector-top+)
+                        (puyo-point onother-puyo))
+         (while (puttable? player (vector+ (puyo-point target-puyo) +vector-top+))
+           (setf (puyo-point target-puyo)
+                 (vector+ (puyo-point target-puyo) +vector-top+))
+           (itemmove (player-canvas player)
+                     (puyo-id target-puyo)
+                     0
+                     cell-size))))))
 
 ;; }}}
 ;; move-bottom {{{
@@ -65,12 +69,11 @@
 
 (defmethod get-rotated-outer-puyo-point ((player player) (rot-dir symbol))
   (let* ((axis-puyo (first (player-curr-puyos player)))
-         (outer-puyo (second (player-next-puyos player)))
+         (outer-puyo (second (player-curr-puyos player)))
          (vector-axis (puyo-point axis-puyo))
          (vector-outer (puyo-point outer-puyo)))
     (vector+ vector-axis
-             (vector-rotate (vector- (puyo-point outer-puyo)
-                                     vector-outer)
+             (vector-rotate (vector- vector-outer vector-axis)
                             (if (eq rot-dir 'right)
                               (/ pi 2)
                               (- (/ pi 2)))))))
@@ -79,16 +82,15 @@
 ;; rotate-puyos {{{
 
 (defmethod rotate-puyos ((player player) (rot-dir symbol))
-  (let ((vector-outer (copy-coordinate (puyo-point (second (player-curr-puyos player))))))
-    (setf (puyo-point (second (player-curr-puyos player)))
-          (get-rotated-outer-puyo-point player rot-dir))
-    (with-coordinates ((vector- (puyo-point
-                                  (second (player-curr-puyos player)))
-                                vector-outer))
+  (let1 (rotated-outer-puyo-point (get-rotated-outer-puyo-point player rot-dir))
+    (with-coordinates ((vector- rotated-outer-puyo-point
+                                (puyo-point (second (player-curr-puyos player)))))
       (itemmove (player-canvas player)
                 (puyo-id (second (player-curr-puyos player)))
                 (* x1 cell-size)
-                (* y1 cell-size)))))
+                (* y1 cell-size)))
+    (setf (puyo-point (second (player-curr-puyos player)))
+          rotated-outer-puyo-point)))
 
 ;; }}}
 ;; rotatable? {{{
