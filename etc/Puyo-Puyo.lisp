@@ -222,16 +222,31 @@
                   :puyos nil
                   :next-puyos nil
                   :curr-puyos nil)
+        player2 (make-player
+                  :canvas-next (pack
+                                 (make-canvas frame
+                                              :width (* cell-size 1)
+                                              :height (* cell-size 2))
+                                 :side :left)
+                  :canvas (pack
+                            (make-canvas frame
+                                         :width (* cell-size width)
+                                         :height (* cell-size height))
+                            :side :left)
+                  :puyos nil
+                  :next-puyos nil
+                  :curr-puyos nil)
         puyo-origin (list
                       (make-puyo :sym 'red :color "#ff0000")
                       (make-puyo :sym 'green :color "#00ff00")
                       (make-puyo :sym 'blue :color "#0000ff")
                       (make-puyo :sym 'purple :color "#ff00ff")))
   (init-player player1)
+  (init-player player2)
   (setf (player-next-puyos player1) (create-next-puyos player1))
-  (print player1)
+  (setf (player-next-puyos player2) (create-next-puyos player2))
   (put-next-puyos player1)
-  (print player1))
+  (put-next-puyos player2))
 
 ;; }}}
 ;; bind-key {{{
@@ -251,7 +266,11 @@
      (bind-key #\h (try-move player1 +vector-left+))
      (bind-key #\j (move-bottom player1))
      (bind-key #\k (try-rotate player1 'right))
-     (bind-key #\l (try-move player1 +vector-right+))))
+     (bind-key #\l (try-move player1 +vector-right+))
+     (bind-key #\a (try-move player2 +vector-left+))
+     (bind-key #\s (move-bottom player2))
+     (bind-key #\d (try-rotate player2 'right))
+     (bind-key #\f (try-move player2 +vector-right+))))
 
 ;; }}}
 ;; main {{{
@@ -261,7 +280,7 @@
               (lambda ()
                 (unless end-game?
                   (try-move player1 +vector-top+)
-                  ; (try-move player2 +vector-top+)
+                  (try-move player2 +vector-top+)
                   (main)))))
 
 ;; }}}
