@@ -67,7 +67,7 @@
   (let* ((axis-puyo (first (player-curr-puyos player)))
          (outer-puyo (second (player-next-puyos player)))
          (vector-axis (puyo-point axis-puyo))
-         (vector-outer (copy-coordinate (puyo-point outer-puyo))))
+         (vector-outer (puyo-point outer-puyo)))
     (vector+ vector-axis
              (vector-rotate (vector- (puyo-point outer-puyo)
                                      vector-outer)
@@ -79,10 +79,9 @@
 ;; rotate-puyos {{{
 
 (defmethod rotate-puyos ((player player) (rot-dir symbol))
-  (let* ((outer-puyo (second (player-curr-puyos player)))
-         (vector-outer (copy-coordinate (puyo-point outer-puyo))))
-    (setf (puyo-point
-            (second (player-curr-puyos player))) (get-rotated-outer-puyo-point player rot-dir))
+  (let ((vector-outer (copy-coordinate (puyo-point (second (player-curr-puyos player))))))
+    (setf (puyo-point (second (player-curr-puyos player)))
+          (get-rotated-outer-puyo-point player rot-dir))
     (with-coordinates ((vector- (puyo-point
                                   (second (player-curr-puyos player)))
                                 vector-outer))
@@ -148,7 +147,9 @@
                                       (* y1 cell-size)
                                       (+ (* cell-size x1) cell-size)
                                       (+ (* cell-size y1) cell-size)))
-    (itemconfigure (player-canvas player)
+    (itemconfigure (if (eq canvas-kind 'canvas)
+                     (player-canvas player)
+                     (player-canvas-next player))
                    (puyo-id puyo)
                    "fill"
                    (puyo-color puyo))
@@ -179,10 +180,10 @@
 (defmethod init-player ((player player))
   (let* ((canvas-width (* cell-size width))
          (canvas-height (* cell-size height)))
-    (itemconfigure (player-canvas player)
-                   (create-rectangle (player-canvas player)
-                                     0 0 canvas-width canvas-height)
-                   "fill" "#c0c0c0")
+    ; (itemconfigure (player-canvas player)
+    ;                (create-rectangle (player-canvas player)
+    ;                                  0 0 canvas-width canvas-height)
+    ;                "fill" "#c0c0c0")
     (dorange (x 0 width)
       (let1 (dx (* x cell-size))
         (create-line (player-canvas player)
@@ -197,7 +198,7 @@
 
 (defun init ()
   (setf cell-size 30
-        drawing-interval 2000
+        drawing-interval 500
         end-game? nil
         frame (pack (make-instance 'frame))
         text-area (pack
