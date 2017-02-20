@@ -18,8 +18,14 @@
   id sym color point)
 
 (defstruct player
-  canvas canvas-next puyos curr-puyos next-puyos)
+  canvas canvas-next puyos curr-puyos next-puyos random-seed)
 
+;; erase {{{
+
+ ; (defmethod erase ((player player) points)
+ ;   (labels ((
+
+;; }}}
 ;; cutting-puyo {{{
 
  (defmethod cutting-puyo ((player player))
@@ -172,7 +178,8 @@
 
 (defmethod create-next-puyos ((player player))
   (loop for i from 0 to 1 collect
-        (let1 (puyo (copy-puyo (nth (random (length puyo-origin) (make-random-state t))
+        (let1 (puyo (copy-puyo (nth (random (length puyo-origin)
+                                            (player-random-seed player))
                                     puyo-origin)))
           (put-puyo player 'canvas-next puyo (make-vector 0 i)))))
 
@@ -221,7 +228,8 @@
                                  :side :left)
                   :puyos nil
                   :next-puyos nil
-                  :curr-puyos nil)
+                  :curr-puyos nil
+                  :random-seed (make-random-state t))
         player2 (make-player
                   :canvas-next (pack
                                  (make-canvas frame
@@ -235,7 +243,8 @@
                             :side :left)
                   :puyos nil
                   :next-puyos nil
-                  :curr-puyos nil)
+                  :curr-puyos nil
+                  :random-seed (make-random-state (player-random-seed player1)))
         puyo-origin (list
                       (make-puyo :sym 'red :color "#ff0000")
                       (make-puyo :sym 'green :color "#00ff00")
