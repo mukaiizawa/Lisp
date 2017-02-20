@@ -22,8 +22,24 @@
 
 ;; erase {{{
 
- ; (defmethod erase ((player player) points)
- ;   (labels ((
+ (defmethod erase ((player player) points)
+   (when points
+     (labels ((neighbors (point sym traversed)
+                (cond ((and (not (find (vector+ point +vector-top+)
+                                       traversed))
+                            (eq sym (puyo-sym (find (vector+ point +vector-top+)
+                                          (player-puyos player)))))
+                       (neighbors (vector+ point +vector-top+)
+                                  sym
+                                  (cons traversed (vector+ point +vector-top+))))
+                      ; (...
+                        )))
+       (let ((neighbors (neighbors (first points) nil)))
+         (if (>= (length neighbors) 4)
+           (progn
+             ; (remove-puyos)
+             (erase player (player-puyos puyos)))
+           (erase player (rest puyos)))))))
 
 ;; }}}
 ;; cutting-puyo {{{
@@ -139,6 +155,7 @@
     (move-puyos player dir)
     (when (vector= dir +vector-top+)
       (cutting-puyo player)
+      (erase player (player-puyos player))
       (asetf (player-puyos player) (append it (player-curr-puyos player)))
       (put-next-puyos player))))
 
