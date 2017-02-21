@@ -1,5 +1,4 @@
-
-(load "../../lib/stdlib")
+(require :stdlib *module-stdlib*)
 
 (defexe duplicate ((-s --show) --help)
   "s;show;help"
@@ -21,4 +20,3 @@
                (when (and (> v 1))
                  (echo (if (or -s --show) (mkstr v ",")) k)))
              table)))
-
