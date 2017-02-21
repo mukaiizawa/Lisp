@@ -22,24 +22,34 @@
 
 ;; erase {{{
 
- (defmethod erase ((player player) points)
-   (when points
-     (labels ((neighbors (point sym traversed)
-                (cond ((and (not (find (vector+ point +vector-top+)
-                                       traversed))
-                            (eq sym (puyo-sym (find (vector+ point +vector-top+)
-                                          (player-puyos player)))))
-                       (neighbors (vector+ point +vector-top+)
-                                  sym
-                                  (cons traversed (vector+ point +vector-top+))))
-                      ; (...
-                        )))
-       (let ((neighbors (neighbors (first points) nil)))
+ (defmethod erase ((player player) puyos)
+   (when puyos
+     (labels ((neighbors (puyo sym chain-puyos)
+                         (let ((chain-puyos chain-puyos)
+                               (top (vector+ (puyo-point puyo) +vector-top+))
+                               (right (vector+ (puyo-point puyo) +vector-right+))
+                               (left (vector+ (puyo-point puyo) +vector-left+))
+                               (bottom (vector+ (puyo-point puyo) +vector-bottom+)))
+                           ;; レンジ内にあって、探索済みのぷよになくて、ボード内のぷよとマッチしたら。
+                           (when (and (in-canvas? top)
+                                      (not (find-if (lambda (x)
+                                                      (vector= top (puyo-point x)))
+                                                    chain-puyos)))
+                             (let ((neighbor-puyo (find-if (lambda (x)
+                                                             (vector= top (puyo-point x)))
+                                                           (player-puyos player))))
+                               (if (and neighbor-puyo
+                                        (eq sym (puyo-sym neighbor-puyo)))
+                                 (setf chain-puyos (neighbors neighbor-puyo sym (cons chain-puyos neighbor-puyo))))))
+                           chain-puyos)))
+       (let ((neighbors (neighbors (first puyos) (puyo-sym (first puyos)) nil)))
+         (print neighbors)
          (if (>= (length neighbors) 4)
            (progn
              ; (remove-puyos)
+             ; (itemdelete (player-canvas player) (puyo-id puyo))
              (erase player (player-puyos puyos)))
-           (erase player (rest puyos)))))))
+           (erase player (rest puyos))))))))
 
 ;; }}}
 ;; cutting-puyo {{{
