@@ -8,7 +8,7 @@
 
 (defexe diffget  (-e --help)
   "e:help"
-  (info 'inc "diffget start")
+  (princln "diffget start")
   (let* ((usage (usage :title "diffget [DIR1] [DIR2] [OPTION]..."
                        :desc  "Get different line with the same name file of [DIR1] and [DIR2]."
                        :opts  '("-e" "extension of terget file (default value `dat'")))
@@ -20,23 +20,20 @@
               (null origin-dir)
               (null test-dir))
       (funcall usage))
-    (mapfile (lambda (pathname)
-               (let* ((fname (file-namestring pathname))
-                      (ori-path (mkstr origin-dir "/" fname))
-                      (test-path (mkstr test-dir "/" fname))
-                      (result-path (mkstr result-dir "/" fname)))
-                 (info 'inc 'start fname)
-                 (info 'test fname)
-                 (when (file-exists-p test-path)
-                   (write-to! (nset-difference
-                                (read-from ori-path)
-                                (read-from test-path)
-                                :test #'string=)
-                              result-path
-                              :ff :windows
-                              :enc :cp932)
-                   (info 'dec 'finish fname))))
-             :directory origin-dir
-             :extension (or -e 'dat)))
-  (info 'dec "finished"))
-
+    (with-encoding (:cp932 :windows)
+      (mapfile (lambda (pathname)
+                 (let* ((fname (file-namestring pathname))
+                        (ori-path (mkstr origin-dir "/" fname))
+                        (test-path (mkstr test-dir "/" fname))
+                        (result-path (mkstr result-dir "/" fname)))
+                   (princln (mkstr "  start" fname))
+                   (when (file-exists? test-path)
+                     (write-to! (nset-difference
+                                  (read-from ori-path)
+                                  (read-from test-path)
+                                  :test #'string=)
+                                result-path)
+                     (princln (mkstr "  finish" fname)))))
+               :directory origin-dir
+               :extension (or -e 'dat))))
+  (princln "finished"))
