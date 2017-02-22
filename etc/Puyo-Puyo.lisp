@@ -23,15 +23,30 @@
 ;; find-neighbors {{{
 
  (defun find-neighbors (puyos)
-   (let ((result))
-     (labels ((rec (puyo candidates)
-                   ))
-       (dolist (puyo puyos)
-         (unless (find-if (lambda (finded-puyo)
-                            (= (puyo-id puyo) (puyo-id finded-puyo)))
-                          result)
-           (push (rec puyo (set-difference puyos result :key #'puyo-id))
-                 result))))))
+   (let ((result nil)
+         (candidates puyos))
+     (labels ((rec (puyo acc)
+                   (let* ((point (puyo-point puyo))
+                          (top (vector+ point +vector-top+))
+                          (right (vector+ point +vector-right+))
+                          (left (vector+ point +vector-left+))
+                          (bottom (vector+ point +vector-bottom+)))
+                     (if (some (lambda (point)
+                                 (and (in-canvas? point)
+                                      (not (find point acc :key #'puyo-point))
+                                      (find point puyos :key #'puyo-point)))
+                               (list top right left bottom)
+                               candidates)
+                       (rec top
+                            (rec right
+                                 (rec left
+                                      (rec bottom (cons puyo acc)))))
+                       acc))))
+       (while candidates
+         (let ((neighbor (rec (first candidates) nil)))
+           (setf candidates (set-difference candidates neighbor :key #'puyo-id))
+           (push neighbor result)))
+       result)))
 
 ;; }}}
 ;; collect-chain-puyos {{{
@@ -40,7 +55,7 @@
    (let ((result nil))
      (let ((puyos-group-by-color (group-by #'puyo-sym (player-puyos player))))
        (dolist (same-color-puyos  puyos-group-by-color)
-         #o(find-neighbors same-color-puyos)))))
+         #o(find-neighbors (rest same-color-puyos))))))
 
 ;; }}}
 ;; erase {{{
