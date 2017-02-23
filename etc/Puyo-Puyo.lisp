@@ -20,33 +20,26 @@
 (defstruct player
   canvas canvas-next puyos curr-puyos next-puyos random-seed)
 
-;; find-neighbors {{{
+;; group-by-neighbor {{{
 
- (defun find-neighbors (puyos)
-   (let ((result nil)
-         (candidates puyos))
-     (labels ((rec (puyo acc)
-                   (let* ((point (puyo-point puyo))
-                          (top (vector+ point +vector-top+))
-                          (right (vector+ point +vector-right+))
-                          (left (vector+ point +vector-left+))
-                          (bottom (vector+ point +vector-bottom+)))
-                     (if (some (lambda (point)
-                                 (and (in-canvas? point)
-                                      (not (find point acc :key #'puyo-point))
-                                      (find point puyos :key #'puyo-point)))
-                               (list top right left bottom)
-                               candidates)
-                       (rec top
-                            (rec right
-                                 (rec left
-                                      (rec bottom (cons puyo acc)))))
-                       acc))))
-       (while candidates
-         (let ((neighbor (rec (first candidates) nil)))
-           (setf candidates (set-difference candidates neighbor :key #'puyo-id))
-           (push neighbor result)))
-       result)))
+;; 同色のぷよのListを受け取り、隣接しているぷよのListにして返す。
+(defun group-by-neighbor (puyos)
+  (labels ((find-neighbors (puyo candidates acc)
+                           (let* ((neighbors (find-if (lambda (candidate)
+                                                       (= 1
+                                                          (vector-norm
+                                                            (vector- (puyo-point candidate)
+                                                                     (puyo-point puyo)))))
+                                                     candidates))
+                                  (candidates (set-difference candidates neighbors :key #'puyo-id)))
+                             (dolist (neighbor neighbors))
+                             acc)))
+    (do ((traversed nil)
+         (unsearched puyos))
+      ((null unsearched) traversed)
+      (let ((neighbors (find-neighbors (first unsearched) (rest unsearched) nil)))
+        (push neighbors traversed)
+        (setf unsearched (set-difference unsearched neighbor :key #'puyo-id))))))
 
 ;; }}}
 ;; collect-chain-puyos {{{
@@ -55,7 +48,7 @@
    (let ((result nil))
      (let ((puyos-group-by-color (group-by #'puyo-sym (player-puyos player))))
        (dolist (same-color-puyos  puyos-group-by-color)
-         #o(find-neighbors (rest same-color-puyos))))))
+         #o(group-by-neighbor (rest same-color-puyos))))))
 
 ;; }}}
 ;; erase {{{
