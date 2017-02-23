@@ -26,11 +26,11 @@
 (defun group-by-neighbor (puyos)
   (labels ((find-neighbors (puyo candidates acc)
                            (let* ((neighbors (find-if (lambda (candidate)
-                                                       (= 1
-                                                          (vector-norm
-                                                            (vector- (puyo-point candidate)
-                                                                     (puyo-point puyo)))))
-                                                     candidates))
+                                                        (= 1
+                                                           (vector-norm
+                                                             (vector- (puyo-point candidate)
+                                                                      (puyo-point puyo)))))
+                                                      candidates))
                                   (candidates (set-difference candidates neighbors :key #'puyo-id)))
                              (dolist (neighbor neighbors))
                              acc)))
@@ -39,7 +39,7 @@
       ((null unsearched) traversed)
       (let ((neighbors (find-neighbors (first unsearched) (rest unsearched) nil)))
         (push neighbors traversed)
-        (setf unsearched (set-difference unsearched neighbor :key #'puyo-id))))))
+        (setf unsearched (set-difference unsearched neighbors :key #'puyo-id))))))
 
 ;; }}}
 ;; collect-chain-puyos {{{
