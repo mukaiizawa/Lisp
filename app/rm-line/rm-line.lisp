@@ -18,4 +18,3 @@
                          (cdr files))
                     candidate)))
       (mapcar #'echo (rec (read-from file) files)))))
-
