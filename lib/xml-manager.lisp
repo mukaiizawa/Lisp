@@ -262,7 +262,7 @@
           (#\& "&amp;")
           (#\< "&lt;")
           (#\> "&gt;")
-          (#\ﾂｩ "&copy;")
+          (#\© "&copy;")
           (t c))
         buf))))
 
@@ -288,7 +288,7 @@
                                  ("&" "&amp")
                                  ("<" "&lt")
                                  (">" "&gt")
-                                 ("ﾂｩ" "&copy"))
+                                 ("?ゑｽｩ" "&copy"))
                                :key #'second))
               (and (read-next reader :cache nil)
                    (first it))

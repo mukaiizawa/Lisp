@@ -1,4 +1,3 @@
-
 ;; symple declare
 (defstruct point
   (x 0)

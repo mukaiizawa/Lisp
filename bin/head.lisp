@@ -17,4 +17,3 @@
           (each-line (echo line-num ":" line))))
       (awhile (read-line *standard-input* nil nil)
         (echo it)))))
-

@@ -5020,4 +5020,3 @@ tk input to terminate"
 		  `(configure ,w :cursor ""))
 		widgets)))
 
-

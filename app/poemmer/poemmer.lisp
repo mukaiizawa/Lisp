@@ -76,4 +76,3 @@
       (dolist (i files)
         (read-text i)))
     (generate-text (aif (or -n --words) (parse-integer it) 100))))
-
