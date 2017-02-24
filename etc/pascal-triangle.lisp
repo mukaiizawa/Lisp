@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defun pascal (i j)
@@ -17,4 +16,3 @@
   (mapcar #'pascal-line (iota 0 i)))
 
 (mapcar #'print (pascal-triangle 10))
-

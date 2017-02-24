@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 ;; Boyer-Moore String Search Algorithm
@@ -34,5 +33,3 @@
 ;; => 0
 (boyer-moore  "icled_pepper" "picled_pepper")
 ;; => 1
-
-

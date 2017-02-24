@@ -1,4 +1,3 @@
-
 (load "../../../lib/stdlib")
 
 (defun mkcols (cols)
@@ -24,5 +23,3 @@
                              (mkstr table-name ".ctl"))))
              :extension 'tab))
   (echo "finished."))
-
-

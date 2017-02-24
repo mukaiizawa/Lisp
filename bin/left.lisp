@@ -1,4 +1,3 @@
-
 (load "../lib/stdlib")
 
 (defun get-line (line columns)
@@ -28,4 +27,3 @@
             (mapcan (lambda (line)
                       (princln (get-line line columns)))
                     (read-from file))))))
-

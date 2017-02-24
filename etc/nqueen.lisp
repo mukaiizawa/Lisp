@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defvar *board-size* 8)
@@ -58,5 +57,3 @@
   (fresh-line))
 
 (main)
-
-

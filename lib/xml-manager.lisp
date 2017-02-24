@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :ahead-reader *module-ahead-reader*)
 (require :regex *module-regex*)
@@ -263,7 +262,7 @@
           (#\& "&amp;")
           (#\< "&lt;")
           (#\> "&gt;")
-          (#\© "&copy;")
+          (#\ﾂｩ "&copy;")
           (t c))
         buf))))
 
@@ -289,7 +288,7 @@
                                  ("&" "&amp")
                                  ("<" "&lt")
                                  (">" "&gt")
-                                 ("©" "&copy"))
+                                 ("ﾂｩ" "&copy"))
                                :key #'second))
               (and (read-next reader :cache nil)
                    (first it))
@@ -578,4 +577,3 @@
          (import-xml ,xml)))))
 
 ;; }}}
-

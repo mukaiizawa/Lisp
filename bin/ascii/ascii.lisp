@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defun ascii ()
@@ -12,4 +11,3 @@
       (format t "~%~2X-" (/ i 16)))
     (when (graphic-char-p (code-char i))
       (format t " ~A" (code-char i)))))
-

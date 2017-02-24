@@ -1,5 +1,4 @@
 
-
 ;; symple declare
 (defstruct point
   (x 0)
@@ -95,5 +94,3 @@
   (area c))
 ;; => 6 
 ;; => 78.53981633974483096L0 
-
-

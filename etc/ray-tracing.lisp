@@ -1,4 +1,3 @@
-
 (defun sq (x)
   (* x x))
 
@@ -119,4 +118,3 @@
   (tracer (make-pathname :name "spheres.pgm") res))
 
 (ray-test)
-

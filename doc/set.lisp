@@ -19,14 +19,12 @@
 (adjoin 'z '(a b c))
 ;; => (Z A B C) 
 
-
 (union '(a b c) '(c b s))
 ;; => (A C B S) 
 (intersection '(a b c) '(b b c))
 ;; => (B C) 
 (set-difference '(a b c d e) '(b e))
 ;; => (A C D) 
-
 
 ;; Function MEMBER, MEMBER-IF, MEMBER-IF-NOT {{{
 ;; 
@@ -236,5 +234,3 @@
 ;; The :test-not parameter is deprecated. 
 ;; Since the nintersection side effect is not required, it should not be used in for-effect-only positions in portable code. 
 ;; }}}
-
-

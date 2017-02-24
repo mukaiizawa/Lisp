@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :test-utils *module-test-utils*)
 
@@ -224,4 +223,3 @@
    (match? '(#\a #\a aster #\c) "bac")
    '(1 3))
   )
-

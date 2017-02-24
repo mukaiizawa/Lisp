@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defparameter *time-limit* 6)
@@ -60,4 +59,3 @@
         (read-line)))))
 
 (dice-with-timer)
-

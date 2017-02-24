@@ -1,7 +1,5 @@
-
 (load "../../../lib/stdlib")
 (load "../ora-lib")
-
 
 (defexe kill-session (-s --help)
   "s:help"
@@ -31,4 +29,3 @@
                                           it))
                    (delete-file tmp-file)))
     (echo "finished")))
-

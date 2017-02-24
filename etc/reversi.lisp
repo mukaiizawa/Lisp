@@ -1,4 +1,3 @@
-
 (require :ltk *module-ltk*)
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)
@@ -127,4 +126,3 @@
                 (draw-disc turn r1)
                 (reverse-disc turn r1 it)
                 (setq turn (toggle turn))))))))
-

@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defmacro bind-cordinate (area &body body)
@@ -108,4 +107,3 @@
                            (- 1 (* x x)))
                          (make-point -1 -1) (make-point 1 1))
 ;; ~= 4/3
-

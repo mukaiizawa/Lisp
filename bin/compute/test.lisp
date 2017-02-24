@@ -1,4 +1,3 @@
-
 (load "compute")
 (require :test-utils *module-test-utils*)
 
@@ -47,4 +46,3 @@
    (test-calc "(1+2)*(3+4)")
    21)
   )
-

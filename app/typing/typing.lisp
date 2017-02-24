@@ -1,4 +1,3 @@
-
 (load "../../lib/stdlib")
 
 (defvar *default-dic-path* "lisp.word")
@@ -43,4 +42,3 @@
         (incf *total-key-stroke* (length word)) 
         (while (not (string= word (read-line))))))
     (summary start-time)))
-

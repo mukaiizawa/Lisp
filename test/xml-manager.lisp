@@ -1,4 +1,3 @@
-
 (require :xml-manager *module-xml-manager*)
 (require :test-utils *module-test-utils*)
 
@@ -128,4 +127,3 @@ END)
         (to-pre-code (sample-source))
         )))
   "xml-manager.html")
-

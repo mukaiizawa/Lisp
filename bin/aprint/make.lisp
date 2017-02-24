@@ -1,4 +1,3 @@
-
 (load "aprint")
 
 (defexe aprint ((-s --surround-with) (-g --bg-char) --help)
@@ -18,4 +17,3 @@
         (with-input-from-string (in (list->string args #\Space))
           (aprint in))
         (aprint *standard-input*)))))
-

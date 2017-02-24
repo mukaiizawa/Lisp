@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :regex *module-regex*)
 (provide :graph-utils)
@@ -113,4 +112,3 @@
     (call "dot" (list "-Tgif" input-file
                       "-o" output-file)
           *standard-output*)))
-

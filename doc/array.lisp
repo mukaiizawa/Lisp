@@ -60,7 +60,6 @@
 
 ;; }}}
 
-
 ;; Function MAKE-ARRAY {{{
 ;; Syntax:
 ;; make-array dimensions &key element-type initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset
@@ -409,6 +408,3 @@
 ;; Should signal an error of type type-error if its argument is not an array.
 ;;
 ;; }}}
-
-
-

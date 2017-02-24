@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defun merge-sort (lis)
@@ -13,4 +12,3 @@
            lis))
 
 #o(merge-sort (list 1 7 2 3 4 4 3 4 8 6 7))
-

@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :ahead-reader *module-ahead-reader*)
 (provide :regex)
@@ -325,4 +324,3 @@
     (push (make-regex :key key :pat pat :closure closure) regex)))
 
 ;; }}}
-

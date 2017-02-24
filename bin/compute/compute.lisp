@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :ahead-reader *module-ahead-reader*)
 
@@ -100,4 +99,3 @@
   (with-ahead-reader (reader stream)
     (setq *tokens* (to-token reader)))
   (parse-expression))
-

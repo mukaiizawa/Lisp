@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :graph-utils *module-graph-utils*)
 (require :test-utils *module-test-utils*)
@@ -35,4 +34,3 @@
               :ranks '(("start" "a0" "a1" "a2" "a3")
                        ("b0" "b1" "b2" "b3" "end")))
   :file "graph-utils-cluster-test")
-

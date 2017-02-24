@@ -22,4 +22,3 @@
 ;; pathname からドライブレターを取得
 (pathname-device #P"D:/tmp/hoge.tgz")
 ;; => "D"
-

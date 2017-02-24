@@ -1,4 +1,3 @@
-
 (load "../../lib/stdlib")
 
 (defun pathname->pdf-file (pathname)
@@ -16,4 +15,3 @@
            :recursive t
            :extension 'pdf)
   (print "finish"))
-

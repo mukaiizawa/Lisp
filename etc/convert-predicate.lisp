@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defmacro abbrev (short long)
@@ -128,4 +127,3 @@
 ;; ==
 (eq? 'a 'a)
 ;; => t
-

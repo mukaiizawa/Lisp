@@ -1,4 +1,3 @@
-
 (load "../../lib/stdlib")
 
 (defparameter *words* (mkhash :size 10000))
@@ -77,5 +76,4 @@
       (dolist (i files)
         (read-text i)))
     (generate-text (aif (or -n --words) (parse-integer it) 100))))
-
 

@@ -1,4 +1,3 @@
-
 ;; define
 (defclass circle()
   (radius center))
@@ -44,13 +43,6 @@
 (defparameter c2 (make-instance 'circle :radius 2))
 (print (circle-num c2))
 ;; => 2
-
-
-
-
-
-
-
 
 ;; point
 ;; @see structure.lisp
@@ -102,7 +94,3 @@
   (area c))
 ;; => 6 
 ;; => 78.53981633974483096L0 
-
-
-
-

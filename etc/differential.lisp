@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defun sum (arg1 &rest args)
@@ -87,4 +86,3 @@
 (d 'x '(* x (* a (+ 4 (* 3 x)))))    ;; (+ 3AX (* A (+ 4 (* 3 X)))) 
 
 ;; }}}
-

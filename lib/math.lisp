@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (provide :math)
 
@@ -20,4 +19,3 @@
   (let1 (div (expt 10 precision))
     (funcall (if (zerop precision) #'parse-int #'float)
              (/ (funcall fn (* number div)) div))))
-

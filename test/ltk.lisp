@@ -1,4 +1,3 @@
-
 (require :ltk *module-ltk*)
 (require :stdlib *module-stdlib*)
 (require :test-utils *module-test-utils*)
@@ -42,5 +41,4 @@
                        '(0 1 2 3 4 5 6 7 8 9))))
     (pack (list fr1 fr2) :fill :both :side :left)
     (pack btns :fill :both :side :top)))
-
 

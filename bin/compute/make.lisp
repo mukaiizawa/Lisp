@@ -1,4 +1,3 @@
-
 (load "compute")
 
 (defexe compute (--help)
@@ -13,4 +12,3 @@
         (with-input-from-string (in (list->string args #\Space))
           (compute in))
         (compute *standard-input*)))))
-

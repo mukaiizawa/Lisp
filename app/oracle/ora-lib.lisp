@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 ;; required function 'usage'
@@ -45,4 +44,3 @@
 
 (defun call-sqlplus (schema pass sid argfile)
   (call "sqlplus" (mkstr "-L -S " schema "/" pass "@" sid " @" argfile) *standard-output*))
-

@@ -1,4 +1,3 @@
-
 (require :coordinate-manager *module-coordinate-manager*)
 (require :test-utils *module-test-utils*)
 
@@ -54,4 +53,3 @@
                   3.0))
 
 ;; }}}
-

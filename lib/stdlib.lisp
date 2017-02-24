@@ -1,4 +1,3 @@
-
 (provide :stdlib)
 
 (defconstant +null-character+ (code-char 0))
@@ -777,8 +776,7 @@
 ;; princln {{{
 
 (defun princln (str &optional (stream *standard-output*))
-  (princ str stream)
-  (fresh-line stream))
+  (format stream "~A~%" str))
 
 ;; }}}
 ;; println {{{
@@ -1444,4 +1442,3 @@
  |#
 
 ;; }}}
-

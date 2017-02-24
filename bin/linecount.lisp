@@ -1,4 +1,3 @@
-
 (load "../lib/stdlib")
 
 ;; count lines in standard input
@@ -8,4 +7,3 @@
     (awhile (read-line *standard-input* nil nil)
       (incf count))
     (print count)))
-

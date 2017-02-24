@@ -1,4 +1,3 @@
-
 (load "../../../lib/stdlib")
 (load "../ora-lib")
 
@@ -52,5 +51,3 @@
                                      :ff :windows)
                          (info 'end)))
                      :extension 'tab)))))
-
-

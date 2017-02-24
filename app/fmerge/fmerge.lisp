@@ -1,4 +1,3 @@
-
 (load "../../lib/stdlib")
 
 ;; exeのあるフォルダ内のdatファイルが対象
@@ -20,5 +19,4 @@
                            :ff :windows)))
              :extension 'dat)
     (echo "finished.")))
-
 

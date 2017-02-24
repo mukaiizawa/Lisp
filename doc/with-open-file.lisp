@@ -71,13 +71,7 @@ nil
 
 ;; }}}
 
-
-
 ;; @stdlib.lisp
-
-;; each-line
-(with-open-file (in "with-open-file.lisp" :direction :input)
-  (each-line (echo line)))
 
 ;; wirte-to
 (write-to "hello.txt" "path/hoge.txt" :ff :windows)
@@ -89,6 +83,3 @@ nil
   (dotimes (i (length vector))
     (format t "~A~%" (svref vector i))))
 ;; => print this file.
-
-
-

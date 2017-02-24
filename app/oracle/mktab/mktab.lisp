@@ -1,4 +1,3 @@
-
 (load "../../../lib/stdlib")
 (load "../ora-lib")
 
@@ -41,5 +40,3 @@
                                    (delete-file tabs)))
                          :spool tabs)))
                    (echo "finished.")))))
-
-

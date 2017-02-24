@@ -1,4 +1,3 @@
-
 (require :ltk *module-ltk*)
 (require :coordinate-manager *module-coordinate-manager*)
 (require :stdlib *module-stdlib*)

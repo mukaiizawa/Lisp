@@ -1,4 +1,3 @@
-
 (load "../lib/stdlib")
 
 (defun map-char (str index)
@@ -66,4 +65,3 @@
            (funcall usage))
           (t
             (translit-main from to lastto)))))
-

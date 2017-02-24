@@ -1,4 +1,3 @@
-
 (load "../lib/stdlib")
 
 (defstruct sfile ()
@@ -53,4 +52,3 @@
                 (when (open-stream? (sfile-stream sfile))
                   (close (sfile-stream sfile))))
               sfiles))))
-

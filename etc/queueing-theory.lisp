@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :math *module-math*)
 
@@ -52,4 +51,3 @@
 ;; estimate Wt
 (for (Wt 0.2 (< Wt 0.25) :step 0.001)
   (echo Wt #\tab (ignore-errors (Wr))))
-

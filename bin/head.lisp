@@ -1,4 +1,3 @@
-
 (load "../lib/stdlib")
 
 (defexe head ((-c --bytes) (-n --lines) (-q --quiet) (-v --verbose))
@@ -18,5 +17,4 @@
           (each-line (echo line-num ":" line))))
       (awhile (read-line *standard-input* nil nil)
         (echo it)))))
-
 

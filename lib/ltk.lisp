@@ -1,4 +1,3 @@
-
 (provide :ltk)
 
 ;; change log
@@ -5020,6 +5019,5 @@ tk input to terminate"
     ,@(mapcar (lambda (w)
 		  `(configure ,w :cursor ""))
 		widgets)))
-
 
 

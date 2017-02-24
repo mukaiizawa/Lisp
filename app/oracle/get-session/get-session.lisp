@@ -1,4 +1,3 @@
-
 (load "../../../lib/stdlib")
 (load "../ora-lib")
 
@@ -52,4 +51,3 @@ END)
                      (mkstr-if -i
                        "   S.STATUS = 'INACTIVE' AND ")
                      "   1 = 1; ")))))
-

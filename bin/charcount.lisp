@@ -1,4 +1,3 @@
-
 (load "../lib/stdlib")
 
 ;; count size of data from stdin
@@ -8,4 +7,3 @@
     (awhile (read-char *standard-input* nil nil)
       (incf count))
     (print count)))
-

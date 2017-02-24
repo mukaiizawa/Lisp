@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (provide :ahead-reader)
 
@@ -225,4 +224,3 @@
   reader)
 
 ;; }}}
-

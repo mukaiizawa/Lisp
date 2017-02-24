@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (let ((index 0)
@@ -43,4 +42,3 @@
        (funcall usage))
       (t
         (crypt-main key file)))))
-

@@ -1,4 +1,3 @@
-
 (load "xmltotext")
 
 (defexe xmltotext (--help)
@@ -8,4 +7,3 @@
     (when (or --help errors)
       (funcall usage))
     (main *standard-input*)))
-

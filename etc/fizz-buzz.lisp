@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 
 (defun fizz? (n)
@@ -28,5 +27,3 @@
       (fizz 'fizz)
       (buzz 'buzz)
       (t i))))
-
-

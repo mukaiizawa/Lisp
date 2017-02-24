@@ -1,4 +1,3 @@
-
 (machine-instance)
 (machine-type)
 (machine-version)
@@ -7,4 +6,3 @@
 (lisp-implementation-type)
 (lisp-implementation-version)
 (user-homedir-pathname)
-

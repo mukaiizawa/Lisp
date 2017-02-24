@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (provide :test-utils)
 
@@ -19,4 +18,3 @@
          (echo (rest ',fn))
          (echo " => " (eval ',fn))
          (echo "    " (eval ',result))))))
-

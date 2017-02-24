@@ -1,7 +1,5 @@
-
 (load "../../../lib/stdlib")
 (load "../ora-lib")
-
 
 (defexe spool (-l --help)
   "l:help"
@@ -18,6 +16,3 @@
                                            it
                                            (mkstr (pathname-name arg-sql-file) ".csv")))))
     (echo "finished.")))
-
-
-

@@ -1,6 +1,5 @@
 (load "../lib/stdlib")
 
-
 ;; before, after
 (before #\s "asdfasdf")
 ;; => "a" 

@@ -1,5 +1,3 @@
-
-
 ;; Function EQ  {{{
 ;; 
 ;; 
@@ -302,5 +300,3 @@
 ;; Object equality is not a concept for which there is a uniquely determined correct algorithm. The appropriateness of an equality predicate can be judged only in the context of the needs of some particular program. Although these functions take any type of argument and their names sound very generic, equal and equalp are not appropriate for every application. 
 ;;
 ;; }}}
-
-

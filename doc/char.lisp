@@ -1,5 +1,3 @@
-
-
 ;; Accessor CHAR, SCHAR {{{
 ;; Syntax:
 ;; char string index => character
@@ -325,5 +323,3 @@
 ;;  ;; in which #\Bell is an implementation-defined character.
 ;;  (lower-case-p #\Bell) =>  false
 ;; }}}
-
-

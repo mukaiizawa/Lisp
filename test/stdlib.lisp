@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :test-utils *module-test-utils*)
 
@@ -315,4 +314,3 @@ END
   (list->string-05 (list->string nil #\,) ""))
 
 ;; }}}
-

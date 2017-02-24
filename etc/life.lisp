@@ -1,4 +1,3 @@
-
 ;; library point
 (defstruct point x y)
 (defmethod x ((p point)) (point-x p))
@@ -86,4 +85,3 @@
     (sleep 1)))
 
 (main)
-

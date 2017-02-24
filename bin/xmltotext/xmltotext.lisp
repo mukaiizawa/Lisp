@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :xml-manager *module-xml-manager*)
 
@@ -17,4 +16,3 @@
 
 (defun main (stream)
   (get-text (parse-xml stream)))
-

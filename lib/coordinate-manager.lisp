@@ -1,4 +1,3 @@
-
 (require :stdlib *module-stdlib*)
 (require :math *module-math*)
 
@@ -127,4 +126,3 @@
 (defconstant +vector-top-left+ (make-vector -1 1))
 (defconstant +vector-bottom-right+ (make-vector 1 -1))
 (defconstant +vector-bottom-left+ (make-vector -1 -1))
-
