@@ -133,6 +133,7 @@
 (defun schema->create-sql (schema)
   (with-output-to-string (out)
     (dolist (table (schema-tables schema))
+      (format out "~%/* ~A */" (table-logical-name table))
       (format out "~%CREATE TABLE ~A (~%" (table-phisical-name table))
       (write-string
         (list->string
