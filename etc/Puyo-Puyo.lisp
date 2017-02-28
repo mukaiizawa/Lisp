@@ -24,16 +24,25 @@
 
 ;; 同色のぷよのListを受け取り、隣接しているぷよのListにして返す。
 (defun group-by-neighbor (puyos)
-  (labels ((find-neighbors (puyo candidates acc)
-                           (let* ((neighbors (find-if (lambda (candidate)
-                                                        (= 1
-                                                           (vector-norm
-                                                             (vector- (puyo-point candidate)
-                                                                      (puyo-point puyo)))))
-                                                      candidates))
-                                  (candidates (set-difference candidates neighbors :key #'puyo-id)))
-                             (dolist (neighbor neighbors))
-                             acc)))
+  (labels ((find-neighbors (puyos candidates acc)
+                           (print candidates)
+                           (let* ((neighbors (remove-duplicates
+                                               (flatten
+                                                 (mapcar (lambda (puyo)
+                                                           (remove-if (lambda (candidate)
+                                                                        (/= 1
+                                                                            (vector-norm
+                                                                              (vector- (puyo-point candidate)
+                                                                                       (puyo-point puyo)))))
+                                                                      candidates))
+                                                         (mklist puyos)))
+                                               :test #'puyo-id)))
+                             (print neighbors)
+                             (if neighbors
+                               (find-neighbors neighbors 
+                                               (set-difference candidates neighbors :key #'puyo-id)
+                                               (append neighbors acc))
+                               acc))))
     (do ((traversed nil)
          (unsearched puyos))
       ((null unsearched) traversed)
