@@ -20,30 +20,42 @@
 (defstruct player
   canvas canvas-next puyos curr-puyos next-puyos random-seed)
 
+;; puyo- {{{
+
+(defun puyo- (puyos1 puyos2)
+  "puyos1にありpuyos2にないぷよのListを返す。"
+  (cond ((null puyos1) nil)
+        ((null puyos2) puyos1)
+        (t (set-difference puyos1 puyos2 :key #'puyo-id))))
+
+;; }}}
 ;; find-neighbors {{{
 
 (defun find-neighbors (puyo candidates)
   "ぷよとぷよのListを受け取り、受け取ったぷよが隣接するぷよのListを返す。
   引数のぷよはすべて同色でなければならない。"
+  ;; TODO neighbors がnilを含むListになることがある。
   (labels ((rec (puyos candidates acc)
-                (if (null puyos)
-                  acc
-                  (let* ((neighbors (remove-duplicates
-                                      (flatten
-                                        (mapcar (lambda (puyo)
-                                                  (remove-if (lambda (candidate)
-                                                               (/= 1
-                                                                   (vector-norm
-                                                                     (vector- (puyo-point candidate)
-                                                                              (puyo-point puyo)))))
-                                                             candidates))
-                                                puyos))
-                                      :test #'puyo-id))
-                         (neighbors (and neighbors (set-difference candidates neighbors :key #'puyo-id))))
-                    (print neighbors)
-                    (rec neighbors
-                         (and neighbors (set-difference candidates neighbors :key #'puyo-id))
-                         (append puyos neighbors acc))))))
+                (cond ((null puyos) acc)
+                      ((null candidates) puyos)
+                      (t
+                        (let* ((neighbors (remove-duplicates
+                                            (flatten
+                                              (mapcar (lambda (puyo)
+                                                        (remove-if (lambda (candidate)
+                                                                     (/= 1
+                                                                         (vector-norm
+                                                                           (vector- (puyo-point candidate)
+                                                                                    (puyo-point puyo)))))
+                                                                   candidates))
+                                                      puyos))
+                                            ; :test (lambda (x y) (echo x "," y) (and x y (= (puyo-id x) (puyo-id y))))))
+                                            :key #'puyo-id))
+                               (neighbors (print neighbors))
+                               (neighbors (puyo- candidates neighbors)))
+                          (rec neighbors
+                               (puyo- candidates neighbors)
+                               (append puyos neighbors acc)))))))
     (rec (mklist puyo) candidates nil)))
 
 ;; }}}
@@ -56,7 +68,7 @@
     ((null unsearched) traversed)
     (let ((neighbors (find-neighbors (first unsearched) (rest unsearched))))
       (push neighbors traversed)
-      (setf unsearched (set-difference unsearched neighbors :key #'puyo-id)))))
+      (setf unsearched (puyo- unsearched neighbors)))))
 
 ;; }}}
 ;; collect-chain-puyos {{{
@@ -96,7 +108,6 @@
    ;                               (setf chain-puyos (neighbors neighbor-puyo sym (cons chain-puyos neighbor-puyo))))))
    ;                         chain-puyos)))
    ;     (let ((neighbors (neighbors (first puyos) (puyo-sym (first puyos)) nil)))
-   ;       (print neighbors)
    ;       (if (>= (length neighbors) 4)
    ;         (progn
    ;           ; (remove-puyos)
