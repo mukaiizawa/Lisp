@@ -20,44 +20,53 @@
 (defstruct player
   canvas canvas-next puyos curr-puyos next-puyos random-seed)
 
-;; group-by-neighbor {{{
+;; find-neighbors {{{
 
-;; 同色のぷよのListを受け取り、隣接しているぷよのListにして返す。
-(defun group-by-neighbor (puyos)
-  (labels ((find-neighbors (puyos candidates acc)
-                           (print candidates)
-                           (let* ((neighbors (remove-duplicates
-                                               (flatten
-                                                 (mapcar (lambda (puyo)
-                                                           (remove-if (lambda (candidate)
-                                                                        (/= 1
-                                                                            (vector-norm
-                                                                              (vector- (puyo-point candidate)
-                                                                                       (puyo-point puyo)))))
-                                                                      candidates))
-                                                         (mklist puyos)))
-                                               :test #'puyo-id)))
-                             (print neighbors)
-                             (if neighbors
-                               (find-neighbors neighbors 
-                                               (set-difference candidates neighbors :key #'puyo-id)
-                                               (append neighbors acc))
-                               acc))))
-    (do ((traversed nil)
-         (unsearched puyos))
-      ((null unsearched) traversed)
-      (let ((neighbors (find-neighbors (first unsearched) (rest unsearched) nil)))
-        (push neighbors traversed)
-        (setf unsearched (set-difference unsearched neighbors :key #'puyo-id))))))
+(defun find-neighbors (puyo candidates)
+  "ぷよとぷよのListを受け取り、受け取ったぷよが隣接するぷよのListを返す。
+  引数のぷよはすべて同色でなければならない。"
+  (labels ((rec (puyos candidates acc)
+                (if (null puyos)
+                  acc
+                  (let* ((neighbors (remove-duplicates
+                                      (flatten
+                                        (mapcar (lambda (puyo)
+                                                  (remove-if (lambda (candidate)
+                                                               (/= 1
+                                                                   (vector-norm
+                                                                     (vector- (puyo-point candidate)
+                                                                              (puyo-point puyo)))))
+                                                             candidates))
+                                                puyos))
+                                      :test #'puyo-id))
+                         (neighbors (and neighbors (set-difference candidates neighbors :key #'puyo-id))))
+                    (print neighbors)
+                    (rec neighbors
+                         (and neighbors (set-difference candidates neighbors :key #'puyo-id))
+                         (append puyos neighbors acc))))))
+    (rec (mklist puyo) candidates nil)))
+
+;; }}}
+;; group-by-neighbors {{{
+
+(defun group-by-neighbors (puyos)
+  "同色のぷよのListを受け取り、隣接しているぷよのListのListにして返す。"
+  (do ((traversed nil)
+       (unsearched puyos))
+    ((null unsearched) traversed)
+    (let ((neighbors (find-neighbors (first unsearched) (rest unsearched))))
+      (push neighbors traversed)
+      (setf unsearched (set-difference unsearched neighbors :key #'puyo-id)))))
 
 ;; }}}
 ;; collect-chain-puyos {{{
 
  (defmethod collect-chain-puyos ((player player))
+   "削除対象のぷよのListを生成して返す。"
    (let ((result nil))
-     (let ((puyos-group-by-color (group-by #'puyo-sym (player-puyos player))))
+     (let ((puyos-group-by-color (mapcar #'rest (group-by #'puyo-sym (player-puyos player)))))
        (dolist (same-color-puyos  puyos-group-by-color)
-         #o(group-by-neighbor (rest same-color-puyos))))))
+         (group-by-neighbors same-color-puyos)))))
 
 ;; }}}
 ;; erase {{{
@@ -66,7 +75,7 @@
 ;; erase -> collect-erase-puyos
 ;; erase-puyuos
  (defmethod erase ((player player) puyos)
-   #o(collect-chain-puyos player))
+   (collect-chain-puyos player))
    ; (when puyos
    ;   (labels ((neighbors (puyo sym chain-puyos)
    ;                       (let ((chain-puyos chain-puyos)
@@ -99,6 +108,7 @@
 ;; cutting-puyo {{{
 
  (defmethod cutting-puyo ((player player))
+   "ぷよが動き終えたら重力を作用させる。下に障害物がない間落下し続ける。"
    (dotimes (i 2)
      (let ((target-puyo (nth i (player-curr-puyos player)))
            (onother-puyo (nth (- 1 i) (player-curr-puyos player))))
