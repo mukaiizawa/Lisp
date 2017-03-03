@@ -34,29 +34,28 @@
 (defun find-neighbors (puyo candidates)
   "ぷよとぷよのListを受け取り、受け取ったぷよが隣接するぷよのListを返す。
   引数のぷよはすべて同色でなければならない。"
-  ;; TODO neighbors がnilを含むListになることがある。
-  (labels ((rec (puyos candidates acc)
-                (cond ((null puyos) acc)
-                      ((null candidates) puyos)
-                      (t
-                        (let* ((neighbors (remove-duplicates
-                                            (flatten
-                                              (mapcar (lambda (puyo)
-                                                        (remove-if (lambda (candidate)
-                                                                     (/= 1
-                                                                         (vector-norm
-                                                                           (vector- (puyo-point candidate)
-                                                                                    (puyo-point puyo)))))
-                                                                   candidates))
-                                                      puyos))
-                                            ; :test (lambda (x y) (echo x "," y) (and x y (= (puyo-id x) (puyo-id y))))))
-                                            :key #'puyo-id))
-                               (neighbors (print neighbors))
-                               (neighbors (puyo- candidates neighbors)))
-                          (rec neighbors
-                               (puyo- candidates neighbors)
-                               (append puyos neighbors acc)))))))
-    (rec (mklist puyo) candidates nil)))
+  (when puyo
+    (labels ((rec (puyos candidates acc)
+                  (cond ((null puyos) acc)
+                        ((null candidates) puyos)
+                        (t
+                          (let* ((neighbors (remove-duplicates
+                                              (remove nil
+                                                      (flatten
+                                                        (mapcar (lambda (puyo)
+                                                                  (remove-if (lambda (candidate)
+                                                                               (/= 1
+                                                                                   (vector-norm
+                                                                                     (vector- (puyo-point candidate)
+                                                                                              (puyo-point puyo)))))
+                                                                             candidates))
+                                                                puyos)))
+                                              :key #'puyo-id))
+                                 (neighbors (puyo- candidates neighbors)))
+                            (rec neighbors
+                                 (puyo- candidates neighbors)
+                                 (append puyos neighbors acc)))))))
+      (rec (mklist puyo) candidates nil))))
 
 ;; }}}
 ;; group-by-neighbors {{{
@@ -78,7 +77,11 @@
    (let ((result nil))
      (let ((puyos-group-by-color (mapcar #'rest (group-by #'puyo-sym (player-puyos player)))))
        (dolist (same-color-puyos  puyos-group-by-color)
-         (group-by-neighbors same-color-puyos)))))
+         (let ((neighbors (group-by-neighbors same-color-puyos)))
+           (print neighbors)
+           (remove-if (lambda (chain)
+                        (< (length chain) 4))
+                      neighbors))))))
 
 ;; }}}
 ;; erase {{{
@@ -87,7 +90,13 @@
 ;; erase -> collect-erase-puyos
 ;; erase-puyuos
  (defmethod erase ((player player) puyos)
-   (collect-chain-puyos player))
+   #o(collect-chain-puyos player))
+
+; (dolist (chain chains)
+;              (dolist (puyo chain)
+;                (itemdelete (player-canvas player) (puyo-id puyo))))
+;    )
+
    ; (when puyos
    ;   (labels ((neighbors (puyo sym chain-puyos)
    ;                       (let ((chain-puyos chain-puyos)
@@ -230,8 +239,8 @@
     (move-puyos player dir)
     (when (vector= dir +vector-top+)
       (cutting-puyo player)
-      (erase player (player-puyos player))
       (asetf (player-puyos player) (append it (player-curr-puyos player)))
+      (erase player (player-puyos player))
       (put-next-puyos player))))
 
 ;; }}}
@@ -381,7 +390,7 @@
               (lambda ()
                 (unless end-game?
                   (try-move player1 +vector-top+)
-                  (try-move player2 +vector-top+)
+                  (try-move player2 (make-vector 0 0))
                   (main)))))
 
 ;; }}}
