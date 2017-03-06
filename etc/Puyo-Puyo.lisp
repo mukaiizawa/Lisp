@@ -9,7 +9,7 @@
                vars)))
 
 (instance-vars
-  drawing-interval end-game?
+  speed end-game?
   cell-size width height
   frame text-area
   puyo-origin player1 player2)
@@ -34,28 +34,26 @@
 (defun find-neighbors (puyo candidates)
   "ぷよとぷよのListを受け取り、受け取ったぷよが隣接するぷよのListを返す。
   引数のぷよはすべて同色でなければならない。"
-  (when puyo
-    (labels ((rec (puyos candidates acc)
-                  (cond ((null puyos) acc)
-                        ((null candidates) puyos)
-                        (t
-                          (let* ((neighbors (remove-duplicates
-                                              (remove nil
-                                                      (flatten
-                                                        (mapcar (lambda (puyo)
-                                                                  (remove-if (lambda (candidate)
-                                                                               (/= 1
-                                                                                   (vector-norm
-                                                                                     (vector- (puyo-point candidate)
-                                                                                              (puyo-point puyo)))))
-                                                                             candidates))
-                                                                puyos)))
-                                              :key #'puyo-id))
-                                 (neighbors (puyo- candidates neighbors)))
-                            (rec neighbors
-                                 (puyo- candidates neighbors)
-                                 (append puyos neighbors acc)))))))
-      (rec (mklist puyo) candidates nil))))
+  (labels ((rec (puyos candidates acc)
+                ;; 探索対象のぷよのListと候補のぷよのListを受け取り、探索対象のぷよのListに隣接するぷよのListを返す。
+                (if (null puyos)
+                  acc
+                  (let* ((neighbors (puyo- (remove-duplicates
+                                             (remove nil
+                                                     (flatten
+                                                       (mapcar (lambda (puyo)
+                                                                 (remove-if (lambda (candidate)
+                                                                              (/= 1
+                                                                                  (vector-norm
+                                                                                    (vector- (puyo-point candidate)
+                                                                                             (puyo-point puyo)))))
+                                                                            candidates))
+                                                               puyos)))
+                                             :key #'puyo-id)
+                                           puyos))
+                         (candidates (puyo- (puyo- candidates neighbors) puyos)))
+                    (rec neighbors candidates (append puyos neighbors acc))))))
+    (rec (mklist puyo) candidates nil)))
 
 ;; }}}
 ;; group-by-neighbors {{{
@@ -66,6 +64,7 @@
        (unsearched puyos))
     ((null unsearched) traversed)
     (let ((neighbors (find-neighbors (first unsearched) (rest unsearched))))
+      (print neighbors)
       (push neighbors traversed)
       (setf unsearched (puyo- unsearched neighbors)))))
 
@@ -78,7 +77,6 @@
      (let ((puyos-group-by-color (mapcar #'rest (group-by #'puyo-sym (player-puyos player)))))
        (dolist (same-color-puyos  puyos-group-by-color)
          (let ((neighbors (group-by-neighbors same-color-puyos)))
-           (print neighbors)
            (remove-if (lambda (chain)
                         (< (length chain) 4))
                       neighbors))))))
@@ -308,7 +306,7 @@
 
 (defun init ()
   (setf cell-size 30
-        drawing-interval 500
+        speed 2500
         end-game? nil
         frame (pack (make-instance 'frame))
         text-area (pack
@@ -386,7 +384,7 @@
 ;; main {{{
 
 (defun main ()
-  (after-time drawing-interval
+  (after-time speed
               (lambda ()
                 (unless end-game?
                   (try-move player1 +vector-top+)
