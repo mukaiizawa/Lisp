@@ -38,48 +38,50 @@
                 ;; 探索対象のぷよのListと候補のぷよのListを受け取り、探索対象のぷよのListに隣接するぷよのListを返す。
                 (if (null puyos)
                   acc
-                  (let* ((neighbors (puyo- (remove-duplicates
-                                             (remove nil
-                                                     (flatten
-                                                       (mapcar (lambda (puyo)
-                                                                 (remove-if (lambda (candidate)
-                                                                              (/= 1
-                                                                                  (vector-norm
-                                                                                    (vector- (puyo-point candidate)
-                                                                                             (puyo-point puyo)))))
-                                                                            candidates))
-                                                               puyos)))
-                                             :key #'puyo-id)
-                                           puyos))
-                         (candidates (puyo- (puyo- candidates neighbors) puyos)))
-                    (rec neighbors candidates (append puyos neighbors acc))))))
+                  (let* ((neighbors (remove-duplicates
+                                      (remove nil
+                                              (flatten
+                                                (mapcar (lambda (puyo)
+                                                          (remove-if (lambda (candidate)
+                                                                       (/= 1
+                                                                           (vector-norm
+                                                                             (vector- (puyo-point candidate)
+                                                                                      (puyo-point puyo)))))
+                                                                     candidates))
+                                                        puyos)))
+                                      :key #'puyo-id))
+                         (candidates (puyo- candidates neighbors)))
+                    (rec (puyo- neighbors puyos)
+                         (puyo- candidates puyos)
+                         (remove-duplicates (append puyos neighbors acc) :key #'puyo-id))))))
     (rec (mklist puyo) candidates nil)))
 
 ;; }}}
-;; group-by-neighbors {{{
+;; group-by-chain-puyos {{{
 
-(defun group-by-neighbors (puyos)
-  "同色のぷよのListを受け取り、隣接しているぷよのListのListにして返す。"
-  (do ((traversed nil)
-       (unsearched puyos))
-    ((null unsearched) traversed)
-    (let ((neighbors (find-neighbors (first unsearched) (rest unsearched))))
-      (print neighbors)
-      (push neighbors traversed)
-      (setf unsearched (puyo- unsearched neighbors)))))
+(defun group-by-chain-puyos (puyos)
+  "ぷよのListを隣接しているぷよのListのListにして返す。"
+  (do* ((traversed nil)
+        (same-color-puyos-list (mapcar #'rest (group-by #'puyo-sym puyos))
+                               (rest same-color-puyos-list))
+        (same-color-puyos (first same-color-puyos-list)
+                          (first same-color-puyos-list)))
+    ((null same-color-puyos) traversed)
+    (do ((unsearched same-color-puyos))
+      ((null unsearched))
+      (let ((neighbors (find-neighbors (first unsearched) (rest unsearched))))
+        (push neighbors traversed)
+        (setf unsearched (puyo- unsearched neighbors))))))
 
 ;; }}}
-;; collect-chain-puyos {{{
+;; collect-erase-puyos {{{
 
- (defmethod collect-chain-puyos ((player player))
-   "削除対象のぷよのListを生成して返す。"
-   (let ((result nil))
-     (let ((puyos-group-by-color (mapcar #'rest (group-by #'puyo-sym (player-puyos player)))))
-       (dolist (same-color-puyos  puyos-group-by-color)
-         (let ((neighbors (group-by-neighbors same-color-puyos)))
-           (remove-if (lambda (chain)
-                        (< (length chain) 4))
-                      neighbors))))))
+ (defmethod collect-erase-puyos ((player player))
+   "削除対象のぷよのListを返す。"
+   (flatten
+     (remove-if (lambda (chain)
+                  (< (length chain) 4))
+                (group-by-chain-puyos (player-puyos player)))))
 
 ;; }}}
 ;; erase {{{
@@ -88,39 +90,7 @@
 ;; erase -> collect-erase-puyos
 ;; erase-puyuos
  (defmethod erase ((player player) puyos)
-   #o(collect-chain-puyos player))
-
-; (dolist (chain chains)
-;              (dolist (puyo chain)
-;                (itemdelete (player-canvas player) (puyo-id puyo))))
-;    )
-
-   ; (when puyos
-   ;   (labels ((neighbors (puyo sym chain-puyos)
-   ;                       (let ((chain-puyos chain-puyos)
-   ;                             (top (vector+ (puyo-point puyo) +vector-top+))
-   ;                             (right (vector+ (puyo-point puyo) +vector-right+))
-   ;                             (left (vector+ (puyo-point puyo) +vector-left+))
-   ;                             (bottom (vector+ (puyo-point puyo) +vector-bottom+)))
-   ;                         ;; レンジ内にあって、探索済みのぷよになくて、ボード内のぷよとマッチしたら。
-   ;                         (when (and (in-canvas? top)
-   ;                                    (not (find-if (lambda (x)
-   ;                                                    (vector= top (puyo-point x)))
-   ;                                                  chain-puyos)))
-   ;                           (let ((neighbor-puyo (find-if (lambda (x)
-   ;                                                           (vector= top (puyo-point x)))
-   ;                                                         (player-puyos player))))
-   ;                             (if (and neighbor-puyo
-   ;                                      (eq sym (puyo-sym neighbor-puyo)))
-   ;                               (setf chain-puyos (neighbors neighbor-puyo sym (cons chain-puyos neighbor-puyo))))))
-   ;                         chain-puyos)))
-   ;     (let ((neighbors (neighbors (first puyos) (puyo-sym (first puyos)) nil)))
-   ;       (if (>= (length neighbors) 4)
-   ;         (progn
-   ;           ; (remove-puyos)
-   ;           ; (itemdelete (player-canvas player) (puyo-id puyo))
-   ;           (erase player (player-puyos puyos)))
-   ;         (erase player (rest puyos)))))))
+   (print (collect-erase-puyos player)))
 
 ;; }}}
 ;; cutting-puyo {{{
@@ -306,7 +276,7 @@
 
 (defun init ()
   (setf cell-size 30
-        speed 2500
+        speed 500
         end-game? nil
         frame (pack (make-instance 'frame))
         text-area (pack
