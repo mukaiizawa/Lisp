@@ -1,6 +1,13 @@
 (require :coordinate-manager *module-coordinate-manager*)
 (require :test-utils *module-test-utils*)
 
+;; as-string {{{
+
+(test-all
+  (as-string (as-string (make-vector 0 0))
+             "(0,0)"))
+
+;; }}}
 ;; vector+ {{{
 
 (test-all

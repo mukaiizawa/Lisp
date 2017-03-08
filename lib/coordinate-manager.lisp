@@ -48,6 +48,12 @@
     (make-vector x y z)))
 
 ;; }}}
+;; asString {{{
+
+(defmethod as-string ((r coordinate))
+  (mkstr "(" (coordinate-x r) "," (coordinate-y r) ")"))
+
+;; }}}
 ;; vector+ {{{
 
 (defmethod vector+ ((r1 coordinate) &rest coordinates)
