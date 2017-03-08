@@ -86,7 +86,6 @@
 ;; }}}
 ;; erase {{{
 
-;; 消す時は一度に消さなければならない。
 (defmethod erase ((player player))
   (let ((erase-puyos (collect-erase-puyos player)))
     (if (null erase-puyos)
@@ -100,11 +99,9 @@
         (dolist (puyo (player-puyos player))
           (let ((moveY (count-if (lambda (erased-puyo)
                                    (with-coordinates ((puyo-point puyo) (puyo-point erased-puyo))
-                                     (echo "(" x1 "," y1 ")" "(" x2 "," y2 ")")
                                      (and (= x1 x2)
                                           (< y1 y2))))
                                  erase-puyos)))
-            (print moveY)
             (when (> moveY 0)
               (itemmove (player-canvas player)
                         (puyo-id puyo)
