@@ -87,10 +87,31 @@
 ;; erase {{{
 
 ;; 消す時は一度に消さなければならない。
-;; erase -> collect-erase-puyos
-;; erase-puyuos
- (defmethod erase ((player player) puyos)
-   (print (collect-erase-puyos player)))
+(defmethod erase ((player player))
+  (let ((erase-puyos (collect-erase-puyos player)))
+    (if (null erase-puyos)
+      nil
+      (progn
+        (mapcar (lambda (puyo)
+                  (itemdelete (player-canvas player)
+                              (puyo-id puyo)))
+                erase-puyos)
+        (setf (player-puyos player) (puyo- (player-puyos player) erase-puyos))
+        (dolist (puyo (player-puyos player))
+          (let ((moveY (count-if (lambda (erased-puyo)
+                                   (with-coordinates ((puyo-point puyo) (puyo-point erased-puyo))
+                                     (echo "(" x1 "," y1 ")" "(" x2 "," y2 ")")
+                                     (and (= x1 x2)
+                                          (< y1 y2))))
+                                 erase-puyos)))
+            (print moveY)
+            (when (> moveY 0)
+              (itemmove (player-canvas player)
+                        (puyo-id puyo)
+                        0
+                        (* cell-size moveY))
+              (setf (puyo-point puyo) (vector+ (puyo-point puyo) (make-vector 0 moveY))))))
+        (erase player)))))
 
 ;; }}}
 ;; cutting-puyo {{{
@@ -208,7 +229,7 @@
     (when (vector= dir +vector-top+)
       (cutting-puyo player)
       (asetf (player-puyos player) (append it (player-curr-puyos player)))
-      (erase player (player-puyos player))
+      (erase player)
       (put-next-puyos player))))
 
 ;; }}}
