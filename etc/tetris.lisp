@@ -279,6 +279,12 @@
                         (make-vector 0 1))))))
 
 ;; }}}
+;; move-bottom {{{
+
+(defun move-bottom ()
+  (while (try-move +vector-top+)))
+
+;; }}}
 ;; move-rectangle {{{
 
 (defun move-rectangle (coordinates direction)
@@ -427,7 +433,7 @@
   (set-new-tetromino)
   (bind-keypress #\o (change-tetromino))
   (bind-keypress #\h (try-move +vector-left+))
-  (bind-keypress #\j (try-move +vector-top+))
+  (bind-keypress #\j (move-bottom))
   (bind-keypress #\k (try-rotate))
   (bind-keypress #\l (try-move +vector-right+))
   (main))
