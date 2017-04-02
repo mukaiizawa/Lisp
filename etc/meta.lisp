@@ -3,12 +3,6 @@
 ;; Assumes only quote, atom, eq, cons, car, cdr, cond.
 ;; Bug reports to lispcode@paulgraham.com.
 
-; quote
-; atom
-; eq
-; car cdr cons
-; cond
-
 (defun null. (x)
   (eq x '()))
 
