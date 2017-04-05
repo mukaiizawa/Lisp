@@ -152,15 +152,19 @@
             (aand (get-primarykeys table)
                   (list (mkstr "CONSTRAINT PK_" (table-phisical-name table) " PRIMARY KEY (" (list->string it ",") ")")))
             (mapcar (lambda (foreignkeys no)
-                      (let ((cols (mapcar #'first (rest foreignkeys)))
-                            (refer-table (first foreignkeys))
-                            (refer-cols (mapcar (compose #'second #'second) (rest foreignkeys))))
-                        (format nil "CONSTRAINT FK_~A~A FOREIGN KEY (~A) REFERENCES ~A(~A)"
-                                (table-phisical-name table)
-                                no
-                                (list->string cols #\,)
-                                refer-table
-                                (list->string refer-cols #\,))))
+                      (let* ((cols (mapcar #'first (rest foreignkeys)))
+                             (refer-table (first foreignkeys))
+                             (refer-cols (mapcar (compose #'second #'second) (rest foreignkeys)))
+                             (fk (lambda (no cols refer-cols)
+                                   (format nil "CONSTRAINT FK_~A~A FOREIGN KEY (~A) REFERENCES ~A(~A)"
+                                           (table-phisical-name table) no cols refer-table refer-cols))))
+                        (if (< (length (remove-duplicates refer-cols :test #'string=)) (length refer-cols))
+                          (list->string 
+                            (mapcar (lambda (i)
+                                      (funcall fk (mkstr no "_" i) (nth (1- i) cols) (first refer-cols)))
+                                    (iota 1 (length refer-cols)))
+                            (mkstr "," #\newline))
+                          (funcall fk no (list->string cols #\,) (list->string refer-cols #\,)))))
                     (group-by (compose #'first #'second) (get-foreignkeys table))
                     (iota 1 (length (group-by (compose #'first #'second) (get-foreignkeys table))))))
           (mkstr #\, #\Newline))
