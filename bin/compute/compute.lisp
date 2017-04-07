@@ -25,7 +25,7 @@
                (push (cons 'number
                            (parse-int (get-buf (read-number reader))))
                      tokens))
-              ((reader-next-in? reader #\+ #\- #\* #\/)
+              ((reader-next-in? reader #\+ #\- #\* #\/ #\( #\))
                (push (list (mksym (get-buf (read-next reader)))) tokens))
               (t
                 (error "to-token: Unexpected token `~A'" (get-next reader))))))
