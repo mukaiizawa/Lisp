@@ -33,7 +33,7 @@
            (setq ,stream (open ,pathname :direction :input :if-does-not-exist ,if-does-not-exist))
            (with-ahead-reader (,reader ,stream)
              ,@body))
-         (when (open-stream? ,stream)
+         (when (open-stream-p ,stream)
            (close ,stream))))))
 
 ;; get-linecount {{{
