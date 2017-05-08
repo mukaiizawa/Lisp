@@ -96,7 +96,7 @@
 
 (defmethod read-ahead ((reader ahead-reader))
   (if (reach-eof? reader)
-    (error "read-ahead: already reach eof.")
+    (error "read-ahead: already reach eof. contents of buffer `~A'" (refer-buf reader))
     (let ((c (read-char (ahead-reader-stream reader) nil +null-character+)))
       (when (char= c #\Newline)
         (incf (ahead-reader-linecount reader)))
