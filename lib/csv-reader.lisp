@@ -2,35 +2,38 @@
 (provide :csv-reader)
 
 (defstruct (csv-reader (:include ahead-reader))
-  (lines nil :type list)
-  (wrap? t :type boolean)
-  (wrapper #\" :type character)
+  (wrapper-character #\" :type character)
   (segment-character #\, :type character))
 
-(defstruct csv-writer
-  (lines nil :type list)
-  (wrap? t :type boolean)
-  (wrapper #\")
-  (segment-character #\, :type character))
-
-;; todo
-(defmacro with-csv-reader ((reader &optional (stream *standard-input*) (segment-character #\,) &body body)
-  `(let* ((,reader (make-csv-reader :stream ,stream :)))
+(defmacro with-csv-reader
+  ((reader &optional (stream *standard-input*) (segment-character #\,) (wrapper-character #\")) &body body)
+  `(let* ((,reader
+            (make-csv-reader :stream ,stream :segment-character ,segment-character :wrapper-character ,wrapper-character)))
      ,@body))
 
-(defmacro with-string-ahead-reader ((reader str) &body body)
-  (with-gensyms (in)
-    `(with-input-from-string (,in ,str)
-       (with-ahead-reader (,reader ,in)
-         ,@body))))
+(defmethod read-csv-line ((reader csv-reader))
+  (let ((fields nil))
+    (while (not (reader-next-in? reader +null-character+ #\Newline))
+      (push
+        (get-buf (if (not (reader-next-in? reader (csv-reader-wrapper-character reader)))
+                   (read-if (lambda (c)
+                              (not (find c (list #\Newline (csv-reader-segment-character reader)))))
+                            reader)
+                   (progn
+                     (read-next reader :cache nil)    ; skip open quote
+                     (while (not (and (char= (get-next reader) (csv-reader-wrapper-character reader))
+                                      (char/= (get-next reader 2) (csv-reader-wrapper-character reader))))
+                       (when (reader-next-in? reader (csv-reader-wrapper-character reader))
+                         (read-next reader :cache nil))    ; read `""' as `"'
+                       (read-next reader))
+                     (read-next reader :cache nil))))    ; skip close quote
+        fields)
+      (when (reader-next-in? reader #\,)    ; skip `,'
+        (read-next reader :cache nil)))
+    (nreverse fields)))
 
-(defmacro with-open-ahead-reader ((reader pathname &key (if-does-not-exist :error)) &body body)
-  (with-gensyms (stream)
-    `(let (,stream)
-       (unwind-protect
-         (progn 
-           (setq ,stream (open ,pathname :direction :input :if-does-not-exist ,if-does-not-exist))
-           (with-ahead-reader (,reader ,stream)
-             ,@body))
-         (when (open-stream? ,stream)
-           (close ,stream))))))
+(defmethod read-csv-lines ((reader csv-reader))
+  (let ((lines nil))
+    (while (not (reach-eof? reader))
+      (push (read-csv-line reader) lines))
+    (nreverse lines)))
