@@ -455,7 +455,7 @@
 ;; filter {{{
 
 (defun filter (fn lst)
-  (let ((acc nil))
+  (let (acc)
     (dolist (x lst)
       (let ((val (funcall fn x)))
         (if val (push val acc))))
@@ -751,7 +751,7 @@
 ;; stdin {{{
 
 (defun stdin ()
-  (let ((buf nil))
+  (let (buf)
     (awhile (read-line *standard-input* nil nil)
       (push it buf))
     (nreverse buf)))
