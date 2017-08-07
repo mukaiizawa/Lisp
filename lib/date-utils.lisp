@@ -18,7 +18,7 @@
     (multiple-value-bind
       (sec minute hour _date _month _year day-of-week daylight-p zone)
       (decode-universal-time (get-universal-time) -9)
-      (declare (ignore daylight-p zone day-of-week))
+      (declare (ignorable daylight-p zone day-of-week))
       (let* ((dt (make-instance 'date-time
                                 :year (if default? _year year)
                                 :month (if default? _month month)
@@ -64,15 +64,17 @@
   (date-time-day-of-week dt))
 
 (defmethod leap-year? ((dt date-time))
-  (or
-    (and (= (mod (year dt) 4) 0)
-         (/= (mod (year dt) 100) 0))
-    (= (mod (year dt) 400) 0)))
+  (let ((year (year dt)))
+    (or
+      (and (= (mod year 4) 0)
+           (/= (mod year 100) 0))
+      (= (mod year 400) 0))))
 
 (defmethod year-day ((dt date-time))
   (if (leap-year? dt) 366 365))
 
 (defmethod month-day ((dt date-time))
-  (cond ((= (month dt) 2) (if (leap-year? dt) 29 28))
-        ((find (month dt) '(4 6 9 11)) 30)
-        (t 31)))
+  (let ((month (month dt)))
+    (cond ((= month 2) (if (leap-year? dt) 29 28))
+          ((find month '(4 6 9 11)) 30)
+          (t 31))))
