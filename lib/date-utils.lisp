@@ -1,77 +1,71 @@
-;; date-util
-;; day-of-week  {{{
+(require :stdlib *module-stdlib*)
 
-(defun day-of-week (date)
-  (first date))
+(defstruct date-time
+  utc
+  year
+  month
+  date
+  hour
+  minute
+  sec
+  day-of-week)
 
-;; }}}
-;; year  {{{
+(defun make-date-time (&key (_year 0) (_month 0) (_date 0))
+  (multiple-value-bind
+    (sec minute hour date month year day-of-week daylight-p zone)
+    (decode-universal-time (get-universal-time) -9)
+    (declare (ignore daylight-p zone))
+    (let ((dt (make-instance 'date-time
+                             :utc nil
+                             :year (if (= _year 0) year _year)
+                             :month (if (= _month 0) month _month)
+                             :date (if (= _date 0) date _date)
+                             :hour hour
+                             :minute minute
+                             :sec sec
+                             :day-of-week (mod (1+ day-of-week) 7))))
+      (setf (date-time-utc dt)
+            (encode-universal-time (sec dt)
+                                   (minute dt)
+                                   (hour dt)
+                                   (date dt)
+                                   (month dt)
+                                   (year dt)
+                                   -9))
+      dt)))
 
-(defun year (date)
-  (second date))
+(defmethod year ((dt date-time))
+  (date-time-year dt))
 
-;; }}}
-;; month  {{{
+(defmethod month ((dt date-time))
+  (date-time-month dt))
 
-(defun month (date)
-  (third date))
+(defmethod date ((dt date-time))
+  (date-time-date dt))
 
-;; }}}
-;; day  {{{
+(defmethod hour ((dt date-time))
+  (date-time-hour dt))
 
-(defun day (date)
-  (fourth date))
+(defmethod minute ((dt date-time))
+  (date-time-minute dt))
 
-;; }}}
-;; hour  {{{
+(defmethod sec ((dt date-time))
+  (date-time-sec dt))
 
-(defun hour (date)
-  (fifth date))
+(defmethod day-of-week ((dt date-time))
+  "0:sun, 1:mon, 2:tue, 3:wed, 4:thu, 5:fri, 6:sat"
+  (date-time-day-of-week dt))
 
-;; }}}
-;; minute  {{{
-
-(defun minute (date)
-  (sixth date))
-
-;; }}}
-;; sec  {{{
-
-(defun sec (date)
-  (sixth date))
-
-;; }}}
-;; date  {{{
-
-(defun date ()
-  (cddr (reverse (multiple-value-list
-                   (decode-universal-time (get-universal-time) -9)))))
-
-;; Examples: {{{
-;;
-;; (let ((date (date)))
-;;   (print (date))
-;;   (print (list (day-of-week date)
-;;                (year date)
-;;                (month date)
-;;                (day date)
-;;                (hour date)
-;;                (minute date)
-;;                (sec date))))
-;; NOTE:
-;; day-of-week
-;; => 0:mon, 1:tue, 2:wed, 3:thu, 4:fri, 5:sat, 6:sun
-
-;; }}}
-
-
-;; }}}
-;; leap-year? {{{
-
-(defun leap-year? (y)
+(defmethod leap-year? ((dt date-time))
   (or
-    (and (= (mod y 4) 0)
-         (/= (mod y 100) 0))
-    (= (mod y 400) 0)))
+    (and (= (mod (year dt) 4) 0)
+         (/= (mod (year dt) 100) 0))
+    (= (mod (year dt) 400) 0)))
 
-;; }}}
+(defmethod year-day ((dt date-time))
+  (if (leap-year? dt) 366 365))
+
+(defmethod month-day ((dt date-time))
+  (cond ((= (month dt) 2) (if (leap-year? dt) 29 28))
+        ((find (month dt) '(4 6 9 11)) 30)
+        (t 31)))
