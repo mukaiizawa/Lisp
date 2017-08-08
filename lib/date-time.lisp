@@ -1,5 +1,5 @@
 (require :stdlib *module-stdlib*)
-(provide :date-utils)
+(provide :date-time)
 
 (defstruct date-time
   utc
