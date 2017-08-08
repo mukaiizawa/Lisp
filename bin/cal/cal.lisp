@@ -3,7 +3,7 @@
  |#
 
 (require :stdlib *module-stdlib*)
-(require :date-utils *module-date-utils*)
+(require :date-time *module-date-time*)
 
 (defparameter usage
   (usage :title "cal [[year] month]"
@@ -12,7 +12,7 @@
 
 (defexe cal ()
   (let* ((args (rest (args)))
-         (dt (make-date-time))
+         (dt (init-date-time (make-instance 'date-time)))
          (year (year dt))
          (month (month dt))
          (date 1))
@@ -20,7 +20,7 @@
           ((= (length args) 2) (setf year (parse-int (car args))
                                      month (parse-int (cadr args))))
           ((/= (length args) 0) (funcall usage)))
-    (setf dt (make-date-time year month date))
+    (init-date-time dt year month date)
     (echo (year dt) "-" (month dt))
     (echo  "Su Mo Tu We Th Fr Sa")
     (princ (make-string (* (day-of-week dt) 3) :initial-element #\space))
