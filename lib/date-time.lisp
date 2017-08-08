@@ -2,6 +2,9 @@
 (provide :date-time)
 
 (defparameter *week-day* 7)
+(defparameter *day-hour* 24)
+(defparameter *hour-minute* 60)
+(defparameter *minute-second* 60)
 
 (defstruct date-time
   utc
@@ -75,11 +78,32 @@
           ((find month '(4 6 9 11)) 30)
           (t 31))))
 
-(defmethod next-day ((dt date-time))
-  (let ((next-day (make-instance 'date-time)))
-    (init-date-time next-day (+ (date-time-utc dt) (* 60 60 24)))))
+(defmethod after-date ((dt date-time) &optional (date 1))
+  (let ((ad (make-instance 'date-time)))
+    (init-date-time ad (+ (date-time-utc dt)
+                          (* date *minute-second* *hour-minute* *day-hour*)))))
+
+(defmethod before-date ((dt date-time) &optional (date 1))
+  (after-date dt (- date)))
 
 (defmethod date= ((dt date-time) (dt2 date-time))
   (and (= (year dt) (year dt2))
        (= (month dt) (month dt2))
        (= (date dt) (date dt2))))
+
+(defmethod diff-date ((dt1 date-time) (dt2 date-time))
+  (let* ((dt1 (init-date-time (make-instance 'date-time)
+                              (year dt1) (month dt1) (date dt1)))
+         (dt2 (init-date-time (make-instance 'date-time)
+                              (year dt2) (month dt2) (date dt2)))
+         (utc-diff (abs (- (date-time-utc dt1) (date-time-utc dt2)))))
+    (truncate utc-diff (* *day-hour* *hour-minute* *minute-second*))))
+
+(defmethod week-number ((dt date-time))
+  (let* ((new-year-day (init-date-time (make-instance 'date-time)
+                                       (year dt) 1 1))
+         (dt-copy (init-date-time (make-instance 'date-time)
+                                  (year dt) (month dt) (date dt))))
+    (1+ (truncate (+ (diff-date new-year-day dt-copy)
+                     (day-of-week new-year-day))
+                  *week-day*))))

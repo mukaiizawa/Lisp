@@ -1,5 +1,5 @@
 #|
- | カレンダー
+ | calendar
  |#
 
 (require :stdlib *module-stdlib*)
