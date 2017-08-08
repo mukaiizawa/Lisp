@@ -1,6 +1,8 @@
 (require :stdlib *module-stdlib*)
 (provide :date-time)
 
+(defparameter *week-day* 7)
+
 (defstruct date-time
   utc
   year
@@ -76,3 +78,8 @@
 (defmethod next-day ((dt date-time))
   (let ((next-day (make-instance 'date-time)))
     (init-date-time next-day (+ (date-time-utc dt) (* 60 60 24)))))
+
+(defmethod date= ((dt date-time) (dt2 date-time))
+  (and (= (year dt) (year dt2))
+       (= (month dt) (month dt2))
+       (= (date dt) (date dt2))))
