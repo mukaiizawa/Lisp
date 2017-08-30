@@ -31,11 +31,10 @@
                  "SET TRIMSPOOL ON"
                  "SET FEEDBACK OFF"
                  "SET COLSEP ','"
-                 (mkstr-aif ,spool
-                   "SPOOL " it)
-                 ,query
-                 (mkstr-if ,spool
-                   "SPOOL OFF")
+                 "SET SQLBLANKLINES ON"
+                 (mkstr-aif ,spool "SPOOL " it)
+                 (mkstr-aif ,query it)
+                 (mkstr-if ,spool "SPOOL OFF")
                  "EXIT"))
          arg-sqlfile))
      (call-sqlplus schema pass sid arg-sqlfile)
