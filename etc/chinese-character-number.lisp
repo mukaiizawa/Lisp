@@ -1,35 +1,68 @@
-(require :stdlib *module-stdlib*)
+; convert numeric number into chinese character number.
 
-(defparameter chinese-char-nums
+(defparameter *digits*
+  '(""
+    "万"
+    "億"
+    "兆"
+    "京"
+    "垓"
+    "秭"
+    "穣"
+    "溝"
+    "澗"
+    "正"
+    "載"
+    "極"
+    "恒河沙"
+    "阿僧祇"
+    "那由他"
+    "不可思議"
+    "無量大数"))
+
+(defparameter *units*
+  '("" "十" "百" "千"))
+
+(defparameter *chinese-char-nums*
   '("〇" "一" "二" "三" "四" "五" "六" "七" "八" "九"))
 
-(defparameter digits
-  '("千" "万" "億" "兆" "景"))
-
 (defun ctoi (c)
-  (if (null c) 10
-    (abs (- (char-code #\0) (char-code c)))))
+  (abs (- (char-code #\0) (char-code c))))
 
-(defun main (i)
-  (do* ((nums (coerce (mkstr i) 'list) (butlast nums 4))
-        (last4 (last nums 4) (last nums 4))
-        (count 0 (1+ count))
-        (acc ""))
-    ((null nums) acc)
-    (setf acc (mkstr 
-                (nth (ctoi (car last4)) chinese-char-nums)
-                (when (>= (length nums) 4)
-                  (nth count digits))
-                (nth (ctoi (cadr last4)) chinese-char-nums)
-                (nth (ctoi (caddr last4)) chinese-char-nums)
-                (nth (ctoi (cadddr last4)) chinese-char-nums)
-                acc))))
+(defun fold-zero (chinese-char-nums)
+  (let* ((zero (car *chinese-char-nums*))
+         (result (remove zero chinese-char-nums)))
+    (if result result (list zero))))
 
-(print (main 1))
-(print (main 2))
-(print (main 10))
-(print (main 100))
-(print (main 1000))
-(print (main 1001))
-(print (main 1234567))
-(print (main 120001000))
+(defun to-chinese-char-num (num-chars)
+  (do ((acc)
+       (i 0 (1+ i))
+       (rest-chars (reverse num-chars) (cdr rest-chars)))
+    ((null rest-chars) (fold-zero acc))
+    (let* ((num (ctoi (car rest-chars)))
+           (chinese-char-num (nth num *chinese-char-nums*))
+           (unit (nth i *units*)))
+      (push (cond ((= num 0) chinese-char-num)
+                  ((and (= num 1) (/= i 0)) unit)
+                  (t (concatenate 'string chinese-char-num unit)))
+            acc))))
+
+(defun main (num)
+  (do* ((acc)
+        (i 0 (1+ i))
+        (nums (coerce (write-to-string num) 'list) (butlast nums 4))
+        (last4 (last nums 4) (last nums 4)))
+    ((null nums) (reduce (lambda (x &optional (y ""))
+                           (concatenate 'string x y))
+                         (apply #'append acc)))
+    (push (append (to-chinese-char-num last4) (list (nth i *digits*)))
+          acc)))
+
+(main 0)
+(main 1)
+(main 10)
+(main 100)
+(main 1000)
+(main 1001)
+(main 1234567)
+(main 120001000)
