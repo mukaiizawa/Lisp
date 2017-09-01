@@ -1,6 +1,6 @@
 ; convert numeric number into chinese character number.
 
-(defparameter *digits*
+(defparameter *units*
   '(""
     "万"
     "億"
@@ -20,43 +20,62 @@
     "不可思議"
     "無量大数"))
 
-(defparameter *units*
+(defparameter *digits*
   '("" "十" "百" "千"))
 
 (defparameter *chinese-char-nums*
   '("〇" "一" "二" "三" "四" "五" "六" "七" "八" "九"))
 
+(defparameter *zero* (car *chinese-char-nums*))
+
 (defun ctoi (c)
   (abs (- (char-code #\0) (char-code c))))
 
-(defun fold-zero (chinese-char-nums)
-  (let* ((zero (car *chinese-char-nums*))
-         (result (remove zero chinese-char-nums)))
-    (if result result (list zero))))
+(defun range (n)
+  (loop for i from 0 to (1- n) collect i))
 
-(defun to-chinese-char-num (num-chars)
-  (do ((acc)
-       (i 0 (1+ i))
-       (rest-chars (reverse num-chars) (cdr rest-chars)))
-    ((null rest-chars) (fold-zero acc))
-    (let* ((num (ctoi (car rest-chars)))
-           (chinese-char-num (nth num *chinese-char-nums*))
-           (unit (nth i *units*)))
-      (push (cond ((= num 0) chinese-char-num)
-                  ((and (= num 1) (/= i 0)) unit)
-                  (t (concatenate 'string chinese-char-num unit)))
-            acc))))
+(defun group4 (lis &optional acc)
+  (if (null lis)
+    (reverse acc)
+    (group4 (nthcdr 4 lis)
+            (push (subseq lis 0 (min 4 (length lis))) acc))))
+
+(defun parse-unit (unit)
+  (reverse
+    (remove nil
+            (mapcar (lambda (num digit)
+                      (if (/= num 0) (list num digit)))
+                    unit (range (length unit))))))
+
+(defun parse-units (units)
+  (reverse (remove nil
+                   (mapcar (lambda (unit unit-index)
+                             (let ((digits (parse-unit unit)))
+                               (if digits (list digits unit-index))))
+                           units (range (length units))))))
+
+(defun print-units (units)
+  (labels ((traverse (tree)
+                     (mapcan (lambda (unit/unit-index)
+                               (mapcan (lambda (digit/digit-index)
+                                         (let ((digit (car digit/digit-index))
+                                               (index (cadr digit/digit-index)))
+                                           (if (or (/= digit 1) (= index 0))
+                                             (princ (nth digit *chinese-char-nums*)))
+                                           (princ (nth index *digits*))))
+                                       (car unit/unit-index))
+                               (princ (nth (cadr unit/unit-index) *units*)))
+                             tree)))
+    (if (null units)
+      (princ *zero*)
+      (traverse units))))
 
 (defun main (num)
-  (do* ((acc)
-        (i 0 (1+ i))
-        (nums (coerce (write-to-string num) 'list) (butlast nums 4))
-        (last4 (last nums 4) (last nums 4)))
-    ((null nums) (reduce (lambda (x &optional (y ""))
-                           (concatenate 'string x y))
-                         (apply #'append acc)))
-    (push (append (to-chinese-char-num last4) (list (nth i *digits*)))
-          acc)))
+  (fresh-line)
+  (print-units
+    (parse-units
+      (group4 (mapcar #'ctoi
+                      (reverse (coerce (write-to-string num) 'list)))))))
 
 (main 0)
 (main 1)
@@ -65,4 +84,4 @@
 (main 1000)
 (main 1001)
 (main 1234567)
-(main 120001000)
+(main 1000000000)
