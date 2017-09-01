@@ -68,10 +68,10 @@
                              tree)))
     (if (null units)
       (princ *zero*)
-      (traverse units))))
+      (traverse units))
+    (fresh-line)))
 
 (defun main (num)
-  (fresh-line)
   (print-units
     (parse-units
       (group4 (mapcar #'ctoi
