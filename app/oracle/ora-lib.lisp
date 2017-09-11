@@ -33,7 +33,7 @@
                  "SET COLSEP ','"
                  "SET SQLBLANKLINES ON"
                  (mkstr-aif ,spool "SPOOL " it)
-                 (mkstr-aif ,query it)
+                 (aif ,query it "")
                  (mkstr-if ,spool "SPOOL OFF")
                  "EXIT"))
          arg-sqlfile))
