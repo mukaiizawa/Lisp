@@ -156,7 +156,7 @@
                              (refer-table (first foreignkeys))
                              (refer-cols (mapcar (compose #'second #'second) (rest foreignkeys)))
                              (fk (lambda (no cols refer-cols)
-                                   (format nil "CONSTRAINT FK_~A~A FOREIGN KEY (~A) REFERENCES ~A(~A)"
+                                   (format nil "CONSTRAINT FK_~A~A FOREIGN KEY (~A) REFERENCES ~A(~A) ON DELETE CASCADE"
                                            (table-phisical-name table) no cols refer-table refer-cols))))
                         (if (< (length (remove-duplicates refer-cols :test #'string=)) (length refer-cols))
                           (list->string 
