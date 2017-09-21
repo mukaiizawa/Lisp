@@ -16,7 +16,7 @@
 (dot
   (make-graph :nodes '(("start" ((shape "Mdiamond") (color "green")))
                        ("end" ((shape "Msquare") (color "yellow"))))
-              :edges '(("start" "a0")
+              :edges '(("start" "a0" ((label "a to a0")))
                        ("start" "b0")
                        ("a3" "end")
                        ("b3" "end")

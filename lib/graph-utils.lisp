@@ -2,7 +2,9 @@
 (require :regex *module-regex*)
 (provide :graph-utils)
 
-(defparameter *global-graph-conf* '((layout "dot") (charset "UTF8") (rankdir "TB")))
+(defparameter *global-graph-conf* '((layout "dot")
+                                    (charset "UTF8")
+                                    (rankdir "TB")))
 (defparameter *global-node-conf* '((shape "record") (fontname "meiryo")))
 (defparameter *global-edge-conf* '((fontname "meiryo")))
 (defparameter *subgraphs-count* 0)
@@ -21,36 +23,33 @@
                                (node-conf nil :type list)
                                (edge-conf nil :type list))))
 
-;; replace-low-line {{{
-
 (defun replace-low-line (str)
   (funcall #~s/-/_/g (mkstr str)))
 
-;; }}}
-;; attrs->dot {{{
-
-(defun attrs->dot (attrs &optional (with-double-quote? t))
-  (let ((canonical-attrs (mkalist attrs)))
-    (cond ((null attrs)
-           "")
-          (with-double-quote?
-            (format nil " [~{~{~(~A~)=\"~A\"~}~^,~}]" canonical-attrs))
-          (t
-            (format nil " [~{~{~(~A~)=~A~}~^,~}]" canonical-attrs)))))
-
-;; }}}
-;; nodes->dot {{{
+(defun attrs->dot (attrs)
+  (if (null attrs)
+    ""
+    (mkstr " ["
+           (list->string
+             (mapcar (lambda (x)
+                       (let* ((key (first x))
+                              (value (second x))
+                              (value-string? (char/= (char value 0) #\<)))
+                         (format nil "~(~A~)=~A"
+                                 key (if value-string?    ; else table layout.
+                                       (mkstr #\" value #\")
+                                       value))))
+                     attrs)
+             #\,)
+           "]")))
 
 (defun nodes->dot (nodes)
   (with-output-to-string (out)
     (mapcar (lambda (node)
               (format out "~A~A;~%"
                       (replace-low-line (first node))
-                      (attrs->dot (second node) nil)))
+                      (attrs->dot (second node))))
             (mkalist nodes))))
-
-;; }}}
-;; edges->dot {{{
 
 (defun edges->dot (edges &optional (directed? t))
   (with-output-to-string (out)
@@ -60,11 +59,8 @@
                       (replace-low-line (first edge))
                       (if directed? ">" "-")
                       (replace-low-line (second edge))
-                      (attrs->dot (third edge) nil)))
+                      (attrs->dot (third edge))))
             (mkalist edges))))
-
-;; }}}
-;; graph->dot {{{
 
 (defun graph->dot (graph)
   (with-output-to-string (out)
@@ -72,17 +68,16 @@
               (when value
                 (format out "~A~A;~%" key (attrs->dot value))))
             '("graph" "node" "edge")
-            (list (graph-graph-conf graph) (graph-node-conf graph) (graph-edge-conf graph)))
+            (list (graph-graph-conf graph)
+                  (graph-node-conf graph)
+                  (graph-edge-conf graph)))
     (format out "~A~%" (nodes->dot (graph-nodes graph)))
     (format out "~A~%" (edges->dot (graph-edges graph)))
     (format out "~{{rank=same;~{ ~A;~}}~%~}" (mklist (graph-ranks graph)))
     (mapcar (lambda (graph)
-              (format out "~%subgraph cluster_~A {~%~A}~%"  (incf *subgraphs-count*) (graph->dot graph)))
+              (format out "~%subgraph cluster_~A {~%~A}~%"
+                      (incf *subgraphs-count*) (graph->dot graph)))
             (mklist (graph-subgraphs graph)))))
-
-;; }}}
-
-;; set-graph-attr! {{{
 
 (defun set-graph-attr! (key val alist)
   (if (assoc key alist)
@@ -90,16 +85,11 @@
     (nconc alist (list (list key val))))
   (values alist))
 
-;; }}}
-;; make-continuous-edges {{{
-
 (defun make-continuous-edges (nodes &optional attr)
   (if (rest nodes)
     (cons (list (first nodes) (second nodes) attr)
           (make-continuous-edges (rest nodes) attr))
     nil))
-
-;; }}}
 
 (defmethod dot ((g graph) &key (digraph? t) (file "graph"))
   (let ((input-file (mkstr file ".dot"))
