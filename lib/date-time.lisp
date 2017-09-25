@@ -17,28 +17,29 @@
   day-of-week)
 
 (defmethod init-date-time ((dt date-time) &rest args)
-  (defun init-utc (dt utc)
-    (multiple-value-bind
-      (sec minute hour date month year day-of-week daylight-p zone)
-      (decode-universal-time utc -9)
-      (declare (ignorable daylight-p zone day-of-week))
-      (setf (date-time-utc dt) utc
-            (date-time-year dt) year
-            (date-time-month dt) month
-            (date-time-date dt) date
-            (date-time-hour dt) hour
-            (date-time-minute dt) minute
-            (date-time-sec dt) sec
-            (date-time-day-of-week dt) (mod (1+ day-of-week) 7)))
-    dt)
-  (defun init-now (dt) (init-utc dt (get-universal-time)))
-  (defun init-year-month-date (dt year month date)
-    (init-utc dt (encode-universal-time 0 0 0 date month year -9)))
-  (cond ((= (length args) 3)
-         (init-year-month-date dt (car args) (cadr args) (caddr args)))
-        ((= (length args) 1) (init-utc dt (car args)))
-        ((null args) (init-now dt))
-        (t (error "init-date-time: Illegal arguments '~A'." args))))
+  (labels
+    ((init-utc (dt utc)
+               (multiple-value-bind
+                 (sec minute hour date month year day-of-week daylight-p zone)
+                 (decode-universal-time utc -9)
+                 (declare (ignorable daylight-p zone day-of-week))
+                 (setf (date-time-utc dt) utc
+                       (date-time-year dt) year
+                       (date-time-month dt) month
+                       (date-time-date dt) date
+                       (date-time-hour dt) hour
+                       (date-time-minute dt) minute
+                       (date-time-sec dt) sec
+                       (date-time-day-of-week dt) (mod (1+ day-of-week) 7)))
+               dt)
+     (init-now (dt) (init-utc dt (get-universal-time)))
+     (init-y-m-d (dt y m d)
+                 (init-utc dt (encode-universal-time 0 0 0 d m y -9))))
+    (cond ((= (length args) 3)
+           (init-y-m-d dt (car args) (cadr args) (caddr args)))
+          ((= (length args) 1) (init-utc dt (car args)))
+          ((null args) (init-now dt))
+          (t (error "init-date-time: Illegal arguments '~A'." args)))))
 
 (defmethod year ((dt date-time))
   (date-time-year dt))
