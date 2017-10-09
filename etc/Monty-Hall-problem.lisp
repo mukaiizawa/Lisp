@@ -4,7 +4,7 @@
 
 (defparameter *test-times* 100000)
 
-(defun try-game (change-choice?)
+(defun do-game (change-choice?)
   (let* ((master-choice (random 3))
          (user-choice (random 3))
          (openable (remove-if (lambda (x) 
@@ -16,13 +16,13 @@
     (= master-choice user-choice)))
 
 (defun montie-hole-problem ()
-  (let ((win-change 0)
-        (win-fix 0))
+  (let ((win-count-change 0)
+        (win-count-not-change 0))
     (dotimes (i *test-times*)
-      (if (try-game t) (incf win-change))
-      (if (try-game nil) (incf win-fix)))
+      (if (do-game t) (incf win-count-change))
+      (if (do-game nil) (incf win-count-not-change)))
     (format t "change: ~A~%fix: ~A"
-            (/ win-change 1.0 *test-times*) (/ win-fix 1.0 *test-times*))))
+            (/ win-count-change 1.0 *test-times*)
+            (/ win-count-not-change 1.0 *test-times*))))
 
 (montie-hole-problem)
-
