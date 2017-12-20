@@ -13,8 +13,6 @@
 
 (defparameter *tokens* nil)
 
-;; to-token {{{
-
 (defmethod to-token ((reader ahead-reader))
   (let (tokens)
     (while (not (reach-eof? reader))
@@ -31,20 +29,11 @@
                 (error "to-token: Unexpected token `~A'" (get-next reader))))))
     (nreverse tokens)))
 
-;; }}}
-;; token-kind {{{
-
 (defun token-kind (token)
   (car token))
 
-;; }}}
-;; token-val {{{
-
 (defun token-val (token)
   (cdr token))
-
-;; }}}
-;; parse-expression {{{
 
 (defun parse-expression ()
   (do* ((term (parse-term))
@@ -56,9 +45,6 @@
                         term 
                         (parse-term)))))
 
-;; }}}
-;; parse-term {{{
-
 (defun parse-term ()
   (do* ((factor (parse-factor))
         (token (first *tokens*) (first *tokens*)))
@@ -68,9 +54,6 @@
     (setq factor (funcall (symbol-function (token-kind token))
                           factor 
                           (parse-factor)))))
-
-;; }}}
-;; parse-factor {{{
 
 (defun parse-factor ()
   (let ((curr-token (first *tokens*)))
@@ -92,8 +75,6 @@
        (token-val curr-token))
       (t
         (error "parse-factor: Unexpected token `~A'" (token-kind (first *tokens*)))))))
-
-;; }}}
 
 (defun compute (stream)
   (with-ahead-reader (reader stream)
