@@ -12,9 +12,9 @@
       (princln "@ECHO off" out)
       (princln "REM following command generated automatically" out)
       (mapfile (lambda (pathname)
-                 (let ((dest (mkstr "\"C:\\xbin\\" (file-namestring pathname) "\"")))
-                   (format out "DEL ~A 2> nul~%MKLINK ~1:*~A \"~A\"~%"
-                           dest pathname)))
+                 (format out "DEL ~A 2> nul~%MKLINK ~1:*~A \"~A\"~%"
+                         (mkstr "\"C:\\xbin\\" (file-namestring pathname) "\"")
+                         pathname))
                :recursive t :directory "./" :extension 'exe)
       (format out "pause~%"))))
 
