@@ -1,9 +1,9 @@
-(load "compute")
+(load "xcalc")
 (require :test-utils *module-test-utils*)
 
 (defmacro test-calc (str)
   `(with-input-from-string (in ,str)
-     (compute in)))
+     (xcalc in)))
 
 (test-all
   ('single-01

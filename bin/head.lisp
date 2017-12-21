@@ -4,8 +4,8 @@
   "c:bytes:n:lines:q;quiet;v;verbose"
   (let ((usage (usage :title "head [OPTION]... [FILE]"
                       :desc '("Print the first 10 lines of each FILE to standard output."
-                               "With more than one FILE, precede each with a header giving the file name."
-                               "With no FILE, read standard input.")
+                              "With more than one FILE, precede each with a header giving the file name."
+                              "With no FILE, read standard input.")
                       :opts '("-c, --bytes=[-]N" "print the first N bytes of each file"
                               "-n, --lines=[-]N" "print the first N lines instead of the first 10"
                               "-q, --quiet" "never print headers giving file names"

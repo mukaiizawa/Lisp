@@ -1,8 +1,8 @@
-(load "compute")
+(load "xcalc")
 
-(defexe compute (--help)
+(defexe xcalc (--help)
   "help"
-  (let* ((usage (usage :title "compute [OPTION] [EXPR]"
+  (let* ((usage (usage :title "xcalc [OPTION] [EXPR]"
                        :desc  '("Calculate numbers from statndard input or command line argument,"
                                 "writing to standard output."))))
     (when (or --help errors)
@@ -10,5 +10,5 @@
     (princ
       (if args
         (with-input-from-string (in (list->string args #\Space))
-          (compute in))
-        (compute *standard-input*)))))
+          (xcalc in))
+        (xcalc *standard-input*)))))
