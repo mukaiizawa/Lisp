@@ -9,7 +9,8 @@
  | BNF
  | <expr>   ::= <term> | <expr> "+" <term> | <expr> "-" <term>
  | <term>   ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
- | <factor> ::= <number> | "(" <expr> ")"
+ | <factor> ::= ["+" | "-"] number | "(" <expr> ")"
+ | number -- a number.
  |#
 
 (defparameter *tokens* nil)
@@ -36,26 +37,6 @@
 (defun token-val (token)
   (cdr token))
 
-(defun parse-expression ()
-  (do* ((term (parse-term))
-        (token (first *tokens*) (first *tokens*)))
-    ((and (not (eq '+ (token-kind token)))
-          (not (eq '- (token-kind token)))) term)
-    (pop *tokens*)
-    (setq term (funcall (symbol-function (token-kind token))
-                        term 
-                        (parse-term)))))
-
-(defun parse-term ()
-  (do* ((factor (parse-factor))
-        (token (first *tokens*) (first *tokens*)))
-    ((and (not (eq '* (token-kind token)))
-          (not (eq '/ (token-kind token)))) factor)
-    (pop *tokens*)
-    (setq factor (funcall (symbol-function (token-kind token))
-                          factor 
-                          (parse-factor)))))
-
 (defun parse-factor ()
   (let ((curr-token (first *tokens*)))
     (case (token-kind curr-token)
@@ -76,6 +57,26 @@
        (token-val curr-token))
       (t
         (error "parse-factor: Unexpected token `~A'" (token-kind (first *tokens*)))))))
+
+(defun parse-term ()
+  (do* ((factor (parse-factor))
+        (token (first *tokens*) (first *tokens*)))
+    ((and (not (eq '* (token-kind token)))
+          (not (eq '/ (token-kind token)))) factor)
+    (pop *tokens*)
+    (setq factor (funcall (symbol-function (token-kind token))
+                          factor 
+                          (parse-factor)))))
+
+(defun parse-expression ()
+  (do* ((term (parse-term))
+        (token (first *tokens*) (first *tokens*)))
+    ((and (not (eq '+ (token-kind token)))
+          (not (eq '- (token-kind token)))) term)
+    (pop *tokens*)
+    (setq term (funcall (symbol-function (token-kind token))
+                        term 
+                        (parse-term)))))
 
 (defun xcalc (stream)
   (with-ahead-reader (reader stream)
