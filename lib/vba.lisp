@@ -3,6 +3,9 @@
 (require :stdlib *module-stdlib*)
 (provide :vba)
 
+(defun refer-sheet (ws)
+  (format nil "Worksheets(\"~A\")" ws))
+
 (defmacro with-vba-main (&rest body)
   `(progn (format t "sub main()~%")
           ,@body
@@ -14,5 +17,12 @@
           ,@body))
 
 (defmacro put-cell (ws range val)
-  `(format t "Worksheets(\"~A\").Range(\"~A\").Value = \"~A\"~%"
-           ,ws ,range ,val)) 
+  `(format t "~A.Range(\"~A\").Value = \"~A\"~%"
+           (refer-sheet ,ws) ,range ,val)) 
+
+(defmacro select-cell (ws range)
+  `(let ((ws (refer-sheet ,ws)))
+     (format t "~A.Activate~%~A.Range(\"~A\").Select~%" ws ws ,range)))
+
+(defmacro select-a1-cell (ws)
+  `(select-cell ,ws "A1"))
