@@ -49,7 +49,7 @@
 ;                 | (in factor [factor] ...)
 ;                 | ({ = | /= | < | <= | > | >= } factor factor)
 (defun pict (factor-list &optional model-list condition-list
-                         &key (output "pict.out"))
+                         &key (output "pict.out") invoke?)
   (with-open-file (pict-in output :direction :output :if-exists :supersede)
     (format pict-in "# following rules are generated automatically.~%")
     (dolist (factor factor-list)
@@ -58,4 +58,4 @@
       (format pict-in "{ ~{~A~^, ~} } @ ~A~%" model (length model)))
     (dolist (condition condition-list)
       (format pict-in "~A~%" (parse-clause condition))))
-  (call "pict" (list output)))
+  (if invoke? (call "pict" (list output))))
