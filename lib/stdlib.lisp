@@ -1311,7 +1311,7 @@
 ;; }}}
 ;; call {{{
 
-(defun call (name args stream)
+(defun call (name args &optional (stream *standard-output*))
   #+ccl   (ccl:run-program name args :output stream)
   #+sbcl  (sb-ext:run-program name args :output stream)
   #+clisp (ext:shell name))
