@@ -18,7 +18,7 @@
              (format out ")"))
             ((eq ope 'in)
              (if (< (length tokens) 3) (error "illegal in clause"))
-             (format out " [~A] in {~{\"~A\"~^,~}}"
+             (format out " [~A] in {~{\"~A\"~^, ~}}"
                      (second tokens) (cddr tokens)))
             ((or (eq ope '=) (eq ope '/=))
              (if (/= (length tokens) 3) (error "illegal ~A clause" ope))
