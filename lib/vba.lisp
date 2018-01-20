@@ -21,6 +21,7 @@
 
 ; cell
 (defmethod .init ((c VBACell) &key row col)
+  (if (or (= row 0) (= col 0)) (error "illegal arguments"))
   (setf (.row c) row
         (.col c) col)
   c)
