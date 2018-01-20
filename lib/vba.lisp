@@ -88,5 +88,6 @@
           (format t "Application.ScreenUpdating = False~%")
           (format t "Application.DisplayAlerts = False~%")
           ,@body
-          (format t "Application.DisplayAlerts = False~%")
+          (format t "Application.DisplayAlerts = True~%")
+          (format t "Application.ScreenUpdating = True~%")
           (format t "End Sub~%")))
