@@ -9,4 +9,4 @@
       (.add-last sheet)
       (dotimes (i 3)
         (dotimes (j 3)
-          (.put sheet (cell i j) (* i j)))))))
+          (.put sheet (cell (1+ i) (1+ j)) (* i j)))))))
