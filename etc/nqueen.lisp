@@ -1,18 +1,18 @@
 ; n queen problem
 
 (defparameter *board-size* 8)
-(defparameter *board* (make-array `(,*board-size* ,*board-size*)
+(defparameter *board* (make-array (list *board-size*  *board-size*)
                                   :initial-element nil))
 
 (defun print-board ()
-  (dotimes (x *board-size*)
-    (dotimes (y *board-size*)
-      (princ (if (aref *board* x y) " Q" " -")))
+  (dotimes (row *board-size*)
+    (dotimes (col *board-size*)
+      (princ (if (aref *board* row col) " Q" " -")))
     (fresh-line))
   (princ #\newline))
 
 (defun in-board? (row col)
-  (and (<= 0 row (1- *board-size* )) (<= 0 col (1- *board-size*))))
+  (and (<= 0 row (1- *board-size*)) (<= 0 col (1- *board-size*))))
 
 (defun putable? (row col)
   (dotimes (row row)
