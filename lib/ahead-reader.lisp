@@ -106,6 +106,15 @@
       c)))
 
 ;; }}}
+;; xread-line {{{
+
+(defmethod xread-line ((reader ahead-reader) &key (cache t))
+  (read-next (read-if (lambda (c)
+                        (char/= c #\newline))
+                      reader :cache cache)
+             :cache nil))
+
+;; }}}
 ;; read-next {{{
 
 (defmethod read-next ((reader ahead-reader) &key (cache t))
