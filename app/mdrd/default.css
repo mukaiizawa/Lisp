@@ -1,0 +1,28 @@
+@charset "UTF-8";
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+h1 { border-bottom: solid 2px black; }
+h2 { border-bottom: solid 1px black; }
+h3 { border-bottom: solid 1px #bbb; }
+
+pre {
+  padding-top: 0.5em;
+  box-sizing: border-box;
+  background: #efefef;
+  padding-left: -4em;
+  margin-left: 1em;
+}
+
+blockquote {
+  border-left: 3px solid #e0e0e0;
+  padding-left: 1em;
+  margin-left: 1em;
+}
+
+blockquote blockquote {
+  margin-left: 0;
+}

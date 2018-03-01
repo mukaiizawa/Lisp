@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8"/>
+    <link type="text/css" rel="stylesheet" href="./default.css"/>
+    <title>
+      マークダウンリーダー
+    </title>
+  </head>
+  <body>
+    <h1>
+      概要
+    </h1>
+    <p>
+      独自拡張したマークダウン記法を解釈し構文木に変換する。
+    </p>
+    <h1>
+      書式
+    </h1>
+    <pre>
+      &lt;markdown&gt; ::= &lt;title&gt; &lt;statement&gt; ...
+      &lt;statement&gt; ::= {
+              &lt;paragraph&gt;
+              | &lt;preformatted_text_block&gt;
+              | &lt;quote_block&gt;
+              | &lt;list_block&gt;
+              | &lt;table&gt;
+          }
+      &lt;header&gt; ::= { # | ## | ### | #### | ##### | ###### } ' ' &lt;string&gt; &lt;eol&gt;
+      &lt;preformatted_text_block&gt; ::= &lt;preformatted_text&gt; ...
+      &lt;preformatted_text&gt; ::= '    ' &lt;string&gt; &lt;eol&gt;
+      &lt;quote_block&gt; ::= &lt;quote&gt; ...
+      &lt;quote&gt; ::= '&gt;' ... ' ' &lt;string&gt; &lt;eol&gt;
+      &lt;list_block&gt; ::= { &lt;ordered_list&gt; | &lt;unordered_list&gt; } ...
+      &lt;ordered_list&gt; ::= '1.' ... ' ' &lt;string&gt; &lt;eol&gt;
+      &lt;unordered_list&gt; ::= '-' ... ' ' &lt;string&gt; &lt;eol&gt;
+      &lt;table&gt; ::= &lt;table_separator&gt;
+              [&lt;table_header&gt;]
+              &lt;table_body&gt;
+              &lt;table_separator&gt;
+      &lt;table_separator&gt; ::= '--' &lt;eol&gt;
+      &lt;table_line&gt; ::= &lt;string&gt; [&lt;tab&gt; &lt;string&gt;] ... &lt;eol&gt;
+      &lt;table_header&gt; ::= &lt;table_line&gt; &lt;table_separator&gt;
+      &lt;table_body&gt; ::= &lt;table_line&gt; &lt;table_line&gt; ...
+      &lt;title&gt; -- この文書のタイトルを表す文字列
+      &lt;eol&gt; -- 改行文字
+      &lt;string&gt; -- 文字の列
+    </pre>
+    <h2>
+      見出し
+    </h2>
+    <p>
+      '#'から始まる行は見出しと見做される。
+    </p>
+    <pre>
+      # header1
+      ## header2
+      ### header3
+      #### header4
+      ##### header5
+      ###### header6
+    </pre>
+    <p>
+      連続する#の数が見出しレベルに対応する。
+    </p>
+    <h1>
+      header1
+    </h1>
+    <h2>
+      header2
+    </h2>
+    <h3>
+      header3
+    </h3>
+    <h4>
+      header4
+    </h4>
+    <h5>
+      header5
+    </h5>
+    <h6>
+      header6
+    </h6>
+    <h2>
+      段落
+    </h2>
+    <p>
+      行末までの文字の列は段落と見做される。
+    </p>
+    <h2>
+      整形済みテキスト
+    </h2>
+    <p>
+      半角スペース4つから始まる行は整形済みテキストと見做す。
+    </p>
+    <pre>
+      preformatted
+    </pre>
+    <p>
+      整形済みのテキストはフォーマッタによって整形されない。
+    </p>
+    <pre>
+      (defun make-adder (n)
+        (lambda (x) (+ x n)))
+    </pre>
+    <h2>
+      引用
+    </h2>
+    <p>
+      '&gt;'から始まる行は引用文と見做す。
+    </p>
+    <pre>
+      &gt; quotation1
+      &gt; quotation2
+    </pre>
+    <blockquote>
+      quotation1
+      quotation2
+    </blockquote>
+    <p>
+      ネストすることにより引用の引用を表すことができる。
+    </p>
+    <pre>
+      &gt;&gt; quotation of quotation1
+      &gt;&gt; quotation of quotation2
+    </pre>
+    <blockquote>
+       quotation of quotation1
+       quotation of quotation2
+    </blockquote>
+    <h2>
+      リスト
+    </h2>
+    <p>
+      リストは順序の有無により二種類存在する。
+    </p>
+    <p>
+      --
+    </p>
+    <p>
+      順序	開始文字
+    </p>
+    <p>
+      --
+    </p>
+    <p>
+      順序あり	1.
+    </p>
+    <p>
+      順序無し	-
+    </p>
+    <p>
+      --
+    </p>
+    <p>
+      それぞれ、開始文字を重ねることにより、ネストしたリストを表現することができる。また、リスト内で他方のリストを記述することもできる。
+    </p>
+    <pre>
+      - list
+      -- nested list
+      - list
+      1. ordered list
+      1. ordered list
+      - list
+    </pre>
+    <h2>
+      表
+    </h2>
+    <p>
+      '--'で区切られたセクションは表と見做される。表は省略可能なヘッダ―部とボディー部に分かれる。
+    </p>
+    <p>
+      次のようにタブ区切りの列として記述される。
+    </p>
+    <p>
+      --
+    </p>
+    <p>
+      header1	header2
+    </p>
+    <p>
+      --
+    </p>
+    <p>
+      body1-1	body1-2
+    </p>
+    <p>
+      body2-1	body2-2
+    </p>
+    <p>
+      --
+    </p>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 ; markdown reader
 
-#|
+(defparameter *mdrd-doc*
+"
 マークダウンリーダー
 
 # 概要
@@ -36,7 +37,7 @@
     <string> -- 文字の列
 
 ## 見出し
-#から始まる行は見出しと見做される。
+'#'から始まる行は見出しと見做される。
     # header1
     ## header2
     ### header3
@@ -45,21 +46,36 @@
     ###### header6
 
 連続する#の数が見出しレベルに対応する。
+# header1
+## header2
+### header3
+#### header4
+##### header5
+###### header6
 
 ## 段落
 行末までの文字の列は段落と見做される。
 
 ## 整形済みテキスト
 半角スペース4つから始まる行は整形済みテキストと見做す。
+    preformatted
 
 整形済みのテキストはフォーマッタによって整形されない。
+    (defun make-adder (n)
+      (lambda (x) (+ x n)))
 
 ## 引用
->から始まる行は引用文と見做す。
-    > quotation
+'>'から始まる行は引用文と見做す。
+    > quotation1
+    > quotation2
+> quotation1
+> quotation2
 
 ネストすることにより引用の引用を表すことができる。
-    >> quotation of quotation
+    >> quotation of quotation1
+    >> quotation of quotation2
+>> quotation of quotation1
+>> quotation of quotation2
 
 ## リスト
 リストは順序の有無により二種類存在する。
@@ -88,8 +104,7 @@ header1	header2
 body1-1	body1-2
 body2-1	body2-2
 --
-
-|#
+")
 
 (require :ahead-reader *module-ahead-reader*)
 (require :xml-manager *module-xml-manager*)
@@ -129,8 +144,16 @@ body2-1	body2-2
       ((5) `(:h5 ,line))
       ((6) `(:h6 ,line)))))
 
-(defmethod parse-quote-block ((ar ahead-reader))
-  (parse-paragraph ar))
+(defmethod quote-level ((ar ahead-reader) &optional (level 0))
+  (if (char= (get-next ar (1+ level)) #\>)
+    (quote-level qr (1+ level))
+    level))
+
+(defmethod parse-quote-block ((ar ahead-reader) &optional (level 0))
+  (let (line)
+    (while (char= (get-next ar) #\>)
+      (push (subseq (get-line ar) (+ level 2)) line))
+    `(:blockquote ,@(nreverse line))))
 
 (defmethod parse-paragraph ((ar ahead-reader))
   `(:p ,(get-line ar)))
@@ -156,7 +179,7 @@ body2-1	body2-2
   (get-line ar))
 
 (defmethod parse-markdown((ar ahead-reader))
-  (let ((title (parse-title ar))
+  (let ((title (parse-title (read-blank ar)))
         (body nil))
     (while (not (reach-eof? (read-blank ar)))
       (push (parse-statement ar) body))
@@ -164,6 +187,7 @@ body2-1	body2-2
       (:html ((lang "ja"))
         (:head 
           (:meta ((charset "utf-8")))
+          (:link ((type "text/css") (rel "stylesheet") (href "./default.css")))
           (:title ,title))
         (:body
           ; ,(parse-outline *outline*)
@@ -175,103 +199,13 @@ body2-1	body2-2
 
 (setq *with-format* t)
 
-; {{{
-(defparameter *test-code*
-"マークダウンリーダー
-
-# 概要
-独自拡張したマークダウン記法を解釈し構文木に変換する。
-
-# 書式
-    <markdown> ::= <title> <block> ...
-    <block> ::= <header> { <block> | <statement> } ...
-    <statement> ::= {
-            <paragraph>
-            | <preformatted_text_block>
-            | <quote_block>
-            | <list_block>
-            | <table>
-        }
-    <header> ::= { # | ## | ### | #### | ##### | ###### } ' ' <string> <eol>
-    <preformatted_text_block> ::= <preformatted_text> ...
-    <preformatted_text> ::= '    ' <string> <eol>
-    <quote_block> ::= <quote> ...
-    <quote> ::= '>' ... ' ' <string> <eol>
-    <list_block> ::= { <ordered_list> | <unordered_list> } ...
-    <ordered_list> ::= '1.' ... ' ' <string> <eol>
-    <unordered_list> ::= '-' ... ' ' <string> <eol>
-    <table> ::= <table_separator>
-            [<table_header>]
-            <table_body>
-            <table_separator>
-    <table_separator> ::= '--' <eol>
-    <table_line> ::= <string> [<tab> <string>] ... <eol>
-    <table_header> ::= <table_line> <table_separator>
-    <table_body> ::= <table_line> <table_line> ...
-    <title> -- この文書のタイトルを表す文字列
-    <eol> -- 改行文字
-    <string> -- 文字の列
-
-## 見出し
-#から始まる行は見出しと見做される。
-    # header1
-    ## header2
-    ### header3
-    #### header4
-    ##### header5
-    ###### header6
-
-連続する#の数が見出しレベルに対応する。見出しレベルが連続でない場合はエラーと見做す。
-
-## 段落
-行末までの文字の列は段落と見做される。
-
-## 整形済みテキスト
-半角スペース4つから始まる行は整形済みテキストと見做す。
-
-整形済みのテキストはフォーマッタによって整形されない。
-
-## 引用
->から始まる行は引用文と見做す。
-    > quotation
-
-ネストすることにより引用の引用を表すことができる。
-    >> quotation of quotation
-
-## リスト
-リストは順序の有無により二種類存在する。
---
-順序	開始文字
---
-順序あり	1.
-順序無し	-
---
-
-それぞれ、開始文字を重ねることにより、ネストしたリストを表現することができる。また、リスト内で他方のリストを記述することもできる。
-    - list
-    -- nested list
-    - list
-    1. ordered list
-    1. ordered list
-    - list
-
-## 表
-'--'で区切られたセクションは表と見做される。表は省略可能なヘッダ―部とボディー部に分かれる。
-
-次のようにタブ区切りの列として記述される。
---
-header1	header2
---
-body1-1	body1-2
-body2-1	body2-2
---
-
-")
-; }}}
+(defparameter usage
+  (usage :title "mdrd FILE"
+         :desc '("Output html from markdown")))
 
 (with-open-file (out "test.html" :direction :output :if-exists :supersede)
   (princ
     (princ
-      (with-input-from-string (in *test-code*)
+      (with-input-from-string (in *mdrd-doc*)
         (DSL->xml (mapcar #'eval (read-markdown in))))
       out)))
