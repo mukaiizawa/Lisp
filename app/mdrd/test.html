@@ -107,26 +107,23 @@
       引用
     </h2>
     <p>
-      '&gt;'から始まる行は引用文と見做す。
+      '&gt;'から始まる行は引用文と見做す。引用の引用を表す場合は'&gt;'をネストさせる。
     </p>
     <pre>
       &gt; quotation1
       &gt; quotation2
-    </pre>
-    <blockquote>
-      quotation1
-      quotation2
-    </blockquote>
-    <p>
-      ネストすることにより引用の引用を表すことができる。
-    </p>
-    <pre>
       &gt;&gt; quotation of quotation1
       &gt;&gt; quotation of quotation2
     </pre>
     <blockquote>
-       quotation of quotation1
-       quotation of quotation2
+       quotation1
+      <br/>
+       quotation2
+      <blockquote>
+         quotation of quotation1
+        <br/>
+         quotation of quotation2
+      </blockquote>
     </blockquote>
     <h2>
       リスト

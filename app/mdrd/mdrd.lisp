@@ -65,15 +65,13 @@
       (lambda (x) (+ x n)))
 
 ## 引用
-'>'から始まる行は引用文と見做す。
+'>'から始まる行は引用文と見做す。引用の引用を表す場合は'>'をネストさせる。
     > quotation1
     > quotation2
-> quotation1
-> quotation2
-
-ネストすることにより引用の引用を表すことができる。
     >> quotation of quotation1
     >> quotation of quotation2
+> quotation1
+> quotation2
 >> quotation of quotation1
 >> quotation of quotation2
 
@@ -116,6 +114,12 @@ body2-1	body2-2
     (trim-left (subseq s 1))
     s))
 
+(defun with-br (nodes)
+  (reduce (lambda (x y)
+            (cons y (cons `(:br) x)))
+          (cdr nodes)
+          :initial-value (list (car nodes))))
+
 ; (defun parse-outline (outline)
 ;   (labels
 ;     ((rec (outline)
@@ -146,13 +150,18 @@ body2-1	body2-2
 
 (defmethod quote-level ((ar ahead-reader) &optional (level 0))
   (if (char= (get-next ar (1+ level)) #\>)
-    (quote-level qr (1+ level))
-    level))
+    (quote-level ar (1+ level))
+    (1- level)))
 
 (defmethod parse-quote-block ((ar ahead-reader) &optional (level 0))
   (let (line)
+    (push (subseq (get-line ar) (1+ level)) line)
     (while (char= (get-next ar) #\>)
-      (push (subseq (get-line ar) (+ level 2)) line))
+      (let ((curr-level (quote-level ar)))
+        (if (= curr-level level)
+          (progn (push `(:br) line)
+                 (push (subseq (get-line ar) (1+ level)) line))
+          (push (parse-quote-block ar curr-level) line))))
     `(:blockquote ,@(nreverse line))))
 
 (defmethod parse-paragraph ((ar ahead-reader))

@@ -19,10 +19,13 @@ pre {
 
 blockquote {
   border-left: 3px solid #e0e0e0;
-  padding-left: 1em;
-  margin-left: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0.5em;
+  margin-left: 0.5em;
 }
 
 blockquote blockquote {
-  margin-left: 0;
+  margin: 0px;
+  margin-top: 0.5em;
 }
