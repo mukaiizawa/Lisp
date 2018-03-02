@@ -55,6 +55,8 @@
 
 ## 段落
 行末までの文字の列は段落と見做される。
+    paragraf...
+paragraf...
 
 ## 整形済みテキスト
 半角スペース4つから始まる行は整形済みテキストと見做す。
@@ -154,7 +156,7 @@ body2-1	body2-2
     (1- level)))
 
 (defmethod parse-quote-block ((ar ahead-reader) &optional (level 0))
-  (let (line)
+  (let ((line))
     (push (subseq (get-line ar) (1+ level)) line)
     (while (char= (get-next ar) #\>)
       (let ((curr-level (quote-level ar)))
@@ -178,10 +180,22 @@ body2-1	body2-2
       (push (subseq (get-line ar) 4) line))
     `(:pre ,@(nreverse line))))
 
+(defmethod table-separator? ((ar ahead-reader))
+  (and (char= (get-next ar 1) #\-)
+       (char= (get-next ar 2) #\-)
+       (char= (get-next ar 3) #\newline)))
+
+(defmethod parse-table ((ar ahead-reader))
+  (get-line ar)
+  (let ((header `(:thead (:tr (:th "row1") (:th "row2"))))
+        (body `(:tbody (:tr (:td "row1") (:td "row2")))))
+    `(:table ,header ,body)))
+
 (defmethod parse-statement ((ar ahead-reader))
   (cond ((char= (get-next (read-blank ar)) #\#) (parse-header ar))
         ((char= (get-next ar) #\>) (parse-quote-block ar))
         ((preformatted_text? ar) (parse-preformatted_text_block ar))
+        ((table-separator? ar) (parse-table ar))
         (t (parse-paragraph ar))))
 
 (defmethod parse-title ((ar ahead-reader))

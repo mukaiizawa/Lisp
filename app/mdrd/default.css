@@ -29,3 +29,20 @@ blockquote blockquote {
   margin: 0px;
   margin-top: 0.5em;
 }
+
+table {
+  border-collapse: collapse;
+}
+
+table th {
+  padding: 6px;
+  color: #333;
+  background-color: #eee;
+  border: 1px solid #b9b9b9;
+}
+
+table td {
+  padding: 6px;
+  background-color: #fff;
+  border: 1px solid #b9b9b9;
+}
