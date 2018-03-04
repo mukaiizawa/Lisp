@@ -25,12 +25,13 @@
     <ordered_list> ::= '1.' ... ' ' <string> <eol>
     <unordered_list> ::= '-' ... ' ' <string> <eol>
     <table> ::= <table_separator>
-            [<table_header>]
+            <table_header>
+            <table_separator>
             <table_body>
             <table_separator>
     <table_separator> ::= '--' <eol>
     <table_line> ::= <string> [<tab> <string>] ... <eol>
-    <table_header> ::= <table_line> <table_separator>
+    <table_header> ::= <table_line>
     <table_body> ::= <table_line> <table_line> ...
     <title> -- この文書のタイトルを表す文字列
     <eol> -- 改行文字
@@ -98,6 +99,13 @@ paragraf...
 '--'で区切られたセクションは表と見做される。表は省略可能なヘッダ―部とボディー部に分かれる。
 
 次のようにタブ区切りの列として記述される。
+    --
+    header1	header2
+    --
+    body1-1	body1-2
+    body2-1	body2-2
+    --
+
 --
 header1	header2
 --
@@ -185,11 +193,20 @@ body2-1	body2-2
        (char= (get-next ar 2) #\-)
        (char= (get-next ar 3) #\newline)))
 
+(defmethod parse-table-row ((ar ahead-reader) &optional header?)
+  `(:tr ,@(mapcar (lambda (x)
+                    (if header? `(:th ,x) `(:td ,x)))
+                  (string->list #\tab (get-line ar)))))
+
 (defmethod parse-table ((ar ahead-reader))
   (get-line ar)
-  (let ((header `(:thead (:tr (:th "row1") (:th "row2"))))
-        (body `(:tbody (:tr (:td "row1") (:td "row2")))))
-    `(:table ,header ,body)))
+  (let ((header (parse-table-row ar t))
+        (body nil))
+    (get-line ar)
+    (while (not (table-separator? ar))
+      (push (parse-table-row ar) body))
+    (get-line ar)
+    `(:table (:thead ,header) (:tbody ,@(nreverse body)))))
 
 (defmethod parse-statement ((ar ahead-reader))
   (cond ((char= (get-next (read-blank ar)) #\#) (parse-header ar))

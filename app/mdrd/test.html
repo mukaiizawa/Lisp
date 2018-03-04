@@ -35,12 +35,13 @@
       &lt;ordered_list&gt; ::= '1.' ... ' ' &lt;string&gt; &lt;eol&gt;
       &lt;unordered_list&gt; ::= '-' ... ' ' &lt;string&gt; &lt;eol&gt;
       &lt;table&gt; ::= &lt;table_separator&gt;
-              [&lt;table_header&gt;]
+              &lt;table_header&gt;
+              &lt;table_separator&gt;
               &lt;table_body&gt;
               &lt;table_separator&gt;
       &lt;table_separator&gt; ::= '--' &lt;eol&gt;
       &lt;table_line&gt; ::= &lt;string&gt; [&lt;tab&gt; &lt;string&gt;] ... &lt;eol&gt;
-      &lt;table_header&gt; ::= &lt;table_line&gt; &lt;table_separator&gt;
+      &lt;table_header&gt; ::= &lt;table_line&gt;
       &lt;table_body&gt; ::= &lt;table_line&gt; &lt;table_line&gt; ...
       &lt;title&gt; -- この文書のタイトルを表す文字列
       &lt;eol&gt; -- 改行文字
@@ -141,73 +142,28 @@
       <thead>
         <tr>
           <th>
-            row1
+            順序
           </th>
           <th>
-            row2
+            開始文字
           </th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>
-            row1
+            順序あり
           </td>
           <td>
-            row2
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      順序	開始文字
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            row1
-          </th>
-          <th>
-            row2
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            row1
-          </td>
-          <td>
-            row2
+            1.
           </td>
         </tr>
-      </tbody>
-    </table>
-    <p>
-      順序あり	1.
-    </p>
-    <p>
-      順序無し	-
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            row1
-          </th>
-          <th>
-            row2
-          </th>
-        </tr>
-      </thead>
-      <tbody>
         <tr>
           <td>
-            row1
+            順序無し
           </td>
           <td>
-            row2
+            -
           </td>
         </tr>
       </tbody>
@@ -232,77 +188,40 @@
     <p>
       次のようにタブ区切りの列として記述される。
     </p>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            row1
-          </th>
-          <th>
-            row2
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            row1
-          </td>
-          <td>
-            row2
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
+    <pre>
+      --
       header1	header2
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            row1
-          </th>
-          <th>
-            row2
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            row1
-          </td>
-          <td>
-            row2
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
+      --
       body1-1	body1-2
-    </p>
-    <p>
       body2-1	body2-2
-    </p>
+      --
+    </pre>
     <table>
       <thead>
         <tr>
           <th>
-            row1
+            header1
           </th>
           <th>
-            row2
+            header2
           </th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>
-            row1
+            body1-1
           </td>
           <td>
-            row2
+            body1-2
+          </td>
+        </tr>
+        <tr>
+          <td>
+            body2-1
+          </td>
+          <td>
+            body2-2
           </td>
         </tr>
       </tbody>
