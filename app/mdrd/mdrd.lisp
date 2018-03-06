@@ -130,11 +130,15 @@ body2-1	body2-2
           (cdr nodes)
           :initial-value (list (car nodes))))
 
-; (defun parse-outline (outline)
-;   (labels
-;     ((rec (outline)
-;           `(:ul ,@(mapcar (lambda (x) `(:ol ,x)) outline)))
-; ; #o(parse-outline '((1 a) (2 b) (3 c)))
+(defun parse-outline (outline)
+  `(list
+     (:h1 "目次")
+     (:p ((style "white-space:pre"))
+       ,@(nreverse (mapcar (lambda (x)
+                             (mkstr (make-string (* (car x) 4)
+                                                 :initial-element #\Space)
+                                    (cadr x)))
+                           outline)))))
 
 (defmethod read-blank ((ar ahead-reader))
   (read-if (lambda (c) (char= c #\newline)) ar :cache nil)
@@ -230,7 +234,7 @@ body2-1	body2-2
           (:link ((type "text/css") (rel "stylesheet") (href "./default.css")))
           (:title ,title))
         (:body
-          ; ,(parse-outline *outline*)
+          ,(parse-outline *outline*)
           ,@(nreverse body))))))
 
 (defun read-markdown (stream)
