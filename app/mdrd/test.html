@@ -11,21 +11,34 @@
     <h1>
       目次
     </h1>
-    <p style="white-space:pre">
-          概要
-          書式
-              見出し
-          header1
-              header2
-                  header3
-                      header4
-                          header5
-                              header6
-              段落
-              整形済みテキスト
-              引用
-              リスト
-              表
+    <p>
+      1. 概要
+      <br/>
+       書式
+      <br/>
+      1. 見出し
+      <br/>
+       header1
+      <br/>
+       header2
+      <br/>
+      1. header3
+      <br/>
+      1. header4
+      <br/>
+      1. header5
+      <br/>
+      1. header6
+      <br/>
+       段落
+      <br/>
+       整形済みテキスト
+      <br/>
+       引用
+      <br/>
+       リスト
+      <br/>
+       表
     </p>
     <h1>
       概要
@@ -36,6 +49,9 @@
     <h1>
       書式
     </h1>
+    <p>
+      拡張マークダウンの書式を以下に示す。
+    </p>
     <pre>
       &lt;markdown&gt; ::= &lt;title&gt; &lt;statement&gt; ...
       &lt;statement&gt; ::= {
@@ -209,10 +225,11 @@
     </p>
     <pre>
       --
-      header1	header2
+      header1	header2	header3
       --
-      body1-1	body1-2
-      body2-1	body2-2
+      body1-1	body1-2	body1-3
+      body2-1	body2-2	body2-3
+      body3-1	body3-2	body3-3
       --
     </pre>
     <table>
@@ -224,6 +241,9 @@
           <th>
             header2
           </th>
+          <th>
+            header3
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -234,6 +254,9 @@
           <td>
             body1-2
           </td>
+          <td>
+            body1-3
+          </td>
         </tr>
         <tr>
           <td>
@@ -241,6 +264,20 @@
           </td>
           <td>
             body2-2
+          </td>
+          <td>
+            body2-3
+          </td>
+        </tr>
+        <tr>
+          <td>
+            body3-1
+          </td>
+          <td>
+            body3-2
+          </td>
+          <td>
+            body3-3
           </td>
         </tr>
       </tbody>

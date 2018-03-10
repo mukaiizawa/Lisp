@@ -1,119 +1,5 @@
 ; markdown reader
 
-(defparameter *mdrd-doc*
-"
-マークダウンリーダー
-
-# 概要
-独自拡張したマークダウン記法を解釈し構文木に変換する。
-
-# 書式
-    <markdown> ::= <title> <statement> ...
-    <statement> ::= {
-            <paragraph>
-            | <preformatted_text_block>
-            | <quote_block>
-            | <list_block>
-            | <table>
-        }
-    <header> ::= { # | ## | ### | #### | ##### | ###### } ' ' <string> <eol>
-    <preformatted_text_block> ::= <preformatted_text> ...
-    <preformatted_text> ::= '    ' <string> <eol>
-    <quote_block> ::= <quote> ...
-    <quote> ::= '>' ... ' ' <string> <eol>
-    <list_block> ::= { <ordered_list> | <unordered_list> } ...
-    <ordered_list> ::= '1.' ... ' ' <string> <eol>
-    <unordered_list> ::= '-' ... ' ' <string> <eol>
-    <table> ::= <table_separator>
-            <table_header>
-            <table_separator>
-            <table_body>
-            <table_separator>
-    <table_separator> ::= '--' <eol>
-    <table_line> ::= <string> [<tab> <string>] ... <eol>
-    <table_header> ::= <table_line>
-    <table_body> ::= <table_line> <table_line> ...
-    <title> -- この文書のタイトルを表す文字列
-    <eol> -- 改行文字
-    <string> -- 文字の列
-
-## 見出し
-'#'から始まる行は見出しと見做される。
-    # header1
-    ## header2
-    ### header3
-    #### header4
-    ##### header5
-    ###### header6
-
-連続する#の数が見出しレベルに対応する。
-# header1
-## header2
-### header3
-#### header4
-##### header5
-###### header6
-
-## 段落
-行末までの文字の列は段落と見做される。
-    paragraf...
-paragraf...
-
-## 整形済みテキスト
-半角スペース4つから始まる行は整形済みテキストと見做す。
-    preformatted
-
-整形済みのテキストはフォーマッタによって整形されない。
-    (defun make-adder (n)
-      (lambda (x) (+ x n)))
-
-## 引用
-'>'から始まる行は引用文と見做す。引用の引用を表す場合は'>'をネストさせる。
-    > quotation1
-    > quotation2
-    >> quotation of quotation1
-    >> quotation of quotation2
-> quotation1
-> quotation2
->> quotation of quotation1
->> quotation of quotation2
-
-## リスト
-リストは順序の有無により二種類存在する。
---
-順序	開始文字
---
-順序あり	1.
-順序無し	-
---
-
-それぞれ、開始文字を重ねることにより、ネストしたリストを表現することができる。また、リスト内で他方のリストを記述することもできる。
-    - list
-    -- nested list
-    - list
-    1. ordered list
-    1. ordered list
-    - list
-
-## 表
-'--'で区切られたセクションは表と見做される。表は省略可能なヘッダ―部とボディー部に分かれる。
-
-次のようにタブ区切りの列として記述される。
-    --
-    header1	header2
-    --
-    body1-1	body1-2
-    body2-1	body2-2
-    --
-
---
-header1	header2
---
-body1-1	body1-2
-body2-1	body2-2
---
-")
-
 (require :ahead-reader *module-ahead-reader*)
 (require :xml-manager *module-xml-manager*)
 
@@ -125,20 +11,33 @@ body2-1	body2-2
     s))
 
 (defun with-br (nodes)
-  (reduce (lambda (x y)
-            (cons y (cons `(:br) x)))
-          (cdr nodes)
-          :initial-value (list (car nodes))))
+  (nreverse (reduce (lambda (x y)
+                      (cons y (cons `(:br) x)))
+                    (cdr nodes)
+                    :initial-value (list (car nodes)))))
+
+; 1. Fundamental protocols.
+;   1.1. Object class.#
+;     1.1.1. Object >> init
+;     1.1.2. Object >> == object
 
 (defun parse-outline (outline)
-  `(list
-     (:h1 "目次")
-     (:p ((style "white-space:pre"))
-       ,@(nreverse (mapcar (lambda (x)
-                             (mkstr (make-string (* (car x) 4)
-                                                 :initial-element #\Space)
-                                    (cadr x)))
-                           outline)))))
+  (let ((levels (make-array 6 :initial-element 0)))
+    `(list
+       (:h1 "目次")
+       (:p ,@(with-br
+               (mapcar (lambda (x)
+                         (with-output-to-string (out)
+                           (let ((level (car x)) (header (cadr x)))
+                             ; (dotimes (i (- 6 level 1))
+                             ;   (setf (aref levels (- 6 i) 0)))
+                             (while (or (> level 6) (= (aref levels level) 0))
+                               (princ (incf (aref levels level)) out)
+                               (princ #\. out))
+                             (princ #\Space out)
+                             (princ header out))
+                           out))
+                       (nreverse outline)))))))
 
 (defmethod read-blank ((ar ahead-reader))
   (read-if (lambda (c) (char= c #\newline)) ar :cache nil)
@@ -153,14 +52,15 @@ body2-1	body2-2
       (setq line (subseq line 1))
       (incf level))
     (setq line (trim-left line))
-    (push (list level line) *outline*)
-    (ecase level
-      ((1) `(:h1 ,line))
-      ((2) `(:h2 ,line))
-      ((3) `(:h3 ,line))
-      ((4) `(:h4 ,line))
-      ((5) `(:h5 ,line))
-      ((6) `(:h6 ,line)))))
+    (push (list (decf level) line) *outline*)
+    (list (ecase level
+            ((0) :h1)
+            ((1) :h2)
+            ((2) :h3)
+            ((3) :h4)
+            ((4) :h5)
+            ((5) :h6))
+          line)))
 
 (defmethod quote-level ((ar ahead-reader) &optional (level 0))
   (if (char= (get-next ar (1+ level)) #\>)
@@ -250,6 +150,6 @@ body2-1	body2-2
 (with-open-file (out "test.html" :direction :output :if-exists :supersede)
   (princ
     (princ
-      (with-input-from-string (in *mdrd-doc*)
+      (with-open-file (in "readme.md" :direction :input)
         (DSL->xml (mapcar #'eval (read-markdown in))))
       out)))

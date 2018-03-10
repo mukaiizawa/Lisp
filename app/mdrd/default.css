@@ -1,24 +1,39 @@
 @charset "UTF-8";
 
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 1em;
-  margin-bottom: 0.5em;
+body {
+  width: 750px;
+  margin: auto;
 }
 
-h1 { border-bottom: solid 2px black; }
-h2 { border-bottom: solid 1px black; }
-h3 { border-bottom: solid 1px #bbb; }
+h1, h2, h3, h4, h5, h6 {
+  display: block;
+  margin-top: 1em;
+  margin-bottom: 0.25em;
+  font-weight: bold;
+  border-bottom: solid 1px #ccc;
+}
+
+h1 { font-size: 1.8em; }
+h2 { font-size: 1.6em; }
+h3 { font-size: 1.4em; }
+h4 { font-size: 1.2em; }
+h5 { font-size: 1.0em; }
+h6 { font-size: 1em; }
+
+p {
+  margin-bottom: 0.25em;
+}
 
 pre {
   padding-top: 0.5em;
   box-sizing: border-box;
-  background: #efefef;
+  border: solid 1px #ccc;
   padding-left: -4em;
   margin-left: 1em;
 }
 
 blockquote {
-  border-left: 3px solid #eee;
+  border-left: 1.2px solid #ccc;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
   padding-left: 0.5em;
@@ -35,14 +50,10 @@ table {
 }
 
 table th {
-  padding: 6px;
-  color: #333;
-  background-color: #eee;
-  border: 1px solid #b9b9b9;
+  background-color: #f4f4f4;
 }
 
-table td {
-  padding: 6px;
-  background-color: #fff;
-  border: 1px solid #b9b9b9;
+td, th {
+  padding: 3px;
+  border: 1px solid #ccc;
 }
