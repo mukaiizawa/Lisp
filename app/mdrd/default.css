@@ -32,6 +32,10 @@ pre {
   margin-left: 1em;
 }
 
+pre.index {
+  border: none;
+}
+
 blockquote {
   border-left: 1.2px solid #ccc;
   padding-top: 0.5em;
@@ -50,7 +54,7 @@ table {
 }
 
 table th {
-  background-color: #f4f4f4;
+  background-color: #ddd;
 }
 
 td, th {

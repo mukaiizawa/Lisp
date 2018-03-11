@@ -16,28 +16,27 @@
                     (cdr nodes)
                     :initial-value (list (car nodes)))))
 
-; 1. Fundamental protocols.
-;   1.1. Object class.#
-;     1.1.1. Object >> init
-;     1.1.2. Object >> == object
-
 (defun parse-outline (outline)
   (let ((levels (make-array 6 :initial-element 0)))
     `(list
        (:h1 "目次")
-       (:p ,@(with-br
-               (mapcar (lambda (x)
-                         (with-output-to-string (out)
-                           (let ((level (car x)) (header (cadr x)))
-                             ; (dotimes (i (- 6 level 1))
-                             ;   (setf (aref levels (- 6 i) 0)))
-                             (while (or (> level 6) (= (aref levels level) 0))
-                               (princ (incf (aref levels level)) out)
-                               (princ #\. out))
-                             (princ #\Space out)
-                             (princ header out))
-                           out))
-                       (nreverse outline)))))))
+       (:pre ((class "index"))
+         ,@(mapcar (lambda (x)
+                     (with-output-to-string (out)
+                       (let ((level (car x )) (header (cadr x)))
+                         (dotimes (i 6)
+                           (cond ((= i level) (incf (aref levels i)))
+                                 ((> i level) (setf (aref levels i) 0))
+                                 (t nil)))
+                         (princ (make-string (* 2 level)
+                                             :initial-element #\Space)
+                                out)
+                         (dotimes (i (1+ level))
+                           (princ (aref levels i) out)
+                           (princ #\. out))
+                         (princ header out)
+                         out)))
+                   (nreverse outline))))))
 
 (defmethod read-blank ((ar ahead-reader))
   (read-if (lambda (c) (char= c #\newline)) ar :cache nil)
