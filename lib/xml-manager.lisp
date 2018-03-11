@@ -3,9 +3,8 @@
 (require :regex *module-regex*)
 (provide :xml-manager)
 
-;; *html-tags* {{{
-
 (defparameter *html-tags*
+; {{{
   '( "a"
      "abbr"
      "acronym"
@@ -128,8 +127,7 @@
      "video"
      "wbr"))
 
-;; }}}
-;; *single-tags* {{{
+; }}}
 
 (defparameter *single-tags*
   '( "area"
@@ -146,14 +144,9 @@
      "param"
      "source"))
 
-;; }}}
-;; *consider-newline-tags* {{{
-
 (defparameter *consider-newline-tags*
   '( "textarea"
      "pre"))
-
-;; }}}
 
 (defstruct xml-node
   (type 'unspecified :type symbol)
@@ -163,21 +156,12 @@
   (children nil :type list)
   (single? nil :type boolean))
 
-;; indent manager 
-;; *with-format* {{{
-
 (defparameter *with-format* nil)
-
-;; }}}
-;; indent-manager {{{
 
 (defstruct indent-manager
   (indent "" :type string)
   (indent-level 0 :type number)
   (tab-space 2 :type number))
-
-;; }}}
-;; change-indent-level {{{
 
 (defun change-indent-level (indent direction)
   (when *with-format*
@@ -191,21 +175,10 @@
             :initial-element #\Space)))
   (values))
 
-;; }}}
-;; indent-newline {{{
-
 (defun indent-newline ()
   (if *with-format* #\Newline +empty-string+))
 
-;; }}}
-
-;; define element
-;; *node-name-mapping* {{{
-
 (defparameter *node-name-mapping* (make-hash-table :test 'equal))
-
-;; }}}
-;; defelement {{{
 
 (defmacro defelement (namespace name mapping-name)
   (set-node-name-mapping namespace name mapping-name)
@@ -227,9 +200,6 @@
                                 (remove nil (list ,@body)))
               :single? ',',(single-tag? name namespace)))))))
 
-;; }}}
-;; defelements {{{
-
 (defmacro defelements (namespace names mapping-names)
   `(progn
      ,@(mapcar (lambda (name mapping-name)
@@ -238,20 +208,11 @@
                               ,mapping-name))
                names mapping-names)))
 
-;; }}}
-;; :!DOCTYPE {{{
-
 (defmacro :!DOCTYPE (&optional (str "html"))
   `(make-xml-node :type 'document-type :value ,str))
 
-;; }}}
-;; :!-- {{{
-
 (defmacro :!-- (str)
   `(make-xml-node :type 'comment :value ,str))
-
-;; }}}
-;; with-xml-encode {{{
 
 (defun with-xml-encode (str)
   (with-output-to-string (buf)
@@ -265,9 +226,6 @@
           (#\© "&copy;")
           (t c))
         buf))))
-
-;; }}}
-;; with-html-decode {{{
 
 (defun with-html-decode (str)
   (with-output-to-string (out)
@@ -295,9 +253,6 @@
               token)
             out))))))
 
-;; }}}
-;; merge-node-name {{{
-
 (defun merge-node-name (name &optional namespace)
   (with-output-to-string (out)
     (when namespace
@@ -305,33 +260,19 @@
       (write-string ":" out))
     (write-string name out)))
 
-;; }}}
-;; set-node-name-mapping {{{
-
 (defun set-node-name-mapping (namespace name mapping-name)
   (setf (gethash (merge-node-name name namespace)
                  *node-name-mapping*)
         mapping-name)
   (values))
 
-;; }}}
-;; get-node-name-mapping {{{
-
 (defun get-node-name-mapping (name &optional namespace)
   (aif (gethash (merge-node-name name namespace) *node-name-mapping*)
     (string-downcase (mkstr it))
     (error "get-node-name-mappin: undefined element `~A'." (merge-node-name name namespace))))
 
-;; }}}
-;; single-tag? {{{
-
 (defun single-tag? (name &optional namespace)
   (and (find (get-node-name-mapping name namespace) *single-tags* :test 'equal) t))
-
-;; }}}
-
-;; xml-parser
-;; parse-xml {{{
 
 (defun parse-xml (stream)
   (with-ahead-reader (reader stream)
@@ -339,9 +280,6 @@
       ((reach-eof? reader)
        (nreverse nodes))
       (push (parse-node reader) nodes))))
-
-;; }}}
-;; parse-node {{{
 
 (defun parse-node (reader)
   (if (not (reader-next-in? reader #\<))
@@ -381,9 +319,6 @@
                             (t
                               (push node nodes)))))
               tag)))))
-
-;; }}}
-;; parse-tag {{{
 
 (defun parse-tag (reader)
   (read-if (lambda (c)
@@ -434,9 +369,6 @@
           (t
             (error "parse-tag: unknown tag `~A' at line: ~A." name (1+ (get-linecount reader)))))))
 
-;; }}}
-;; parse-attrs {{{
-
 (defun parse-attrs (reader)
   (do ((key) (value) (attrs))
     ((reader-next-in? (read-if (lambda (c)
@@ -454,11 +386,6 @@
                                       #\' #\")
                      (get-buf (read-segment reader))))
     (push (delete nil (list key value)) attrs)))
-
-;; }}}
-
-;; converter
-;; xml-nodes->DSL {{{
 
 (defun xml-nodes->DSL (nodes)
   (let ((consider-newline? nil))
@@ -490,9 +417,6 @@
                                   (error "xml-nodes->DSL: unknown node type ~A" (xml-node-type node)))))
                             (mklist nodes)))))
       (rec nodes))))
-
-;; }}}
-;; DSL->xml {{{
 
 (defun DSL->xml (&rest nodes)
   (labels ((rec (nodes indent-manager)
@@ -535,14 +459,8 @@
                                       (indent-newline)))))))))
     (rec nodes (make-indent-manager))))
 
-;; }}}
-;; xml->DSL {{{
-
 (defun xml->DSL (stream)
   (xml-nodes->DSL (parse-xml stream)))
-
-;; }}}
-;; trim {{{
 
 (defun trim (str)
   (let ((left-trimmer (lambda (str)
@@ -555,19 +473,11 @@
                                               reader :cache nil)))))))
     (reverse (funcall left-trimmer (reverse (funcall left-trimmer str))))))
 
-;; }}}
-
 (defelements nil #.*html-tags* #.(mapcar (compose #'mkkey #'string-upcase) *html-tags*))
-
-;; utility
-;; import-xml {{{
 
 (defmacro import-xml (xml)
   `(with-input-from-string (in ,xml)
      (parse-xml in)))
-
-;; }}}
-;; to-pre-code {{{
 
 (defmacro to-pre-code (xml)
   `(list
@@ -575,5 +485,3 @@
      (:pre
        (:code
          (import-xml ,xml)))))
-
-;; }}}
