@@ -2,15 +2,12 @@
 
 body { width: 780px; margin: auto; }
 
-h1, h2, h3, h4, h5, h6, p, pre, blockquote, table {
-  margin-bottom: 0.25em;
-}
-
-pre, blockquote, table { margin-left: 1.0em; margin-right: 1.0em; }
+h1, h2, h3, h4, h5, h6, p, pre, blockquote, table { margin-bottom: 0.75em; }
+pre, blockquote, table { padding: 0.5em; margin-left: 1em; margin-right: 1em; }
 
 h1, h2, h3, h4, h5, h6 {
   display: block;
-  margin-top: 0.5em;
+  margin-top: 0.75em;
   font-weight: bold;
   border-bottom: solid 1px #ccc;
 }
@@ -24,20 +21,10 @@ h6 { font-size: 1.0em; }
 
 p { text-indent: 1em; }
 
-pre {
-  border: solid 1px #ccc;
-  box-sizing: border-box;
-  padding-left: -4em;
-  padding-top: 0.5em;
-}
+pre { border: solid 1px #ccc; box-sizing: border-box; }
 pre.index { border: none; }
 
-blockquote {
-  border-left: 1.2px solid #ccc;
-  padding-bottom: 0.5em;
-  padding-left: 0.5em;
-  padding-top: 0.5em;
-}
+blockquote { border-left: 1.2px solid #ccc; }
 blockquote blockquote { margin-left: 0px; }
 
 table { border-collapse: collapse; }

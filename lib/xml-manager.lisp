@@ -4,149 +4,26 @@
 (provide :xml-manager)
 
 (defparameter *html-tags*
-; {{{
-  '( "a"
-     "abbr"
-     "acronym"
-     "address"
-     "applet"
-     "area"
-     "article"
-     "aside"
-     "audio"
-     "b"
-     "base"
-     "basefont"
-     "bdi"
-     "bdo"
-     "big"
-     "blockquote"
-     "body"
-     "br"
-     "button"
-     "canvas"
-     "caption"
-     "center"
-     "cite"
-     "code"
-     "col"
-     "colgroup"
-     "datalist"
-     "dd"
-     "del"
-     "details"
-     "dfn"
-     "dialog"
-     "dir"
-     "div"
-     "dl"
-     "dt"
-     "em"
-     "embed"
-     "fieldset"
-     "figcaption"
-     "figure"
-     "font"
-     "footer"
-     "form"
-     "frame"
-     "frameset"
-     "h1"
-     "h2"
-     "h3"
-     "h4"
-     "h5"
-     "h6"
-     "head"
-     "header"
-     "hr"
-     "html"
-     "i"
-     "iframe"
-     "img"
-     "input"
-     "ins"
-     "kbd"
-     "keygen"
-     "label"
-     "legend"
-     "li"
-     "link"
-     "main"
-     "map"
-     "mark"
-     "menu"
-     "menuitem"
-     "meta"
-     "meter"
-     "nav"
-     "noframes"
-     "noscript"
-     "object"
-     "ol"
-     "optgroup"
-     "option"
-     "output"
-     "p"
-     "param"
-     "pre"
-     "progress"
-     "q"
-     "rp"
-     "rt"
-     "ruby"
-     "s"
-     "samp"
-     "script"
-     "section"
-     "select"
-     "small"
-     "source"
-     "span"
-     "strike"
-     "strong"
-     "style"
-     "sub"
-     "summary"
-     "sup"
-     "table"
-     "tbody"
-     "td"
-     "textarea"
-     "tfoot"
-     "th"
-     "thead"
-     "time"
-     "title"
-     "tr"
-     "track"
-     "tt"
-     "u"
-     "ul"
-     "var"
-     "video"
-     "wbr"))
-
-; }}}
+  '("a" "abbr" "acronym" "address" "applet" "area" "article" "aside" "audio"
+    "b" "base" "basefont" "bdi" "bdo" "big" "blockquote" "body" "br" "button"
+    "canvas" "caption" "center" "cite" "code" "col" "colgroup" "datalist" "dd"
+    "del" "details" "dfn" "dialog" "dir" "div" "dl" "dt" "em" "embed" "fieldset"
+    "figcaption" "figure" "font" "footer" "form" "frame" "frameset" "h1" "h2"
+    "h3" "h4" "h5" "h6" "head" "header" "hr" "html" "i" "iframe" "img" "input"
+    "ins" "kbd" "keygen" "label" "legend" "li" "link" "main" "map" "mark" "menu"
+    "menuitem" "meta" "meter" "nav" "noframes" "noscript" "object" "ol"
+    "optgroup" "option" "output" "p" "param" "pre" "progress" "q" "rp" "rt"
+    "ruby" "s" "samp" "script" "section" "select" "small" "source" "span"
+    "strike" "strong" "style" "sub" "summary" "sup" "table" "tbody" "td"
+    "textarea" "tfoot" "th" "thead" "time" "title" "tr" "track" "tt" "u" "ul"
+    "var" "video" "wbr"))
 
 (defparameter *single-tags*
-  '( "area"
-     "base"
-     "br"
-     "col"
-     "embed"
-     "hr"
-     "img"
-     "input"
-     "keygen"
-     "link"
-     "meta"
-     "param"
-     "source"))
+  '("area" "base" "br" "col" "embed" "hr" "img" "input" "keygen" "link" "meta"
+    "param" "source"))
 
 (defparameter *consider-newline-tags*
-  '( "textarea"
-     "pre"))
+  '("textarea" "pre"))
 
 (defstruct xml-node
   (type 'unspecified :type symbol)
@@ -172,8 +49,7 @@
           (make-string
             (* (indent-manager-tab-space indent)
                (indent-manager-indent-level indent))
-            :initial-element #\Space)))
-  (values))
+            :initial-element #\Space))))
 
 (defun indent-newline ()
   (if *with-format* #\Newline +empty-string+))
@@ -201,12 +77,9 @@
               :single? ',',(single-tag? name namespace)))))))
 
 (defmacro defelements (namespace names mapping-names)
-  `(progn
-     ,@(mapcar (lambda (name mapping-name)
-                 `(defelement ,namespace
-                              ,name
-                              ,mapping-name))
-               names mapping-names)))
+  `(progn ,@(mapcar (lambda (name mapping-name)
+                      `(defelement ,namespace ,name ,mapping-name))
+                    names mapping-names)))
 
 (defmacro :!DOCTYPE (&optional (str "html"))
   `(make-xml-node :type 'document-type :value ,str))
@@ -217,15 +90,14 @@
 (defun with-xml-encode (str)
   (with-output-to-string (buf)
     (dostring (c str)
-      (princ
-        (case c
-          (#\" "&quot;")
-          (#\& "&amp;")
-          (#\< "&lt;")
-          (#\> "&gt;")
-          (#\© "&copy;")
-          (t c))
-        buf))))
+      (princ (case c
+               ((#\") "&quot;")
+               ((#\&) "&amp;")
+               ((#\<) "&lt;")
+               ((#\>) "&gt;")
+               ((#\©) "&copy;")
+               (t c))
+             buf))))
 
 (defun with-html-decode (str)
   (with-output-to-string (out)
@@ -246,10 +118,9 @@
                                  ("&" "&amp")
                                  ("<" "&lt")
                                  (">" "&gt")
-                                 ("?驛｢?ｧ隰?∞?ｽ?ｽ??ｽ???ｩ" "&copy"))
+                                 ("©" "&copy"))
                                :key #'second))
-              (and (read-next reader :cache nil)
-                   (first it))
+              (and (read-next reader :cache nil) (first it))
               token)
             out))))))
 
@@ -261,70 +132,65 @@
     (write-string name out)))
 
 (defun set-node-name-mapping (namespace name mapping-name)
-  (setf (gethash (merge-node-name name namespace)
-                 *node-name-mapping*)
-        mapping-name)
-  (values))
+  (setf (gethash (merge-node-name name namespace) *node-name-mapping*)
+        mapping-name))
 
 (defun get-node-name-mapping (name &optional namespace)
   (aif (gethash (merge-node-name name namespace) *node-name-mapping*)
     (string-downcase (mkstr it))
-    (error "get-node-name-mappin: undefined element `~A'." (merge-node-name name namespace))))
+    (error "get-node-name-mappin: undefined element `~A'."
+           (merge-node-name name namespace))))
 
 (defun single-tag? (name &optional namespace)
-  (and (find (get-node-name-mapping name namespace) *single-tags* :test 'equal) t))
+  (and (find (get-node-name-mapping name namespace) *single-tags* :test 'equal)
+       t))    ; must be t or nil
 
 (defun parse-xml (stream)
   (with-ahead-reader (reader stream)
     (do ((nodes))
-      ((reach-eof? reader)
-       (nreverse nodes))
+      ((reach-eof? reader) (nreverse nodes))
       (push (parse-node reader) nodes))))
 
 (defun parse-node (reader)
   (if (not (reader-next-in? reader #\<))
-    ;; text-node
-    (make-xml-node
-      :type 'text
-      :value (with-html-decode
-               (get-buf (read-if (lambda (c)
-                                   (char/= c #\<))
-                                 reader))))
+    ;; text node
+    (make-xml-node :type 'text
+                   :value (with-html-decode
+                            (get-buf (read-if (lambda (c)
+                                                (char/= c #\<))
+                                              reader))))
+    ;; other node
     (let ((linecount-at-open-tag (1+ (get-linecount reader)))
           (tag (parse-tag reader)))
-      (cond ((find (xml-node-type tag) '(etag document-type comment))
-             tag)
-            ((xml-node-single? tag) 
-             (setf (xml-node-type tag) 'element)
-             tag)
+      (cond ((find (xml-node-type tag) '(etag document-type comment)) tag)
+            ((xml-node-single? tag) (setf (xml-node-type tag) 'element) tag)
             (t
-              (setf (xml-node-type tag)
-                    'element
+              (setf (xml-node-type tag) 'element
                     (xml-node-children tag)
                     (do* ((error?)
                           (node (parse-node reader) (parse-node reader))
                           (nodes))
                       ((let ((match-etag? (and (eq (xml-node-type node) 'etag)
-                                               (string= (xml-node-name node) (xml-node-name tag)))))
+                                               (string= (xml-node-name node)
+                                                        (xml-node-name tag)))))
                          (cond ((and error? match-etag?)
-                                (error "parse-nodes: Missing start `~A' tag at line: ~A" (xml-node-name (first error?)) (second error?)))
+                                (error "parse-nodes: Missing start `~A' tag at line: ~A"
+                                       (xml-node-name (first error?)) (second error?)))
                                (error?
-                                 (error "parse-nodes: Missing end `~A' tag at line: ~A" (xml-node-name tag) linecount-at-open-tag))
-                               (match-etag? t)
-                               (t nil)))
+                                 (error "parse-nodes: Missing end `~A' tag at line: ~A"
+                                        (xml-node-name tag) linecount-at-open-tag))
+                               (t match-etag?)))
                        (nreverse nodes))
                       (cond ((or (reach-eof? reader)
                                  (eq (xml-node-type node) 'etag))
-                             (setq error? (list node (1+ (get-linecount reader)))))
+                             (setq error?
+                                   (list node (1+ (get-linecount reader)))))
                             (t
                               (push node nodes)))))
               tag)))))
 
 (defun parse-tag (reader)
-  (read-if (lambda (c)
-             (find c '(#\< #\/)))
-           reader
-           :cache nil)
+  (read-if (lambda (c) (find c '(#\< #\/))) reader :cache nil)
   (let* ((tag-type (cond ((reader-curr-in? reader #\/) 'etag)
                          ((not (reader-next-in? reader #\!)) 'stag)
                          (t 'others)))
@@ -338,10 +204,8 @@
            (let ((attrs (parse-attrs reader))
                  (single? (or (and (reader-next-in? reader #\/) t)
                               (single-tag? name))))    ; defined *single-tag*
-             (read-if (lambda (c)
-                        (char= c #\>))
-                      (read-if (lambda (c)
-                                 (char= c #\/))
+             (read-if (lambda (c) (char= c #\>))
+                      (read-if (lambda (c) (char= c #\/))
                                reader :cache nil)
                       :cache nil)    ; skip `>' or `/>'
              (make-xml-node :type tag-type
@@ -353,21 +217,22 @@
                           :value (funcall #~s/-->$//    ; trim right and remove hyphen
                                           (get-buf
                                             (read-next    ; skip `>'
-                                              (read-if (ilambda(c)
-                                                         (not (and (char= (get-next reader) #\-)
-                                                                   (char= (get-next reader 2) #\-)
-                                                                   (char= (get-next reader 3) #\>))))
-                                                       reader))))))
+                                              (read-if
+                                                (ilambda(c)
+                                                  (not (and (char= (get-next reader) #\-)
+                                                            (char= (get-next reader 2) #\-)
+                                                            (char= (get-next reader 3) #\>))))
+                                                reader))))))
           ((string= name "!DOCTYPE")
            (make-xml-node :type 'document-type
-                          :value (get-buf
-                                   (read-next    ; skip `>'
-                                     (read-if (lambda (c)
-                                                (char/= c #\>))
-                                              reader)
-                                     :cache nil))))
+                          :value (get-buf (read-next    ; skip `>'
+                                            (read-if (lambda (c)
+                                                       (char/= c #\>))
+                                                     reader)
+                                            :cache nil))))
           (t
-            (error "parse-tag: unknown tag `~A' at line: ~A." name (1+ (get-linecount reader)))))))
+            (error "parse-tag: unknown tag `~A' at line: ~A."
+                   name (1+ (get-linecount reader)))))))
 
 (defun parse-attrs (reader)
   (do ((key) (value) (attrs))
@@ -376,10 +241,9 @@
                                reader :cache nil)
                       #\/ #\>)
      (nreverse attrs))
-    (setq key (get-buf
-                (read-if (lambda (c)
-                           (not (find c '(#\Space #\= #\/ #\>))))
-                         reader))
+    (setq key (get-buf (read-if (lambda (c)
+                                  (not (find c '(#\Space #\= #\/ #\>))))
+                                reader))
           value (and (reader-next-in? (read-if (lambda (c)
                                                  (find c '(#\= #\Space)))
                                                reader :cache nil)
@@ -414,7 +278,8 @@
                                 ((comment)
                                  (format out "(:!-- \"~A\")" (xml-node-value node)))
                                 (t
-                                  (error "xml-nodes->DSL: unknown node type ~A" (xml-node-type node)))))
+                                  (error "xml-nodes->DSL: unknown node type ~A"
+                                         (xml-node-type node)))))
                             (mklist nodes)))))
       (rec nodes))))
 
@@ -422,9 +287,7 @@
   (labels ((rec (nodes indent-manager)
                 (with-output-to-string (out)
                   (let ((indent (indent-manager-indent indent-manager)))
-                    (cond ((stringp nodes)
-                           (format out "~A" nodes))
-                          ((or (null nodes)
+                    (cond ((or (null nodes)
                                (and (not (listp nodes))
                                     (not (typep nodes 'xml-node))))
                            (error "DSL->xml: `~A' unexpected token." nodes))
@@ -434,13 +297,15 @@
                                              (rec node indent-manager))
                                            nodes)))
                           ((eq (xml-node-type nodes) 'text)
-                           (format out "~A~A~A" indent (with-xml-encode (xml-node-value nodes)) (indent-newline)))
-                          ((eq (xml-node-type nodes) 'plain-text)
-                           (format out "~A~A~A" indent (xml-node-value nodes) (indent-newline)))
+                           (format out "~A~A~A" indent
+                                   (with-xml-encode (xml-node-value nodes))
+                                   (indent-newline)))
                           ((eq (xml-node-type nodes) 'document-type)
-                           (format out "<!DOCTYPE ~A>~A" (xml-node-value nodes) (indent-newline)))
+                           (format out "<!DOCTYPE ~A>~A"
+                                   (xml-node-value nodes) (indent-newline)))
                           ((eq (xml-node-type nodes) 'comment)
-                           (format out "~A<!-- ~A -->~A" indent (xml-node-value nodes) (indent-newline)))
+                           (format out "~A<!-- ~A -->~A" indent
+                                   (xml-node-value nodes) (indent-newline)))
                           (t
                             (format out "~A<~A~{ ~{~(~A~)~^=\"~A\"~}~}~A>~A"
                                     indent

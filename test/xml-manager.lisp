@@ -34,9 +34,9 @@
    (test-xml->DSL"<hr><br>")
    (with-escape "(:hr ())(:br ())")))
 
-;; sample-source {{{
 
 (defun sample-source ()
+; {{{
 #<< END
 <span class="Statement">set</span> <span class="PreProc">background</span>=dark
 <span class="Statement">hi</span> <span class="Statement">clear</span>
@@ -81,11 +81,10 @@
 <span class="Comment">&quot; }}}</span>
 
 END)
-
-;; }}}
-;; sample-css {{{
+; }}}
 
 (defun sample-css ()
+; {{{
 #<< END
 <style type="text/css">
 pre { font-family: monospace; color: #ffffff; background-color: #262626; }
@@ -103,8 +102,7 @@ body { font-family: monospace; color: #ffffff; background-color: #262626; }
 .Statement { color: #d78700; }
 </style>
 END)
-
-;; }}}
+; }}}
 
 (write-to!
   (DSL->xml
@@ -124,6 +122,5 @@ END)
                         (:td ((bgcolor (if (oddp (1+ j)) "#FF0000" "#FF00FF")))
                           (format nil "~@R" (+ (* 5 i) (1+ j))))))))
         (:hr)
-        (to-pre-code (sample-source))
-        )))
+        (to-pre-code (sample-source)))))
   "xml-manager.html")
