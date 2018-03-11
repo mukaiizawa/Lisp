@@ -1,9 +1,6 @@
 @charset "UTF-8";
 
-body {
-  width: 750px;
-  margin: auto;
-}
+body { width: 750px; margin: auto; }
 
 h1, h2, h3, h4, h5, h6 {
   display: block;
@@ -20,9 +17,7 @@ h4 { font-size: 1.2em; }
 h5 { font-size: 1.0em; }
 h6 { font-size: 1em; }
 
-p {
-  margin-bottom: 0.25em;
-}
+p { margin-bottom: 0.25em; }
 
 pre {
   padding-top: 0.5em;
@@ -31,10 +26,7 @@ pre {
   padding-left: -4em;
   margin-left: 1em;
 }
-
-pre.index {
-  border: none;
-}
+pre.index { border: none; }
 
 blockquote {
   border-left: 1.2px solid #ccc;
@@ -43,21 +35,9 @@ blockquote {
   padding-left: 0.5em;
   margin-left: 0.5em;
 }
+blockquote blockquote { margin: 0px; margin-top: 0.5em; }
 
-blockquote blockquote {
-  margin: 0px;
-  margin-top: 0.5em;
-}
-
-table {
-  border-collapse: collapse;
-}
-
-table th {
-  background-color: #ddd;
-}
-
-td, th {
-  padding: 3px;
-  border: 1px solid #ccc;
-}
+table { border-collapse: collapse; }
+thead { border-bottom: 1.2px solid #ccc; }
+th, td { padding: 3px; }
+th:nth-child(1), td:nth-child(1) { border-right: 1.2px solid #ccc; }
