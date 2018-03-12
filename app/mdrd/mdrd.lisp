@@ -127,9 +127,7 @@
                 `(:li ,(subseq (get-line ar) (1+ level)))
                 (parse-list-block ar curr-level))
               li-list)))
-    (if ul?
-      `(:ul ,@(nreverse li-list))
-      `(:ol ,@(nreverse li-list)))))
+    `(,(if ul? :ul :ol) ,@(nreverse li-list))))
 
 (defmethod parse-statement ((ar ahead-reader))
   (cond ((char= (get-next (read-blank ar)) #\#) (parse-header ar))
