@@ -45,17 +45,14 @@
               &lt;paragraph&gt;
               | &lt;preformatted_text_block&gt;
               | &lt;quote_block&gt;
-              | &lt;list_block&gt;
               | &lt;table&gt;
+              | &lt;list_block&gt;
           }
       &lt;header&gt; ::= { # | ## | ### | #### | ##### | ###### } ' ' &lt;string&gt; &lt;eol&gt;
       &lt;preformatted_text_block&gt; ::= &lt;preformatted_text&gt; ...
       &lt;preformatted_text&gt; ::= '    ' &lt;string&gt; &lt;eol&gt;
       &lt;quote_block&gt; ::= &lt;quote&gt; ...
       &lt;quote&gt; ::= '&gt;' ... ' ' &lt;string&gt; &lt;eol&gt;
-      &lt;list_block&gt; ::= { &lt;ordered_list&gt; | &lt;unordered_list&gt; } ...
-      &lt;ordered_list&gt; ::= '1.' ... ' ' &lt;string&gt; &lt;eol&gt;
-      &lt;unordered_list&gt; ::= '-' ... ' ' &lt;string&gt; &lt;eol&gt;
       &lt;table&gt; ::= &lt;table_separator&gt;
               &lt;table_header&gt;
               &lt;table_separator&gt;
@@ -65,6 +62,9 @@
       &lt;table_line&gt; ::= &lt;string&gt; [&lt;tab&gt; &lt;string&gt;] ... &lt;eol&gt;
       &lt;table_header&gt; ::= &lt;table_line&gt;
       &lt;table_body&gt; ::= &lt;table_line&gt; &lt;table_line&gt; ...
+      &lt;list_block&gt; ::= { &lt;ordered_list&gt; | &lt;unordered_list&gt; } ...
+      &lt;ordered_list&gt; ::= '+' ... ' ' &lt;string&gt; &lt;eol&gt;
+      &lt;unordered_list&gt; ::= '-' ... ' ' &lt;string&gt; &lt;eol&gt;
       &lt;title&gt; -- この文書のタイトルを表す文字列
       &lt;eol&gt; -- 改行文字
       &lt;string&gt; -- 文字の列
@@ -143,6 +143,8 @@
       &gt; quotation2
       &gt;&gt; quotation of quotation1
       &gt;&gt; quotation of quotation2
+      &gt; quotation3
+      &gt; quotation4
     </pre>
     <blockquote>
        quotation1
@@ -152,6 +154,11 @@
          quotation of quotation1
         <br/>
          quotation of quotation2
+        <blockquote>
+           quotation3
+          <br/>
+           quotation4
+        </blockquote>
       </blockquote>
     </blockquote>
     <h2>
@@ -177,7 +184,7 @@
             順序あり
           </td>
           <td>
-            1.
+            +
           </td>
         </tr>
         <tr>
@@ -196,11 +203,39 @@
     <pre>
       - list
       -- nested list
+      -- nested list
       - list
-      1. ordered list
-      1. ordered list
+      + ordered list
+      + ordered list
       - list
     </pre>
+    <ol>
+      <li>
+         list
+      </li>
+      <ul>
+        <li>
+           nested list
+        </li>
+        <li>
+           nested list
+        </li>
+        <ul>
+          <li>
+             list
+          </li>
+          <li>
+             ordered list
+          </li>
+          <li>
+             ordered list
+          </li>
+          <li>
+             list
+          </li>
+        </ul>
+      </ul>
+    </ol>
     <h2>
       表
     </h2>

@@ -10,17 +10,14 @@
             <paragraph>
             | <preformatted_text_block>
             | <quote_block>
-            | <list_block>
             | <table>
+            | <list_block>
         }
     <header> ::= { # | ## | ### | #### | ##### | ###### } ' ' <string> <eol>
     <preformatted_text_block> ::= <preformatted_text> ...
     <preformatted_text> ::= '    ' <string> <eol>
     <quote_block> ::= <quote> ...
     <quote> ::= '>' ... ' ' <string> <eol>
-    <list_block> ::= { <ordered_list> | <unordered_list> } ...
-    <ordered_list> ::= '1.' ... ' ' <string> <eol>
-    <unordered_list> ::= '-' ... ' ' <string> <eol>
     <table> ::= <table_separator>
             <table_header>
             <table_separator>
@@ -30,6 +27,9 @@
     <table_line> ::= <string> [<tab> <string>] ... <eol>
     <table_header> ::= <table_line>
     <table_body> ::= <table_line> <table_line> ...
+    <list_block> ::= { <ordered_list> | <unordered_list> } ...
+    <ordered_list> ::= '+' ... ' ' <string> <eol>
+    <unordered_list> ::= '-' ... ' ' <string> <eol>
     <title> -- この文書のタイトルを表す文字列
     <eol> -- 改行文字
     <string> -- 文字の列
@@ -70,27 +70,41 @@ paragraf...
     > quotation2
     >> quotation of quotation1
     >> quotation of quotation2
+    > quotation3
+    > quotation4
+
 > quotation1
 > quotation2
 >> quotation of quotation1
 >> quotation of quotation2
+> quotation3
+> quotation4
 
 ## リスト
 リストは順序の有無により二種類存在する。
 --
 順序	開始文字
 --
-順序あり	1.
+順序あり	+
 順序無し	-
 --
 
 それぞれ、開始文字を重ねることにより、ネストしたリストを表現することができる。また、リスト内で他方のリストを記述することもできる。
     - list
     -- nested list
+    -- nested list
     - list
-    1. ordered list
-    1. ordered list
+    + ordered list
+    + ordered list
     - list
+
+- list
+-- nested list
+-- nested list
+- list
++ ordered list
++ ordered list
+- list
 
 ## 表
 '--'で区切られたセクションは表と見做される。表は省略可能なヘッダ―部とボディー部に分かれる。

@@ -1,4 +1,4 @@
-; markdown reader
+; xc markdown reader
 
 (require :ahead-reader *module-ahead-reader*)
 (require :xml-manager *module-xml-manager*)
@@ -80,14 +80,14 @@
 (defmethod parse-paragraph ((ar ahead-reader))
   `(:p ,(get-line ar)))
 
-(defmethod preformatted_text? ((ar ahead-reader) &optional (col 1))
+(defmethod preformatted-text? ((ar ahead-reader) &optional (col 1))
   (or (> col 4)
       (and (char= (get-next ar col) #\space)
-           (preformatted_text? ar (1+ col)))))
+           (preformatted-text? ar (1+ col)))))
 
 (defmethod parse-preformatted_text_block ((ar ahead-reader))
   (let (line)
-    (while (preformatted_text? ar)
+    (while (preformatted-text? ar)
       (push (subseq (get-line ar) 4) line))
     `(:pre ,@(nreverse line))))
 
@@ -111,17 +111,38 @@
     (get-line ar)
     `(:table (:thead ,header) (:tbody ,@(nreverse body)))))
 
+(defmethod list-line? ((ar ahead-reader))
+  (find (get-next ar) '(#\- #\+)))
+
+(defmethod list-level ((ar ahead-reader) &optional (level 0))
+  (if (find (get-next ar (1+ level)) '(#\- #\+))
+    (list-level ar (1+ level))
+    (1- level)))
+
+(defmethod parse-list-block ((ar ahead-reader) &optional (level 0))
+  (let ((li-list) (ul? (char= (get-next ar) #\-)))
+    (while (list-line? ar)
+      (let ((curr-level (list-level ar)))
+        (push (if (= curr-level level)
+                `(:li ,(subseq (get-line ar) (1+ level)))
+                (parse-list-block ar curr-level))
+              li-list)))
+    (if ul?
+      `(:ul ,@(nreverse li-list))
+      `(:ol ,@(nreverse li-list)))))
+
 (defmethod parse-statement ((ar ahead-reader))
   (cond ((char= (get-next (read-blank ar)) #\#) (parse-header ar))
         ((char= (get-next ar) #\>) (parse-quote-block ar))
-        ((preformatted_text? ar) (parse-preformatted_text_block ar))
+        ((preformatted-text? ar) (parse-preformatted_text_block ar))
         ((table-separator? ar) (parse-table ar))
+        ((list-line? ar) (parse-list-block ar))
         (t (parse-paragraph ar))))
 
 (defmethod parse-title ((ar ahead-reader))
   (get-line ar))
 
-(defmethod parse-markdown((ar ahead-reader))
+(defmethod parse-xmarkdown((ar ahead-reader))
   (let ((title (parse-title (read-blank ar)))
         (body nil))
     (while (not (reach-eof? (read-blank ar)))
@@ -138,7 +159,7 @@
 
 (defun read-markdown (stream)
   (with-ahead-reader (ar stream)
-    (parse-markdown ar)))
+    (parse-xmarkdown ar)))
 
 (setq *with-format* t)
 
@@ -149,6 +170,6 @@
 (with-open-file (out "test.html" :direction :output :if-exists :supersede)
   (princ
     (princ
-      (with-open-file (in "readme.md" :direction :input)
+      (with-open-file (in "readme.xmd" :direction :input)
         (DSL->xml (mapcar #'eval (read-markdown in))))
       out)))
