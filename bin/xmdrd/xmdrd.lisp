@@ -4,6 +4,7 @@
 (require :xml-manager *module-xml-manager*)
 
 (defparameter *outline* nil)
+(defparameter *css* (read-from (truename "./default.css")))
 
 (defun trim-left (s)
   (if (char= (char s 0) #\space)
@@ -149,9 +150,7 @@
       (:html ((lang "ja"))
         (:head 
           (:meta ((charset "utf-8")))
-          (:link ((type "text/css")
-                  (rel "stylesheet")
-                  (href ,(truename "./default.css"))))
+          (:style ,@*css*)
           (:title ,title))
         (:body
           ,(parse-outline *outline*)

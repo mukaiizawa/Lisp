@@ -9,5 +9,5 @@
 (defexe xmdrd (--help)
   "help"
   (if (or --help (/= (length args) 1))
-    (usage)
+    (funcall (usage))
     (read-xmd (first args))))
