@@ -149,25 +149,22 @@
       (:html ((lang "ja"))
         (:head 
           (:meta ((charset "utf-8")))
-          (:link ((type "text/css") (rel "stylesheet") (href "./default.css")))
+          (:link ((type "text/css")
+                  (rel "stylesheet")
+                  (href ,(truename "./default.css"))))
           (:title ,title))
         (:body
           ,(parse-outline *outline*)
           ,@(nreverse body))))))
 
-(defun read-markdown (stream)
-  (with-ahead-reader (ar stream)
-    (parse-xmarkdown ar)))
-
-(setq *with-format* t)
-
-(defparameter usage
-  (usage :title "mdrd FILE"
-         :desc '("Output html from markdown")))
-
-(with-open-file (out "test.html" :direction :output :if-exists :supersede)
-  (princ
-    (princ
-      (with-open-file (in "readme.xmd" :direction :input)
-        (DSL->xml (mapcar #'eval (read-markdown in))))
-      out)))
+(defun read-xmd (xmd)
+  (let ((*with-format* t))
+    (with-open-file (out (mkstr (pathname-name xmd) ".html")
+                         :direction :output
+                         :if-exists :supersede)
+      (princ
+        (princ
+          (with-open-file (in xmd :direction :input)
+            (DSL->xml (mapcar #'eval (with-ahead-reader (ar in)
+                                       (parse-xmarkdown ar)))))
+          out)))))
