@@ -21,7 +21,7 @@ h6 { font-size: 1.0em; }
 
 p { text-indent: 1em; }
 
-pre { border: solid 1px #ccc; box-sizing: border-box; }
+pre { border: solid 1px #ccc; box-sizing: border-box; overflow: scroll; }
 pre.index { border: none; }
 
 blockquote { border-left: 1.2px solid #ccc; }
