@@ -19,15 +19,14 @@
 (defclass VBALastSheet (VBASheet) ())
 (defclass VBAActiveSheet (VBASheet) ())
 
-; cell
+; cell (0 origin)
 (defmethod .init ((c VBACell) &key row col)
-  (if (or (= row 0) (= col 0)) (error "illegal arguments"))
   (setf (.row c) row
         (.col c) col)
   c)
 
 (defmethod .map ((c VBACell))
-  (format nil "Cells(~A, ~A)" (.row c) (.col c)))
+  (format nil "Cells(~A, ~A)" (1+ (.row c)) (1+ (.col c))))    ; 1 origin
 
 ; range
 (defmethod .init ((r VBARange) &key expr)
