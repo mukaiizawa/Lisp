@@ -41,6 +41,9 @@
           ((null args) (init-now dt))
           (t (error "init-date-time: Illegal arguments '~A'." args)))))
 
+(defmethod utc ((dt date-time))
+  (date-time-utc dt))
+
 (defmethod year ((dt date-time))
   (date-time-year dt))
 
