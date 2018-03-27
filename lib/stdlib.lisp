@@ -547,6 +547,21 @@
       (values wins max))))
 
 ;; }}}
+;; least {{{
+
+(defun least (fn lst)
+  (if (null lst)
+    (values nil nil)
+    (let* ((wins (car lst))
+           (min (funcall fn wins)))
+      (dolist (obj (cdr lst))
+        (let ((score (funcall fn obj)))
+          (when (< score min)
+            (setq wins obj
+                  min score))))
+      (values wins min))))
+
+;; }}}
 ;; maptree {{{
 
 (defun maptree (fn &rest args)

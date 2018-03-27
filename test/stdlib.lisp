@@ -256,6 +256,13 @@ END
   (most-02 (most #'values '(1 2 3 4 5)) 5 5))
 
 ;; }}}
+;; least {{{
+
+(test-all
+  (least (least #'length '((1) (1 2) (1 2 3) (1 2 3 4))) '(1) 1)
+  (least (least #'values '(1 2 3 4 5)) 1 1))
+
+;; }}}
 ;; maptree {{{
 
 (test-all
