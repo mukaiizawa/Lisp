@@ -40,6 +40,8 @@
   (format t "~A.~A.Value = \"~A\"~%" (.map s) (.map r) val))
 
 ; sheet
+; note: to get excel worksheets, write bellow command in 'imidiate windows' and press enter.
+;     For Each i In ThisWorkbook.Sheets: debug.print i.name : next i
 (defmethod .init ((s VBASheet) &key name)
   (setf (.name s) name)
   s)
