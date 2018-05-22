@@ -15,7 +15,7 @@
 
 (defun parse-outline ()
   `(list
-     (:h1 "目次")
+     (:h1 "0. 目次")
      (:ul ((class "index"))
        ,@(mapcar (lambda (x)
                    (let* ((node (eval x))
