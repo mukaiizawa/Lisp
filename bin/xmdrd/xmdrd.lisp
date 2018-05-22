@@ -24,7 +24,7 @@
                        (:a ((href (mkstr "#" index)))
                          (loop for i from 0 to (length index) collect (:span))
                          index
-                         (xml-node-value (car (xml-node-children node)))))))
+                         (xml-node-value (cadr (xml-node-children node)))))))
                  (nreverse *xmdrd-outline*)))))
 
 (defmethod read-blank ((ar ahead-reader))
@@ -57,7 +57,7 @@
                           ((3) :h4)
                           ((4) :h5)
                           ((5) :h6))
-                        `((id ,(get-id))) line)))
+                        `((id ,(get-id))) (get-id) line)))
       (push header *xmdrd-outline*)
       header)))
 

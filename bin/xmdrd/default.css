@@ -2,27 +2,25 @@
 
 body { width:780px; margin:auto; }
 
-a { color:#000; text-decoration:none; margin:2px; }
 
-ul.index { list-style:none; }
+ul.index { padding-left:0px; list-style:none; }
 ul.index span { margin-left:0.5em; }
+ul.index a { color:#000; text-decoration:none; margin:2px; overflow:visible; }
+
+pre, blockquote, table { padding:0.5em; margin-left:1em; margin-right:1em; }
 
 h1, h2, h3, h4, h5, h6, p, pre, blockquote, table { margin-bottom:0.75em; }
-pre, blockquote, table { padding:0.5em; margin-left:1em; margin-right:1em; }
 
 h1, h2, h3, h4, h5, h6 {
   display: block;
   margin-top: 0.75em;
   font-weight: bold;
-  border-bottom: solid 1px #ccc;
 }
 
+h1, h2, h3 { border-bottom: solid 1px #ccc; }
 h1 { font-size:1.6em; }
-h2 { font-size:1.4em; }
-h3 { font-size:1.3em; }
-h4 { font-size:1.2em; }
-h5 { font-size:1.1em; }
-h6 { font-size:1.0em; }
+h2, h3 { font-size:1.2em; }
+h4, h5, h6 { font-size:1.0em; }
 
 p { text-indent:1em; }
 
