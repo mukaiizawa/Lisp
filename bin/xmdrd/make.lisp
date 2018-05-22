@@ -3,11 +3,11 @@
 (load "xmdrd")
 
 (defparameter usage
-  (usage :title "mdrd FILE"
+  (usage :title "xmdrd FILE"
          :desc '("Read xc markdown and Output html.")))
 
 (defexe xmdrd (--help)
   "help"
   (if (or --help (/= (length args) 1))
-    (funcall (usage))
+    (funcall usage)
     (read-xmd (first args))))
