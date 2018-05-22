@@ -22,7 +22,10 @@
                           (index (cadr (assoc 'id (xml-node-attrs node)))))
                      (:li
                        (:a ((href (mkstr "#" index)))
-                         (loop for i from 0 to (length index) collect (:span))
+                         (loop for i
+                               from 0
+                               to (count-if (lambda (ch) (char= ch #\.)) index)
+                               collect (:span))
                          index
                          (xml-node-value (cadr (xml-node-children node)))))))
                  (nreverse *xmdrd-outline*)))))

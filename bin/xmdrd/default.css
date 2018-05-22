@@ -7,7 +7,7 @@ body {
 }
 
 ul.index { padding-left:0px; list-style:none; }
-ul.index span { margin-left:0.5em; }
+ul.index span { margin-left:1em; }
 ul.index a { color:#000; text-decoration:none; margin:2px; overflow:visible; }
 
 pre, blockquote, table { padding:0.5em; margin-left:1em; margin-right:1em; }
