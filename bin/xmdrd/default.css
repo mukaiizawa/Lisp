@@ -1,9 +1,14 @@
 /* expanded inline */
 
-body { width: 780px; margin: auto; }
+body { width:780px; margin:auto; }
 
-h1, h2, h3, h4, h5, h6, p, pre, blockquote, table { margin-bottom: 0.75em; }
-pre, blockquote, table { padding: 0.5em; margin-left: 1em; margin-right: 1em; }
+a { color:#000; text-decoration:none; margin:2px; }
+
+ul.index { list-style:none; }
+ul.index span { margin-left:0.5em; }
+
+h1, h2, h3, h4, h5, h6, p, pre, blockquote, table { margin-bottom:0.75em; }
+pre, blockquote, table { padding:0.5em; margin-left:1em; margin-right:1em; }
 
 h1, h2, h3, h4, h5, h6 {
   display: block;
@@ -12,22 +17,21 @@ h1, h2, h3, h4, h5, h6 {
   border-bottom: solid 1px #ccc;
 }
 
-h1 { font-size: 1.6em; }
-h2 { font-size: 1.4em; }
-h3 { font-size: 1.3em; }
-h4 { font-size: 1.2em; }
-h5 { font-size: 1.1em; }
-h6 { font-size: 1.0em; }
+h1 { font-size:1.6em; }
+h2 { font-size:1.4em; }
+h3 { font-size:1.3em; }
+h4 { font-size:1.2em; }
+h5 { font-size:1.1em; }
+h6 { font-size:1.0em; }
 
-p { text-indent: 1em; }
+p { text-indent:1em; }
 
-pre { border: solid 1px #ccc; box-sizing: border-box; overflow-x: auto; }
-pre.index { border: none; }
+pre { border:solid 1px #ccc; box-sizing:border-box; overflow-x:auto; }
 
-blockquote { border-left: 1.2px solid #ccc; }
-blockquote blockquote { margin-left: 0px; }
+blockquote { border-left:1.2px solid #ccc; }
+blockquote blockquote { margin-left:0px; }
 
-table { border-collapse: collapse; }
-thead { border-bottom: 1.2px solid #ccc; }
-th, td { padding: 3px; }
-th:nth-child(1), td:nth-child(1) { border-right: 1.2px solid #ccc; }
+table { border-collapse:collapse; }
+thead { border-bottom:1.2px solid #ccc; }
+th, td { padding:3px; }
+th:nth-child(1), td:nth-child(1) { border-right:1.2px solid #ccc; }
