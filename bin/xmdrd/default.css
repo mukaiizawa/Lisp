@@ -10,7 +10,8 @@ ul.index { padding-left:0px; list-style:none; }
 ul.index span { margin-left:1em; }
 ul.index a { color:#000; text-decoration:none; margin:2px; overflow:visible; }
 
-pre, blockquote, table { padding:0.5em; margin-left:1em; margin-right:1em; }
+pre, blockquote, table { margin-left:1em; margin-right:1em; padding:0.5em; }
+h1 { margin-top:0.25em; }
 h1, h2, h3, h4, h5, h6, p, pre, blockquote, table { margin-bottom:0.75em; }
 
 h1 { font-size:1.6em; }
