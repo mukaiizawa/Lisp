@@ -34,6 +34,7 @@
   (single? nil :type boolean))
 
 (defparameter *with-format* nil)
+(defparameter *strict-node-name* nil)
 
 (defstruct indent-manager
   (indent "" :type string)
@@ -136,10 +137,12 @@
         mapping-name))
 
 (defun get-node-name-mapping (name &optional namespace)
-  (aif (gethash (merge-node-name name namespace) *node-name-mapping*)
-    (string-downcase (mkstr it))
-    (error "get-node-name-mappin: undefined element `~A'."
-           (merge-node-name name namespace))))
+  (let ((marged-node-name (merge-node-name name namespace)))
+    (if (not *strict-node-name*)
+      marged-node-name
+      (aif (gethash marged-node-name *node-name-mapping*)
+        (string-downcase (mkstr it))
+        (error "get-node-name-mappin: undefined element `~A'." marged-node-name)))))
 
 (defun single-tag? (name &optional namespace)
   (and (find (get-node-name-mapping name namespace) *single-tags* :test 'equal)
