@@ -90,6 +90,18 @@
   (format t "~A.Copy after:=~A~%" (.map from) (.map +last-sheet+))
   (format t "~A.Name = \"~A\"~%" (.map +last-sheet+) (.name to)))
 
+(defmethod .remove-if-exist ((s VBASheet))
+  (format t (concatenate
+              'string
+              "Dim ~A~%"
+              "For Each ~1:*~A In Worksheets~%"
+              "  If ~1:*~A.Name = \"~1:*~A\" Then~%"
+              "    ~1:*~A.Delete~%"
+              "    Exit For~%"
+              "  End If~%"
+              "Next~%")
+          (.name s)))
+
 ; utility
 (defun cell (row col)
   (.init (make-instance 'VBACell) :row row :col col))
