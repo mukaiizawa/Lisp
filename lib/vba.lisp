@@ -37,13 +37,28 @@
   (format nil "Range(\"~A\")" (.range r)))
 
 (defmethod .put ((s VBASheet) (r VBARange) val)
-  (format t "~A.~A.Value = ~{\"~A\"~^ & vbLf & ~}~%"
-          (.map s) (.map r) (if (listp val) val (list val))))
+  (let ((val (if (listp val) val (list val))))
+    (format t "~A.~A.Value = \"~A\"~%" (.map s) (.map r) (car val))
+    (dolist (x (cdr val))
+      (format t "~A.~A.Value = ~A.~A.Value & vbLf & \"~A\"~%"
+              (.map s) (.map r) (.map s) (.map r) x))))
 
 (defmethod .copy ((s1 VBASheet) (r1 VBARange) (s2 VBASheet) (r2 VBARange))
   (format t "~A.~A.Copy~%" (.map s1) (.map r1))
   (format t "~A.~A.Select~%" (.map s2) (.map r2))
   (format t "~A.Paste~%" (.map +active-sheet+)))
+
+(defmethod .border ((s VBASheet) (r VBARange))
+  (format t "~A.~A.Borders.LineStyle = True~%" (.map s) (.map r)))
+
+(defmethod .print-area ((s VBASheet) (r VBARange))
+  (format t "~A.PageSetup.PrintArea = ~A.Address~%" (.map s) (.map r)))
+
+(defmethod .auto-fit-row ((s VBASheet) (r VBARange))
+  (format t "~A.~A.EntireRow.AutoFit~%" (.map s) (.map r)))
+
+(defmethod .wrap-text ((s VBASheet) (r VBARange))
+  (format t "~A.~A.WrapText = True~%" (.map s) (.map r)))
 
 ; sheet
 ; note: to get excel worksheets, write bellow command in 'imidiate windows' and press enter.
