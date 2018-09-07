@@ -34,10 +34,16 @@
   r)
 
 (defmethod .map ((r VBARange))
-  (format nil "Range(~A)" (.range r)))
+  (format nil "Range(\"~A\")" (.range r)))
 
 (defmethod .put ((s VBASheet) (r VBARange) val)
-  (format t "~A.~A.Value = \"~A\"~%" (.map s) (.map r) val))
+  (format t "~A.~A.Value = ~{\"~A\"~^ & vbLf & ~}~%"
+          (.map s) (.map r) (if (listp val) val (list val))))
+
+(defmethod .copy ((s1 VBASheet) (r1 VBARange) (s2 VBASheet) (r2 VBARange))
+  (format t "~A.~A.Copy~%" (.map s1) (.map r1))
+  (format t "~A.~A.Select~%" (.map s2) (.map r2))
+  (format t "~A.Paste~%" (.map +active-sheet+)))
 
 ; sheet
 ; note: to get excel worksheets, write bellow command in 'imidiate windows' and press enter.
