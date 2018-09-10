@@ -7,6 +7,7 @@
 (defparameter +last-sheet+ nil)
 
 (defparameter *sym-index* 0)
+(defparameter *subroutine-index* 0)
 
 (defclass VBARange ()
   ((expr :accessor .range)))
@@ -123,12 +124,19 @@
       +active-sheet+ (.init (make-instance 'VBAActiveSheet) :name "ActiveSheet"))
 
 ; enter utility
-(defmacro with-vba-main (&rest body)
+(defmacro with-subroutine (&rest body)
+  `(progn (format t "Sub sub_~A()~%" (incf *subroutine-index*))
+          ,@body
+          (format t "End Sub~%")))
+
+(defmacro with-vba (&rest body)
   `(progn (format t "Option Explicit~%")
+          ,@body
           (format t "Sub main()~%")
           (format t "Application.ScreenUpdating = False~%")
           (format t "Application.DisplayAlerts = False~%")
-          ,@body
+          (dotimes (i *subroutine-index*)
+            (format t "Call sub_~A~%" (1+ i)))
           (format t "Application.DisplayAlerts = True~%")
           (format t "Application.ScreenUpdating = True~%")
           (format t "End Sub~%")))
