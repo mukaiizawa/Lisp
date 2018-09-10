@@ -6,6 +6,8 @@
 (defparameter +active-sheet+ nil)
 (defparameter +last-sheet+ nil)
 
+(defparameter *sym-index* 0)
+
 (defclass VBARange ()
   ((expr :accessor .range)))
 
@@ -18,6 +20,10 @@
 
 (defclass VBALastSheet (VBASheet) ())
 (defclass VBAActiveSheet (VBASheet) ())
+
+(defun gen-vba-sym ()
+  (with-output-to-string (out)
+    (princ "G" out) (princ (incf *sym-index*) out)))
 
 ; cell (0 origin)
 (defmethod .init ((c VBACell) &key row col)
@@ -91,16 +97,17 @@
   (format t "~A.Name = \"~A\"~%" (.map +last-sheet+) (.name to)))
 
 (defmethod .remove-if-exist ((s VBASheet))
-  (format t (concatenate
-              'string
-              "Dim ~A~%"
-              "For Each ~1:*~A In Worksheets~%"
-              "  If ~1:*~A.Name = \"~1:*~A\" Then~%"
-              "    ~1:*~A.Delete~%"
-              "    Exit For~%"
-              "  End If~%"
-              "Next~%")
-          (.name s)))
+  (let ((sym (gen-vba-sym)))
+    (format t (concatenate
+                'string
+                "Dim ~A~%"
+                "For Each ~A In Worksheets~%"
+                "  If ~A.Name = \"~A\" Then~%"
+                "    ~A.Delete~%"
+                "    Exit For~%"
+                "  End If~%"
+                "Next~%")
+            sym sym sym (.name s) sym)))
 
 ; utility
 (defun cell (row col)
