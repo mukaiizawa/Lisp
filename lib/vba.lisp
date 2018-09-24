@@ -67,6 +67,10 @@
 (defmethod .wrap-text ((s VBASheet) (r VBARange))
   (format t "~A.~A.WrapText = True~%" (.map s) (.map r)))
 
+(defmethod .fix-header ((s VBASheet) (r VBARange))
+  (.select-range s r)
+  (format t "ActiveWindow.FreezePanes = True~%"))
+
 ; sheet
 ; note: to get excel worksheets, write bellow command in 'imidiate windows' and press enter.
 ;     For Each i In ThisWorkbook.Sheets: debug.print i.name : next i
