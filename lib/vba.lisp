@@ -91,7 +91,7 @@
   (format t "~A.Activate~%~1:*~A.~A.Select~%" (.map s) (.map r)))
 
 (defmethod .select-A1 ((s VBASheet))
-  (.select-range s (cell 1 1)))
+  (.select-range s (cell 0 0)))
 
 (defmethod .add-last ((s VBASheet))
   (format t "Worksheets.Add after:=~A~%" (.map +last-sheet+))
@@ -100,6 +100,15 @@
 (defmethod .copy-to-last ((from VBASheet) (to VBASheet))
   (format t "~A.Copy after:=~A~%" (.map from) (.map +last-sheet+))
   (format t "~A.Name = \"~A\"~%" (.map +last-sheet+) (.name to)))
+
+(defmethod .activate ((s VBASheet))
+  (format t "~A.Activate~%" (.map s)))
+
+(defmethod .hide ((s VBASheet))
+  (format t "~A.Visible = xlVeryHidden~%" (.map s)))
+
+(defmethod .show ((s VBASheet))
+  (format t "~A.Visible = True~%" (.map s)))
 
 (defmethod .remove-if-exist ((s VBASheet))
   (let ((sym (gen-vba-sym)))
