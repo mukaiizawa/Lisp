@@ -5,6 +5,7 @@
 
 # 書式
 拡張マークダウンの書式を以下に示す。
+
     <markdown> ::= <title> <statement> ...
     <statement> ::= {
             <paragraph>
@@ -36,6 +37,7 @@
 
 ## 見出し
 '#'から始まる行は見出しと見做される。
+
     # header1
     ## header2
     ### header3
@@ -44,28 +46,25 @@
     ###### header6
 
 連続する#の数が見出しレベルに対応する。
-# header1
-## header2
-### header3
-#### header4
-##### header5
-###### header6
 
 ## 段落
 行末までの文字の列は段落と見做される。
+
     paragraf...
-paragraf...
 
 ## 整形済みテキスト
 半角スペース4つから始まる行は整形済みテキストと見做す。
+
     preformatted
 
 整形済みのテキストはフォーマッタによって整形されない。
+
     (defun make-adder (n)
       (lambda (x) (+ x n)))
 
 ## 引用
 '>'から始まる行は引用文と見做す。引用の引用を表す場合は'>'をネストさせる。
+
     > quotation1
     > quotation2
     >> quotation of quotation1
@@ -92,21 +91,30 @@ paragraf...
 --
 
 それぞれ、開始文字を重ねることにより、ネストしたリストを表現することができる。また、リスト内で他方のリストを記述することもできる。
+
     - list
     -- nested list
     -- nested list
     - list
-    + ordered list
-    + ordered list
     - list
 
 - list
 -- nested list
 -- nested list
 - list
-+ ordered list
-+ ordered list
 - list
+
+    + list
+    ++ nested list
+    ++ nested list
+    + list
+    + list
+
++ list
+++ nested list
+++ nested list
++ list
++ list
 
 ## 表
 '--'で区切られたセクションは表と見做される。表は省略可能なヘッダ―部とボディー部に分かれる。

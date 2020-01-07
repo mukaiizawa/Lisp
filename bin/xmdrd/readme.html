@@ -78,152 +78,62 @@
         </a>
       </li>
       <li>
-        <a href="#3.">
-          <span>
-          </span>
-          <span>
-          </span>
-          3.
-          header1
-        </a>
-      </li>
-      <li>
-        <a href="#3.1.">
+        <a href="#2.2.">
           <span>
           </span>
           <span>
           </span>
           <span>
           </span>
-          3.1.
-          header2
-        </a>
-      </li>
-      <li>
-        <a href="#3.1.1.">
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          3.1.1.
-          header3
-        </a>
-      </li>
-      <li>
-        <a href="#3.1.1.1.">
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          3.1.1.1.
-          header4
-        </a>
-      </li>
-      <li>
-        <a href="#3.1.1.1.1.">
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          3.1.1.1.1.
-          header5
-        </a>
-      </li>
-      <li>
-        <a href="#3.1.1.1.1.1.">
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          3.1.1.1.1.1.
-          header6
-        </a>
-      </li>
-      <li>
-        <a href="#3.2.">
-          <span>
-          </span>
-          <span>
-          </span>
-          <span>
-          </span>
-          3.2.
+          2.2.
           段落
         </a>
       </li>
       <li>
-        <a href="#3.3.">
+        <a href="#2.3.">
           <span>
           </span>
           <span>
           </span>
           <span>
           </span>
-          3.3.
+          2.3.
           整形済みテキスト
         </a>
       </li>
       <li>
-        <a href="#3.4.">
+        <a href="#2.4.">
           <span>
           </span>
           <span>
           </span>
           <span>
           </span>
-          3.4.
+          2.4.
           引用
         </a>
       </li>
       <li>
-        <a href="#3.5.">
+        <a href="#2.5.">
           <span>
           </span>
           <span>
           </span>
           <span>
           </span>
-          3.5.
+          2.5.
           リスト
         </a>
       </li>
       <li>
-        <a href="#3.6.">
+        <a href="#2.6.">
           <span>
           </span>
           <span>
           </span>
           <span>
           </span>
-          3.6.
+          2.6.
           表
         </a>
       </li>
@@ -290,32 +200,8 @@
     <p>
       連続する#の数が見出しレベルに対応する。
     </p>
-    <h1 id="3.">
-      3.
-      header1
-    </h1>
-    <h2 id="3.1.">
-      3.1.
-      header2
-    </h2>
-    <h3 id="3.1.1.">
-      3.1.1.
-      header3
-    </h3>
-    <h4 id="3.1.1.1.">
-      3.1.1.1.
-      header4
-    </h4>
-    <h5 id="3.1.1.1.1.">
-      3.1.1.1.1.
-      header5
-    </h5>
-    <h6 id="3.1.1.1.1.1.">
-      3.1.1.1.1.1.
-      header6
-    </h6>
-    <h2 id="3.2.">
-      3.2.
+    <h2 id="2.2.">
+      2.2.
       段落
     </h2>
     <p>
@@ -324,11 +210,8 @@
     <pre>
       paragraf...
     </pre>
-    <p>
-      paragraf...
-    </p>
-    <h2 id="3.3.">
-      3.3.
+    <h2 id="2.3.">
+      2.3.
       整形済みテキスト
     </h2>
     <p>
@@ -344,8 +227,8 @@
       (defun make-adder (n)
         (lambda (x) (+ x n)))
     </pre>
-    <h2 id="3.4.">
-      3.4.
+    <h2 id="2.4.">
+      2.4.
       引用
     </h2>
     <p>
@@ -379,8 +262,8 @@
       <br/>
        quotation4
     </blockquote>
-    <h2 id="3.5.">
-      3.5.
+    <h2 id="2.5.">
+      2.5.
       リスト
     </h2>
     <p>
@@ -424,8 +307,6 @@
       -- nested list
       -- nested list
       - list
-      + ordered list
-      + ordered list
       - list
     </pre>
     <ul>
@@ -439,24 +320,42 @@
         <li>
            nested list
         </li>
-        <ul>
-          <li>
-             list
-          </li>
-          <li>
-             ordered list
-          </li>
-          <li>
-             ordered list
-          </li>
-          <li>
-             list
-          </li>
-        </ul>
       </ul>
+      <li>
+         list
+      </li>
+      <li>
+         list
+      </li>
     </ul>
-    <h2 id="3.6.">
-      3.6.
+    <pre>
+      + list
+      ++ nested list
+      ++ nested list
+      + list
+      + list
+    </pre>
+    <ol>
+      <li>
+         list
+      </li>
+      <ol>
+        <li>
+           nested list
+        </li>
+        <li>
+           nested list
+        </li>
+      </ol>
+      <li>
+         list
+      </li>
+      <li>
+         list
+      </li>
+    </ol>
+    <h2 id="2.6.">
+      2.6.
       表
     </h2>
     <p>
