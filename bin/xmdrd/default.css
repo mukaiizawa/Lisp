@@ -24,8 +24,7 @@ p { text-indent:1em; }
 
 pre { border:solid 1px #ccc; box-sizing:border-box; overflow-x:auto; }
 
-blockquote { border-left:1.2px solid #ccc; }
-blockquote blockquote { margin-left:0px; }
+blockquote { padding-left:1em; border-left:1.2px solid #ccc; }
 
 table { border-collapse:collapse; }
 thead { border-bottom:1.2px solid #ccc; }

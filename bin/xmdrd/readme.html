@@ -29,8 +29,7 @@
       
       pre { border:solid 1px #ccc; box-sizing:border-box; overflow-x:auto; }
       
-      blockquote { border-left:1.2px solid #ccc; }
-      blockquote blockquote { margin-left:0px; }
+      blockquote { padding-left:1em; border-left:1.2px solid #ccc; }
       
       table { border-collapse:collapse; }
       thead { border-bottom:1.2px solid #ccc; }
@@ -356,6 +355,7 @@
       &gt; quotation1
       &gt; quotation2
       &gt;&gt; quotation of quotation1
+      &gt;&gt;&gt; quotation of quotation of quotation
       &gt;&gt; quotation of quotation2
       &gt; quotation3
       &gt; quotation4
@@ -364,16 +364,20 @@
        quotation1
       <br/>
        quotation2
+      <br/>
       <blockquote>
          quotation of quotation1
         <br/>
-         quotation of quotation2
         <blockquote>
-           quotation3
+           quotation of quotation of quotation
           <br/>
-           quotation4
         </blockquote>
+         quotation of quotation2
+        <br/>
       </blockquote>
+       quotation3
+      <br/>
+       quotation4
     </blockquote>
     <h2 id="3.5.">
       3.5.

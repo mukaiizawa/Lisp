@@ -69,6 +69,7 @@ paragraf...
     > quotation1
     > quotation2
     >> quotation of quotation1
+    >>> quotation of quotation of quotation
     >> quotation of quotation2
     > quotation3
     > quotation4
@@ -76,6 +77,7 @@ paragraf...
 > quotation1
 > quotation2
 >> quotation of quotation1
+>>> quotation of quotation of quotation
 >> quotation of quotation2
 > quotation3
 > quotation4
