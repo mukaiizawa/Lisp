@@ -58,6 +58,9 @@
 (defmethod .border ((s VBASheet) (r VBARange))
   (format t "~A.~A.Borders.LineStyle = True~%" (.map s) (.map r)))
 
+(defmethod .print-title-rows ((s VBASheet) (r VBARange))
+  (format t "~A.PageSetup.PrintTitleRows = ~A.Address~%" (.map s) (.map r)))
+
 (defmethod .print-area ((s VBASheet) (r VBARange))
   (format t "~A.PageSetup.PrintArea = ~A.Address~%" (.map s) (.map r)))
 
