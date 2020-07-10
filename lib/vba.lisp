@@ -2,8 +2,8 @@
 
 (provide :vba)
 
-(defparameter +last-sheet+ nil)
 (defparameter +active-sheet+ nil)
+(defparameter +first-sheet+ nil)
 (defparameter +last-sheet+ nil)
 
 (defparameter *sym-index* 0)
@@ -19,6 +19,7 @@
 (defclass VBASheet ()
   ((name :accessor .name)))
 
+(defclass VBAFirstSheet (VBASheet) ())
 (defclass VBALastSheet (VBASheet) ())
 (defclass VBAActiveSheet (VBASheet) ())
 
@@ -74,6 +75,18 @@
   (.select-range s r)
   (format t "ActiveWindow.FreezePanes = True~%"))
 
+(defmethod .left ((s VBASheet) (r VBARange))
+  (format t "~A.~A.HorizontalAlignment = xlLeft~%" (.map s) (.map r)))
+
+(defmethod .center ((s VBASheet) (r VBARange))
+  (format t "~A.~A.HorizontalAlignment = xlCenter~%" (.map s) (.map r)))
+
+(defmethod .right ((s VBASheet) (r VBARange))
+  (format t "~A.~A.HorizontalAlignment = xlRight~%" (.map s) (.map r)))
+
+(defmethod .font-size ((s VBASheet) (r VBARange) n)
+  (format t "~A.~A.Font.Size = ~A~%" (.map s) (.map r) n))
+
 ; sheet
 ; note: to get excel worksheets, write bellow command in 'imidiate windows' and press enter.
 ;     For Each i In ThisWorkbook.Sheets: debug.print i.name : next i
@@ -84,8 +97,11 @@
 (defmethod .map ((s VBASheet))
   (format nil "Worksheets(\"~A\")" (.name s)))
 
+(defmethod .map ((s VBAFirstSheet))
+  "Worksheets(1)")
+
 (defmethod .map ((s VBALastSheet))
-  (format nil "Worksheets(Worksheets.Count)"))
+  "Worksheets(Worksheets.Count)")
 
 (defmethod .map ((s VBAActiveSheet))
   (.name s))
@@ -136,7 +152,8 @@
 (defun sheet (name)
   (.init (make-instance 'VBASheet) :name name))
 
-(setf +last-sheet+ (.init (make-instance 'VBALastSheet) :name "LastSheet")
+(setf +first-sheet+ (.init (make-instance 'VBAFirstSheet) :name "FirstSheet")
+      +last-sheet+ (.init (make-instance 'VBALastSheet) :name "LastSheet")
       +active-sheet+ (.init (make-instance 'VBAActiveSheet) :name "ActiveSheet"))
 
 ; enter utility
