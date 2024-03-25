@@ -828,6 +828,17 @@
          pathname)))
 
 ;; }}}
+;; pathname-suffix {{{
+
+(defun pathname-suffix (pathname &optional suffix)
+  (let* ((fn (namestring pathname))
+         (pos (position #\. fn :from-end t))
+         (basename (subseq fn 0 pos)))
+    (cond ((null suffix) (and pos (subseq fn (1+ pos))))
+          ((null pos) pathname)
+          (t (pathname (concatenate 'string basename "." suffix))))))
+
+;;}}}
 ;; pathname-as-file {{{
 
 (defun pathname-as-file (name)
