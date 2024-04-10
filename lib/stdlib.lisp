@@ -707,6 +707,24 @@
 
 ;; }}}
 
+;; set utils
+;; set-eq {{{
+
+(defun set-eq (X Y &key key (test #'eq))
+  (null (set-exclusive-or X Y :key key :test test)))
+
+;; }}}
+
+;; hash-table utils
+;; hash-table-keys {{{
+
+(defun hash-table-keys (table)
+  (let ((keys nil))
+    (maphash (lambda (k v) (push k keys)) table)
+    keys))
+
+;; }}}
+
 ;; io utils
 ;; guess-encoding {{{
 
